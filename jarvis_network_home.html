@@ -1,0 +1,1452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>J.A.R.V.I.S. Network — Exploring the Future of Artificial Intelligence</title>
+<style>
+  :root {
+    --black: #05070a;
+    --anthracite: #0e1319;
+    --panel: #12181f;
+    --panel-raised: #161d26;
+    --deep-blue: #0b1f3c;
+    --line: rgba(191, 227, 240, 0.10);
+    --line-strong: rgba(191, 227, 240, 0.20);
+    --cyan: #49d3e0;
+    --cyan-dim: #2d8f9c;
+    --ice: #bfe3f0;
+    --white: #eef5f8;
+    --muted: #7f93a1;
+
+    --st-active: #49d3e0;
+    --st-testing: #bfe3f0;
+    --st-dev: #d9a86c;
+    --st-experimental: #b79ce0;
+    --st-research: #7f93a1;
+    --st-failed: #d97676;
+
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--black);
+    color: var(--white);
+    font-family: -apple-system, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+  }
+  a { color: inherit; }
+  img, svg, canvas { display: block; max-width: 100%; }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 clamp(1.1rem, 4vw, 2.5rem);
+  }
+
+  h1, h2, h3 { text-wrap: balance; margin: 0; }
+
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--cyan-dim);
+  }
+
+  /* ================= NAV ================= */
+
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(5, 7, 10, 0.78);
+    backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    height: 60px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-size: 0.98rem;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .brand .mark {
+    width: 9px; height: 9px; border-radius: 2px;
+    background: var(--cyan);
+    box-shadow: 0 0 10px 1px color-mix(in srgb, var(--cyan) 55%, transparent);
+    flex: none;
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.7rem;
+    font-size: 0.82rem;
+    letter-spacing: 0.03em;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--muted);
+    white-space: nowrap;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .nav-links a:hover, .nav-links a.current { color: var(--white); border-color: var(--cyan-dim); }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    font-size: 0.8rem;
+    flex: none;
+  }
+  .nav-actions .search-hint {
+    display: flex; align-items: center; gap: 0.4rem;
+    color: var(--muted);
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    padding: 0.35rem 0.6rem;
+    cursor: pointer;
+  }
+  .nav-actions .search-hint kbd {
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    background: var(--panel-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    padding: 0.05rem 0.32rem;
+    color: var(--ice);
+  }
+  .login-btn {
+    color: var(--white);
+    text-decoration: none;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    padding: 0.4rem 0.85rem;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .login-btn:hover { border-color: var(--cyan-dim); background: rgba(73, 211, 224, 0.06); }
+
+  .lang-toggle {
+    display: flex;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .lang-toggle button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 0.4rem 0.6rem;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease;
+  }
+  .lang-toggle button + button { border-left: 1px solid var(--line-strong); }
+  .lang-toggle button.active { color: var(--cyan); background: rgba(73, 211, 224, 0.08); }
+  .lang-toggle button:hover { color: var(--white); }
+  .online-pill {
+    display: flex; align-items: center; gap: 0.4rem;
+    color: var(--cyan);
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+  }
+  .dot-live {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 6px 1px color-mix(in srgb, var(--cyan) 60%, transparent);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.35; }
+  }
+
+  @media (max-width: 860px) {
+    .nav-links { display: none; }
+  }
+
+  /* ================= HERO ================= */
+
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(4.5rem, 12vw, 8rem) 0 clamp(3.5rem, 8vw, 6rem);
+    border-bottom: 1px solid var(--line);
+    background:
+      radial-gradient(ellipse 900px 480px at 82% -10%, rgba(11, 31, 60, 0.55), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 8% 110%, rgba(11, 31, 60, 0.4), transparent 60%);
+  }
+  #net-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  .hero-inner { position: relative; z-index: 2; }
+
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--cyan);
+    border: 1px solid rgba(73, 211, 224, 0.28);
+    background: rgba(73, 211, 224, 0.05);
+    border-radius: 100px;
+    padding: 0.4rem 0.9rem 0.4rem 0.7rem;
+    margin-bottom: 1.6rem;
+    opacity: 0;
+    animation: fadeUp 0.7s ease 0.05s forwards;
+  }
+
+  .hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(3rem, 11vw, 6.6rem);
+    letter-spacing: 0.02em;
+    line-height: 1;
+    background: linear-gradient(180deg, var(--white) 0%, var(--ice) 55%, var(--cyan-dim) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    opacity: 0;
+    animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.15s forwards;
+  }
+
+  .hero .tagline {
+    margin-top: 1.1rem;
+    font-size: clamp(1.05rem, 2.4vw, 1.4rem);
+    color: var(--ice);
+    font-weight: 500;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.28s forwards;
+  }
+  .hero .subtagline {
+    margin-top: 0.4rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.36s forwards;
+  }
+  .hero .intro {
+    max-width: 46ch;
+    margin-top: 1.5rem;
+    color: var(--muted);
+    font-size: 1rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.44s forwards;
+  }
+
+  .hero-ctas {
+    display: flex; flex-wrap: wrap; gap: 0.85rem;
+    margin-top: 2.3rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.55s forwards;
+  }
+  .cta {
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    padding: 0.85rem 1.3rem;
+    border-radius: 7px;
+    border: 1px solid var(--line-strong);
+    color: var(--white);
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+  .cta:hover { transform: translateY(-1px); }
+  .cta.primary {
+    background: linear-gradient(180deg, rgba(73,211,224,0.16), rgba(73,211,224,0.05));
+    border-color: rgba(73, 211, 224, 0.4);
+    color: var(--cyan);
+  }
+  .cta.primary:hover { border-color: var(--cyan); background: rgba(73,211,224,0.14); }
+  .cta.ghost:hover { border-color: var(--ice); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero h1, .hero .tagline, .hero .subtagline, .hero .intro, .hero-ctas, .status-pill {
+      animation: none; opacity: 1;
+    }
+    .dot-live { animation: none; }
+  }
+
+  /* ================= SECTION SHELLS ================= */
+
+  section.block {
+    padding: clamp(3.5rem, 8vw, 5.5rem) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .block-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 2.4rem;
+  }
+  .block-head h2 {
+    margin-top: 0.5rem;
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 3.6vw, 2.3rem);
+    letter-spacing: 0.01em;
+  }
+  .block-head .sub {
+    margin-top: 0.5rem;
+    color: var(--muted);
+    font-size: 0.98rem;
+    max-width: 50ch;
+  }
+  .preview-tag {
+    font-family: ui-monospace, monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    border: 1px dashed var(--line-strong);
+    border-radius: 100px;
+    padding: 0.25rem 0.65rem;
+    white-space: nowrap;
+  }
+
+  /* ================= JARVIS PROJECT ================= */
+
+  .arch-flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 2.6rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+  }
+  .arch-node {
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    background: var(--panel);
+    color: var(--ice);
+    white-space: nowrap;
+  }
+  .arch-node.emphasis { border-color: rgba(73,211,224,0.4); color: var(--cyan); }
+  .arch-arrow { color: var(--muted); padding: 0 0.55rem; }
+
+  .component-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    gap: 0.65rem;
+    margin-bottom: 1.5rem;
+  }
+  .component-chip {
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    letter-spacing: 0.05em;
+    text-align: left;
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    color: var(--white);
+    padding: 0.75rem 0.85rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .component-chip:hover { border-color: var(--cyan-dim); }
+  .component-chip[aria-pressed="true"] {
+    border-color: var(--cyan);
+    background: rgba(73, 211, 224, 0.08);
+    color: var(--cyan);
+  }
+  .component-desc {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel-raised);
+    padding: 1.1rem 1.3rem;
+    min-height: 3.6em;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+  .component-desc .k {
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    color: var(--cyan);
+    letter-spacing: 0.06em;
+    flex: none;
+  }
+  .component-desc .v { color: var(--muted); font-size: 0.92rem; }
+
+  /* ================= DEV STATUS ================= */
+
+  .status-panel {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .status-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.9rem 1.3rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.92rem;
+  }
+  .status-row:last-child { border-bottom: none; }
+  .status-row .name { font-weight: 500; }
+  .status-tag {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+  }
+  .status-tag .d { width: 7px; height: 7px; border-radius: 50%; }
+
+  .focus-note {
+    margin-top: 1.4rem;
+    padding: 1.1rem 1.3rem;
+    border-left: 2px solid var(--cyan-dim);
+    background: rgba(73, 211, 224, 0.04);
+    border-radius: 0 8px 8px 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  .focus-note .eyebrow { display: block; margin-bottom: 0.4rem; }
+
+  /* ================= COMMUNITY ================= */
+
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 2.4rem;
+  }
+  .cat-card {
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    padding: 1.1rem 1.2rem;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .cat-card:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+  .cat-card .t {
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan);
+  }
+  .cat-card .d { margin-top: 0.4rem; font-size: 0.85rem; color: var(--muted); }
+
+  .disc-list { display: flex; flex-direction: column; gap: 0.8rem; }
+  .disc-card {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    padding: 1.1rem 1.3rem;
+    transition: border-color 0.2s ease;
+  }
+  .disc-card:hover { border-color: var(--line-strong); }
+  .disc-title { font-size: 1rem; font-weight: 500; }
+  .disc-meta {
+    display: flex; align-items: center; gap: 0.7rem;
+    margin-top: 0.5rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .disc-tag {
+    color: var(--cyan);
+    border: 1px solid rgba(73,211,224,0.3);
+    border-radius: 4px;
+    padding: 0.12rem 0.45rem;
+  }
+  .disc-flag {
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.6rem;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+  .disc-flag.active { color: var(--st-active); border: 1px solid rgba(73,211,224,0.35); }
+  .disc-flag.trending { color: var(--st-dev); border: 1px solid rgba(217,168,108,0.35); }
+  .disc-flag.updated { color: var(--muted); border: 1px solid var(--line-strong); }
+
+  /* ================= KNOWLEDGE ================= */
+
+  .know-map {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0;
+    margin-bottom: 2.2rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.82rem;
+  }
+  .know-node {
+    padding: 0.65rem 1.1rem;
+    border-radius: 100px;
+    border: 1px solid var(--line-strong);
+    background: var(--panel);
+    color: var(--ice);
+  }
+  .know-arrow { color: var(--cyan-dim); padding: 0 0.5rem; }
+
+  .tag-cloud { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+  .tag-pill {
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    padding: 0.42rem 0.9rem;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .tag-pill:hover { color: var(--white); border-color: var(--line-strong); }
+
+  /* ================= NEWS ================= */
+
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.1rem;
+  }
+  .news-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    padding: 1.4rem 1.5rem;
+  }
+  .news-cat {
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+  }
+  .news-card h3 {
+    margin-top: 0.6rem;
+    font-size: 1.08rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .news-meta {
+    margin-top: 0.5rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .news-card p { margin: 0.8rem 0 0; color: var(--muted); font-size: 0.88rem; }
+  .news-why {
+    margin-top: 0.7rem;
+    font-size: 0.85rem;
+    color: var(--ice);
+    padding-left: 0.8rem;
+    border-left: 2px solid var(--cyan-dim);
+  }
+  .news-link {
+    display: inline-block; margin-top: 1rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.74rem;
+    color: var(--cyan);
+    text-decoration: none;
+  }
+  .news-link:hover { text-decoration: underline; }
+
+  /* ================= LAB ================= */
+
+  .lab-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+  }
+  .lab-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    padding: 1.2rem 1.3rem;
+  }
+  .lab-card .t { font-weight: 500; font-size: 0.98rem; }
+  .lab-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    margin-top: 0.7rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    padding: 0.28rem 0.6rem;
+    border-radius: 100px;
+  }
+  .lab-card .note { margin-top: 0.6rem; font-size: 0.82rem; color: var(--muted); }
+  .lab-card.is-failed { border-color: rgba(217, 118, 118, 0.28); }
+
+  /* ================= LIVE ACTIVITY ================= */
+
+  .live-strip {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--panel), var(--anthracite));
+    padding: 1.5rem 1.6rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.4rem;
+  }
+  .live-item .n {
+    font-family: ui-monospace, monospace;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--cyan);
+    font-variant-numeric: tabular-nums;
+  }
+  .live-item .l {
+    margin-top: 0.3rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  /* ================= FOOTER ================= */
+
+  footer {
+    padding: 3rem 0 2.4rem;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.4fr repeat(3, 1fr);
+    gap: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .footer-grid h4 {
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin: 0 0 0.9rem;
+  }
+  .footer-grid a {
+    display: block;
+    text-decoration: none;
+    color: var(--white);
+    font-size: 0.86rem;
+    margin-bottom: 0.55rem;
+    opacity: 0.85;
+  }
+  .footer-grid a:hover { opacity: 1; color: var(--cyan); }
+  .footer-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 0.8rem;
+    padding-top: 1.4rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  @media (max-width: 720px) {
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ================= ASK JARVIS ================= */
+
+  .ask-btn {
+    position: fixed;
+    right: 1.4rem; bottom: 1.4rem;
+    z-index: 60;
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    letter-spacing: 0.06em;
+    display: flex; align-items: center; gap: 0.55rem;
+    background: rgba(11, 19, 26, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(73, 211, 224, 0.35);
+    color: var(--cyan);
+    border-radius: 100px;
+    padding: 0.7rem 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .ask-btn:hover { border-color: var(--cyan); transform: translateY(-1px); }
+  .ask-btn .ring {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 8px 1px color-mix(in srgb, var(--cyan) 60%, transparent);
+  }
+
+  .ask-panel {
+    position: fixed;
+    right: 1.4rem; bottom: 4.6rem;
+    z-index: 61;
+    width: min(340px, calc(100vw - 2.8rem));
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: rgba(14, 19, 25, 0.96);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    padding: 1.1rem 1.2rem 1.3rem;
+    transform: translateY(8px) scale(0.98);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), opacity 0.22s ease;
+  }
+  .ask-panel.open { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
+  .ask-panel .head {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+    margin-bottom: 0.8rem;
+  }
+  .ask-panel .head button {
+    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem;
+  }
+  .ask-examples { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.9rem; }
+  .ask-examples button {
+    text-align: left;
+    font-size: 0.82rem;
+    color: var(--white);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 0.55rem 0.75rem;
+    cursor: pointer;
+  }
+  .ask-examples button:hover { border-color: var(--cyan-dim); }
+  .ask-input-row {
+    display: flex; gap: 0.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 0.8rem;
+  }
+  .ask-input-row input {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    color: var(--white);
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 0.5rem 0.7rem;
+  }
+  .ask-input-row input:focus-visible { outline: 2px solid var(--cyan-dim); outline-offset: 1px; }
+  .ask-input-row button {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--black);
+    background: var(--cyan);
+    border: none;
+    border-radius: 7px;
+    padding: 0 0.9rem;
+    cursor: pointer;
+  }
+  .ask-note { margin-top: 0.7rem; font-size: 0.72rem; color: var(--muted); }
+
+  :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <div class="nav-links">
+      <a href="#home" class="current" data-i18n="nav.home">HOME</a>
+      <a href="#project" data-i18n="nav.project">JARVIS PROJECT</a>
+      <a href="#news" data-i18n="nav.news">AI NEWS</a>
+      <a href="#community" data-i18n="nav.discussions">DISCUSSIONS</a>
+      <a href="#knowledge" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="#lab" data-i18n="nav.lab">LAB</a>
+      <a href="#community" data-i18n="nav.community">COMMUNITY</a>
+      <a href="#about" data-i18n="nav.about">ABOUT</a>
+    </div>
+    <div class="nav-actions">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="home">
+  <canvas id="net-canvas"></canvas>
+  <div class="wrap hero-inner">
+    <div class="status-pill"><span class="dot-live"></span><span data-i18n="hero.status">J.A.R.V.I.S. NETWORK ONLINE</span></div>
+    <h1>J.A.R.V.I.S.</h1>
+    <p class="tagline" data-i18n="hero.tagline">Exploring the Future of Artificial Intelligence</p>
+    <p class="subtagline" data-i18n="hero.subtagline">Build · Discuss · Understand · Evolve</p>
+    <p class="intro" data-i18n="hero.intro">A place for people who want to understand, discuss and
+      build the next generation of intelligent systems.</p>
+    <div class="hero-ctas">
+      <a href="#project" class="cta primary" data-i18n="hero.cta1">EXPLORE J.A.R.V.I.S.</a>
+      <a href="#community" class="cta ghost" data-i18n="hero.cta2">ENTER AI COMMUNITY</a>
+      <a href="#knowledge" class="cta ghost" data-i18n="hero.cta3">DISCOVER AI</a>
+    </div>
+  </div>
+</header>
+
+<section class="block" id="project">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="project.eyebrow">J.A.R.V.I.S. PROJECT</span>
+        <h2 data-i18n="project.title">BUILDING J.A.R.V.I.S.</h2>
+        <p class="sub" data-i18n="project.sub">From AI assistant to autonomous digital intelligence.</p>
+      </div>
+    </div>
+
+    <div class="arch-flow" id="arch-flow" aria-hidden="true"></div>
+
+    <div class="component-grid" id="component-grid"></div>
+    <div class="component-desc">
+      <span class="k mono" id="comp-name">CORE</span>
+      <span class="v" id="comp-value">The central reasoning loop that receives intent and coordinates every other system.</span>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="status.eyebrow">TRANSPARENCY</span>
+        <h2 data-i18n="status.title">DEVELOPMENT STATUS</h2>
+        <p class="sub" data-i18n="status.sub">What's actually being worked on right now — including the parts that aren't finished yet.</p>
+      </div>
+    </div>
+    <div class="status-panel" id="status-panel"></div>
+    <div class="focus-note">
+      <span class="eyebrow mono" data-i18n="status.focusLabel">CURRENT DEVELOPMENT FOCUS</span>
+      <span data-i18n="status.focusText">Stabilizing browser-controlled actions behind an explicit confirmation
+      step, and extending the memory layer so it can hold a task's goal and
+      open questions across a session.</span>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="community">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="community.eyebrow">AI COMMUNITY</span>
+        <h2 data-i18n="community.title">Discuss. Question. Build. Learn.</h2>
+      </div>
+      <span class="preview-tag" data-i18n="tag.preview">PREVIEW CONTENT</span>
+    </div>
+
+    <div class="cat-grid" id="cat-grid"></div>
+
+    <div class="disc-list" id="disc-list"></div>
+  </div>
+</section>
+
+<section class="block" id="knowledge">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="knowledge.eyebrow">AI KNOWLEDGE</span>
+        <h2 data-i18n="knowledge.title">UNDERSTAND AI</h2>
+        <p class="sub" data-i18n="knowledge.sub">Articles connect into a growing, interactive map of AI concepts.</p>
+      </div>
+    </div>
+    <div class="know-map" id="know-map" aria-hidden="true"></div>
+    <div class="tag-cloud" id="tag-cloud"></div>
+  </div>
+</section>
+
+<section class="block" id="news">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="news.eyebrow">AI NEWS</span>
+        <h2 data-i18n="news.title">AI SIGNAL</h2>
+        <p class="sub" data-i18n="news.sub">Not just headlines — why it matters, and where the community is discussing it.</p>
+      </div>
+      <span class="preview-tag" data-i18n="tag.preview">PREVIEW CONTENT</span>
+    </div>
+    <div class="news-grid" id="news-grid"></div>
+  </div>
+</section>
+
+<section class="block" id="lab">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="lab.eyebrow">AI LAB</span>
+        <h2 data-i18n="lab.title">Experiments at the edge of AI.</h2>
+        <p class="sub" data-i18n="lab.sub">What worked, what's in progress — and what failed, and why.</p>
+      </div>
+      <span class="preview-tag" data-i18n="tag.preview">PREVIEW CONTENT</span>
+    </div>
+    <div class="lab-grid" id="lab-grid"></div>
+  </div>
+</section>
+
+<section class="block" style="border-bottom:none;">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="live.eyebrow">LIVE ACTIVITY</span>
+        <h2 data-i18n="live.title">NETWORK ACTIVITY</h2>
+      </div>
+      <span class="preview-tag" data-i18n="live.tag">PREVIEW DATA — NOT LIVE YET</span>
+    </div>
+    <div class="live-strip" id="live-strip"></div>
+  </div>
+</section>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="#project" data-i18n="footer.project">JARVIS Project</a>
+        <a href="#knowledge" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="#news" data-i18n="footer.news">AI Signal</a>
+        <a href="#lab" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">COMMUNITY</h4>
+        <a href="#community" data-i18n="footer.discussions">Discussions</a>
+        <a href="#community" data-i18n="footer.models">Models</a>
+        <a href="#community" data-i18n="footer.ideas">Ideas</a>
+        <a href="#community" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" data-i18n="ask.send">ASK</button>
+  </div>
+  <p class="ask-note" data-i18n="ask.note">Concept preview — will query the platform's real knowledge and community content once connected.</p>
+</div>
+
+<script>
+  // ==================================================================
+  // i18n: static strings
+  // ==================================================================
+  var STRINGS = {
+    "nav.home": { en: "HOME", de: "STARTSEITE" },
+    "nav.project": { en: "JARVIS PROJECT", de: "JARVIS PROJEKT" },
+    "nav.news": { en: "AI NEWS", de: "KI NEWS" },
+    "nav.discussions": { en: "DISCUSSIONS", de: "DISKUSSIONEN" },
+    "nav.knowledge": { en: "KNOWLEDGE", de: "WISSEN" },
+    "nav.lab": { en: "LAB", de: "LABOR" },
+    "nav.community": { en: "COMMUNITY", de: "COMMUNITY" },
+    "nav.about": { en: "ABOUT", de: "ÜBER UNS" },
+    "nav.search": { en: "SEARCH", de: "SUCHE" },
+    "nav.login": { en: "LOGIN", de: "ANMELDEN" },
+    "nav.online": { en: "ONLINE", de: "ONLINE" },
+    "hero.status": { en: "J.A.R.V.I.S. NETWORK ONLINE", de: "J.A.R.V.I.S. NETZWERK ONLINE" },
+    "hero.tagline": { en: "Exploring the Future of Artificial Intelligence", de: "Die Zukunft der Künstlichen Intelligenz erkunden" },
+    "hero.subtagline": { en: "Build · Discuss · Understand · Evolve", de: "Bauen · Diskutieren · Verstehen · Weiterentwickeln" },
+    "hero.intro": { en: "A place for people who want to understand, discuss and build the next generation of intelligent systems.", de: "Ein Ort für Menschen, die die nächste Generation intelligenter Systeme verstehen, diskutieren und mitgestalten wollen." },
+    "hero.cta1": { en: "EXPLORE J.A.R.V.I.S.", de: "J.A.R.V.I.S. ENTDECKEN" },
+    "hero.cta2": { en: "ENTER AI COMMUNITY", de: "ZUR KI-COMMUNITY" },
+    "hero.cta3": { en: "DISCOVER AI", de: "KI ENTDECKEN" },
+    "project.eyebrow": { en: "J.A.R.V.I.S. PROJECT", de: "J.A.R.V.I.S. PROJEKT" },
+    "project.title": { en: "BUILDING J.A.R.V.I.S.", de: "J.A.R.V.I.S. WIRD GEBAUT" },
+    "project.sub": { en: "From AI assistant to autonomous digital intelligence.", de: "Vom KI-Assistenten zur autonomen digitalen Intelligenz." },
+    "status.eyebrow": { en: "TRANSPARENCY", de: "TRANSPARENZ" },
+    "status.title": { en: "DEVELOPMENT STATUS", de: "ENTWICKLUNGSSTATUS" },
+    "status.sub": { en: "What's actually being worked on right now — including the parts that aren't finished yet.", de: "Woran gerade wirklich gearbeitet wird – auch an den Teilen, die noch nicht fertig sind." },
+    "status.focusLabel": { en: "CURRENT DEVELOPMENT FOCUS", de: "AKTUELLER ENTWICKLUNGSSCHWERPUNKT" },
+    "status.focusText": { en: "Stabilizing browser-controlled actions behind an explicit confirmation step, and extending the memory layer so it can hold a task's goal and open questions across a session.", de: "Browsergesteuerte Aktionen hinter einer ausdrücklichen Bestätigung stabilisieren, und die Gedächtnisebene so erweitern, dass sie Ziel und offene Fragen einer Aufgabe über eine Sitzung hinweg festhalten kann." },
+    "community.eyebrow": { en: "AI COMMUNITY", de: "KI-COMMUNITY" },
+    "community.title": { en: "Discuss. Question. Build. Learn.", de: "Diskutieren. Hinterfragen. Bauen. Lernen." },
+    "tag.preview": { en: "PREVIEW CONTENT", de: "VORSCHAU-INHALT" },
+    "knowledge.eyebrow": { en: "AI KNOWLEDGE", de: "KI-WISSEN" },
+    "knowledge.title": { en: "UNDERSTAND AI", de: "KI VERSTEHEN" },
+    "knowledge.sub": { en: "Articles connect into a growing, interactive map of AI concepts.", de: "Artikel verbinden sich zu einer wachsenden, interaktiven Landkarte der KI-Konzepte." },
+    "news.eyebrow": { en: "AI NEWS", de: "KI NEWS" },
+    "news.title": { en: "AI SIGNAL", de: "KI SIGNAL" },
+    "news.sub": { en: "Not just headlines — why it matters, and where the community is discussing it.", de: "Nicht nur Schlagzeilen – warum es wichtig ist, und wo die Community darüber diskutiert." },
+    "lab.eyebrow": { en: "AI LAB", de: "KI LABOR" },
+    "lab.title": { en: "Experiments at the edge of AI.", de: "Experimente am Rand des Machbaren." },
+    "lab.sub": { en: "What worked, what's in progress — and what failed, and why.", de: "Was funktioniert hat, was in Arbeit ist – und was gescheitert ist, und warum." },
+    "live.eyebrow": { en: "LIVE ACTIVITY", de: "LIVE-AKTIVITÄT" },
+    "live.title": { en: "NETWORK ACTIVITY", de: "NETZWERK-AKTIVITÄT" },
+    "live.tag": { en: "PREVIEW DATA — NOT LIVE YET", de: "VORSCHAU-DATEN — NOCH NICHT LIVE" },
+    "footer.desc": { en: "A digital platform for people who want to understand, discuss and build the next generation of intelligent systems.", de: "Eine digitale Plattform für Menschen, die die nächste Generation intelligenter Systeme verstehen, diskutieren und mitgestalten wollen." },
+    "footer.platform": { en: "PLATFORM", de: "PLATTFORM" },
+    "footer.project": { en: "JARVIS Project", de: "JARVIS Projekt" },
+    "footer.knowledge": { en: "AI Knowledge", de: "KI-Wissen" },
+    "footer.news": { en: "AI Signal", de: "KI Signal" },
+    "footer.lab": { en: "AI Lab", de: "KI Labor" },
+    "footer.community": { en: "COMMUNITY", de: "COMMUNITY" },
+    "footer.discussions": { en: "Discussions", de: "Diskussionen" },
+    "footer.models": { en: "Models", de: "Modelle" },
+    "footer.ideas": { en: "Ideas", de: "Ideen" },
+    "footer.room": { en: "JARVIS Room", de: "JARVIS Raum" },
+    "footer.about": { en: "ABOUT", de: "ÜBER" },
+    "footer.aboutProject": { en: "About the Project", de: "Über das Projekt" },
+    "footer.roadmap": { en: "Roadmap", de: "Roadmap" },
+    "footer.contact": { en: "Contact", de: "Kontakt" },
+    "footer.copy": { en: "© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY", de: "© J.A.R.V.I.S. NETWORK — EINE WACHSENDE KI-COMMUNITY" },
+    "footer.networkOnline": { en: "NETWORK ONLINE", de: "NETZWERK ONLINE" },
+    "ask.btn": { en: "ASK J.A.R.V.I.S.", de: "J.A.R.V.I.S. FRAGEN" },
+    "ask.placeholder": { en: "Ask about anything on this platform…", de: "Frag alles über diese Plattform…" },
+    "ask.send": { en: "ASK", de: "FRAGEN" },
+    "ask.note": { en: "Concept preview — will query the platform's real knowledge and community content once connected.", de: "Konzept-Vorschau – wird später echtes Wissen und echte Community-Inhalte der Plattform abfragen." }
+  };
+  var PAGE_TITLE = {
+    en: "J.A.R.V.I.S. Network — Exploring the Future of Artificial Intelligence",
+    de: "J.A.R.V.I.S. Network — Die Zukunft der Künstlichen Intelligenz erkunden"
+  };
+
+  var currentLang = (function () {
+    try {
+      var saved = localStorage.getItem('jarvis-lang');
+      if (saved === 'en' || saved === 'de') return saved;
+    } catch (e) {}
+    return (navigator.language || 'en').toLowerCase().indexOf('de') === 0 ? 'de' : 'en';
+  })();
+
+  function t(key) {
+    var entry = STRINGS[key];
+    return entry ? entry[currentLang] : key;
+  }
+
+  function applyStaticStrings() {
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
+      el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+    });
+    document.documentElement.lang = currentLang;
+    document.title = PAGE_TITLE[currentLang];
+    document.querySelectorAll('#lang-toggle button').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-lang') === currentLang);
+    });
+  }
+
+  // ---------- Hero neural network background ----------
+  (function () {
+    var canvas = document.getElementById('net-canvas');
+    var ctx = canvas.getContext('2d');
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var nodes = [];
+    var w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    function resize() {
+      var rect = canvas.parentElement.getBoundingClientRect();
+      w = rect.width; h = rect.height;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var count = Math.max(24, Math.min(60, Math.floor((w * h) / 26000)));
+      nodes = [];
+      for (var i = 0; i < count; i++) {
+        nodes.push({
+          x: Math.random() * w, y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.12, vy: (Math.random() - 0.5) * 0.12,
+          r: Math.random() * 1.4 + 0.6
+        });
+      }
+    }
+
+    function step() {
+      ctx.clearRect(0, 0, w, h);
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        n.x += n.vx; n.y += n.vy;
+        if (n.x < 0 || n.x > w) n.vx *= -1;
+        if (n.y < 0 || n.y > h) n.vy *= -1;
+      }
+      for (var i = 0; i < nodes.length; i++) {
+        for (var j = i + 1; j < nodes.length; j++) {
+          var a = nodes[i], b = nodes[j];
+          var dx = a.x - b.x, dy = a.y - b.y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            ctx.strokeStyle = 'rgba(73, 211, 224,' + (0.14 * (1 - dist / 150)) + ')';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(191, 227, 240, 0.55)';
+        ctx.fill();
+      }
+      if (!reduced) requestAnimationFrame(step);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    if (reduced) { step(); } else { requestAnimationFrame(step); }
+  })();
+
+  // ==================================================================
+  // Bilingual dynamic content
+  // ==================================================================
+
+  var archFlow = [
+    { en: "USER", de: "NUTZER" },
+    { en: "JARVIS CORE", de: "JARVIS KERN", emphasis: true },
+    { en: "REASONING", de: "SCHLUSSFOLGERN" },
+    { en: "AI AGENTS", de: "KI-AGENTEN" },
+    { en: "TOOLS", de: "WERKZEUGE" },
+    { en: "WEB / BROWSER / DESKTOP", de: "WEB / BROWSER / DESKTOP" },
+    { en: "ACTION", de: "AKTION", emphasis: true }
+  ];
+
+  var components = [
+    { en: ["CORE", "The central reasoning loop that receives intent and coordinates every other system."],
+      de: ["KERN", "Die zentrale Schlussfolgerungsschleife, die Absichten empfängt und alle anderen Systeme koordiniert."] },
+    { en: ["MEMORY", "Persistent context across conversations, tasks, and sessions."],
+      de: ["GEDÄCHTNIS", "Anhaltender Kontext über Gespräche, Aufgaben und Sitzungen hinweg."] },
+    { en: ["AGENTS", "Specialized sub-processes that plan and execute multi-step tasks."],
+      de: ["AGENTEN", "Spezialisierte Teilprozesse, die mehrstufige Aufgaben planen und ausführen."] },
+    { en: ["VOICE", "Speech recognition and natural voice interaction."],
+      de: ["SPRACHE", "Spracherkennung und natürliche Sprachinteraktion."] },
+    { en: ["VISION", "Screen understanding and visual automation."],
+      de: ["VISION", "Bildschirmverständnis und visuelle Automatisierung."] },
+    { en: ["RESEARCH", "Structured, source-aware information gathering."],
+      de: ["RECHERCHE", "Strukturierte, quellenbewusste Informationsbeschaffung."] },
+    { en: ["BROWSER", "A controlled, isolated browser JARVIS can navigate and act within."],
+      de: ["BROWSER", "Ein kontrollierter, isolierter Browser, in dem JARVIS navigieren und handeln kann."] },
+    { en: ["AUTOMATION", "Turns confirmed intent into real actions on the desktop and web."],
+      de: ["AUTOMATISIERUNG", "Verwandelt bestätigte Absicht in echte Aktionen auf Desktop und Web."] },
+    { en: ["TOOLS", "A guarded registry of exact capabilities JARVIS is allowed to call."],
+      de: ["WERKZEUGE", "Eine bewachte Liste genau der Fähigkeiten, die JARVIS aufrufen darf."] },
+    { en: ["PLANNING", "Breaks a goal into ordered, verifiable steps before anything runs."],
+      de: ["PLANUNG", "Zerlegt ein Ziel in geordnete, überprüfbare Schritte, bevor etwas ausgeführt wird."] }
+  ];
+
+  var statuses = [
+    { row: { en: "CORE", de: "KERN" }, s: "active" },
+    { row: { en: "AI AGENTS", de: "KI-AGENTEN" }, s: "active" },
+    { row: { en: "VOICE SYSTEM", de: "SPRACHSYSTEM" }, s: "testing" },
+    { row: { en: "BROWSER CONTROL", de: "BROWSER-STEUERUNG" }, s: "dev" },
+    { row: { en: "MEMORY", de: "GEDÄCHTNIS" }, s: "experimental" },
+    { row: { en: "AUTONOMOUS TASKS", de: "AUTONOME AUFGABEN" }, s: "research" }
+  ];
+  var statusLabel = {
+    active: { en: "ACTIVE", de: "AKTIV" }, testing: { en: "TESTING", de: "IM TEST" },
+    dev: { en: "DEVELOPMENT", de: "IN ENTWICKLUNG" }, experimental: { en: "EXPERIMENTAL", de: "EXPERIMENTELL" },
+    research: { en: "RESEARCH", de: "ERFORSCHUNG" }
+  };
+  var statusVar = { active: "--st-active", testing: "--st-testing", dev: "--st-dev", experimental: "--st-experimental", research: "--st-research" };
+
+  var cats = [
+    { en: ["GENERAL AI", "Open discussions about artificial intelligence."], de: ["ALLGEMEINE KI", "Offene Diskussionen über künstliche Intelligenz."] },
+    { en: ["AI AGENTS", "Autonomous agents, multi-agent systems and agentic AI."], de: ["KI-AGENTEN", "Autonome Agenten, Multi-Agenten-Systeme und Agentic AI."] },
+    { en: ["LOCAL AI", "Local language models, hardware and private AI systems."], de: ["LOKALE KI", "Lokale Sprachmodelle, Hardware und private KI-Systeme."] },
+    { en: ["MODELS", "GPT, Claude, Gemini, Qwen, Llama, Mistral, DeepSeek and more."], de: ["MODELLE", "GPT, Claude, Gemini, Qwen, Llama, Mistral, DeepSeek und mehr."] },
+    { en: ["AUTOMATION", "AI control of computers, browsers and software."], de: ["AUTOMATISIERUNG", "KI-Steuerung von Computern, Browsern und Software."] },
+    { en: ["AI DEVELOPMENT", "Programming, APIs, frameworks and experiments."], de: ["KI-ENTWICKLUNG", "Programmierung, APIs, Frameworks und Experimente."] },
+    { en: ["J.A.R.V.I.S.", "Discussions specifically about the JARVIS project."], de: ["J.A.R.V.I.S.", "Diskussionen speziell über das JARVIS-Projekt."] },
+    { en: ["FUTURE OF AI", "Societal, philosophical and technological questions."], de: ["ZUKUNFT DER KI", "Gesellschaftliche, philosophische und technologische Fragen."] }
+  ];
+
+  var discussions = [
+    { t: { en: "Can AI agents replace traditional software?", de: "Können KI-Agenten klassische Software ersetzen?" },
+      tag: { en: "AI AGENTS", de: "KI-AGENTEN" }, replies: 42, extra: { en: "128 participants", de: "128 Teilnehmer" },
+      flag: { en: "ACTIVE NOW", de: "GERADE AKTIV" }, flagClass: "active" },
+    { t: { en: "Local AI vs Cloud AI", de: "Lokale KI vs. Cloud-KI" },
+      tag: { en: "LOCAL AI", de: "LOKALE KI" }, replies: 81, extra: null,
+      flag: { en: "UPDATED 4 MIN AGO", de: "AKTUALISIERT VOR 4 MIN" }, flagClass: "updated" },
+    { t: { en: "What should a real JARVIS be able to do?", de: "Was sollte ein echtes JARVIS können?" },
+      tag: { en: "J.A.R.V.I.S.", de: "J.A.R.V.I.S." }, replies: 156, extra: null,
+      flag: { en: "TRENDING", de: "IM TREND" }, flagClass: "trending" }
+  ];
+  var repliesWord = { en: "replies", de: "Antworten" };
+
+  var tags = [
+    { en: "Artificial Intelligence", de: "Künstliche Intelligenz" }, { en: "Large Language Models", de: "Große Sprachmodelle" },
+    { en: "AI Agents", de: "KI-Agenten" }, { en: "Machine Learning", de: "Maschinelles Lernen" },
+    { en: "Neural Networks", de: "Neuronale Netze" }, { en: "Computer Vision", de: "Computer Vision" },
+    { en: "Voice AI", de: "Sprach-KI" }, { en: "Local AI", de: "Lokale KI" },
+    { en: "Automation", de: "Automatisierung" }, { en: "Robotics", de: "Robotik" },
+    { en: "AI Safety", de: "KI-Sicherheit" }, { en: "Future Technologies", de: "Zukunftstechnologien" }
+  ];
+
+  var knowMap = [
+    { en: "LLM", de: "LLM" }, { en: "Reasoning", de: "Schlussfolgern" }, { en: "Agents", de: "Agenten" },
+    { en: "Tools", de: "Werkzeuge" }, { en: "Autonomous Systems", de: "Autonome Systeme" }
+  ];
+
+  var news = [
+    { cat: { en: "RESEARCH", de: "FORSCHUNG" },
+      title: { en: "New reasoning benchmark shows agentic models closing the gap on multi-step planning", de: "Neuer Reasoning-Benchmark zeigt: agentische Modelle holen bei mehrstufiger Planung auf" },
+      src: { en: "AI Research Weekly", de: "AI Research Weekly" }, date: { en: "Example date", de: "Beispieldatum" },
+      sum: { en: "A new benchmark tests models on long-horizon tasks that require planning, tool use and self-correction.", de: "Ein neuer Benchmark testet Modelle an langfristigen Aufgaben, die Planung, Werkzeugnutzung und Selbstkorrektur erfordern." },
+      why: { en: "Why it matters: multi-step planning is the main gap between chatbots and real agents.", de: "Warum wichtig: mehrstufige Planung ist der Hauptunterschied zwischen Chatbots und echten Agenten." } },
+    { cat: { en: "OPEN SOURCE", de: "OPEN SOURCE" },
+      title: { en: "Open-source model release adds native tool-calling for local agents", de: "Open-Source-Modell veröffentlicht mit nativer Werkzeugnutzung für lokale Agenten" },
+      src: { en: "Community Digest", de: "Community Digest" }, date: { en: "Example date", de: "Beispieldatum" },
+      sum: { en: "A newly released open-weight model ships with built-in structured tool-calling, aimed at local agent frameworks.", de: "Ein neu veröffentlichtes offenes Modell bringt eingebautes, strukturiertes Tool-Calling für lokale Agenten-Frameworks mit." },
+      why: { en: "Why it matters: native tool-calling lowers the bar for running real agents fully offline.", de: "Warum wichtig: natives Tool-Calling senkt die Hürde, echte Agenten komplett offline zu betreiben." } }
+  ];
+  var communityDiscussionLink = { en: "Community Discussion →", de: "Community-Diskussion →" };
+
+  var lab = [
+    { t: { en: "LLM Comparison", de: "LLM-Vergleich" }, s: "active", note: { en: "Ongoing side-by-side evaluation across reasoning, tool-use and latency.", de: "Laufender Vergleich bei Schlussfolgern, Werkzeugnutzung und Latenz." } },
+    { t: { en: "Agent Tests", de: "Agenten-Tests" }, s: "testing", note: { en: "Stress-testing multi-step agent runs against realistic failure cases.", de: "Belastungstests mehrstufiger Agenten-Läufe gegen realistische Fehlerfälle." } },
+    { t: { en: "Browser Agents", de: "Browser-Agenten" }, s: "active", note: { en: "Controlled, confirmation-gated web actions inside an isolated browser.", de: "Kontrollierte, bestätigungspflichtige Webaktionen in einem isolierten Browser." } },
+    { t: { en: "Voice Experiments", de: "Sprach-Experimente" }, s: "experimental", note: { en: "Low-latency local speech interaction, early stage.", de: "Lokale Sprachinteraktion mit geringer Latenz, frühes Stadium." } },
+    { t: { en: "Early Autonomous Planning Loop", de: "Frühe autonome Planungsschleife" }, s: "failed", note: { en: "Fully unattended multi-step execution — abandoned after inconsistent safety guarantees. Superseded by confirmation-gated agents.", de: "Vollständig unbeaufsichtigte mehrstufige Ausführung – aufgegeben wegen inkonsistenter Sicherheitsgarantien. Abgelöst durch bestätigungspflichtige Agenten." } },
+    { t: { en: "J.A.R.V.I.S. Experiments", de: "J.A.R.V.I.S.-Experimente" }, s: "research", note: { en: "Exploratory work that hasn't reached a shaped experiment yet.", de: "Explorative Arbeit, die noch kein festes Experiment ist." } }
+  ];
+  var labStatusLabel = {
+    active: { en: "ACTIVE", de: "AKTIV" }, testing: { en: "TESTING", de: "IM TEST" },
+    experimental: { en: "EXPERIMENTAL", de: "EXPERIMENTELL" }, failed: { en: "FAILED", de: "GESCHEITERT" },
+    archived: { en: "ARCHIVED", de: "ARCHIVIERT" }, research: { en: "RESEARCH", de: "ERFORSCHUNG" }
+  };
+  var labStatusVar = { active: "--st-active", testing: "--st-testing", experimental: "--st-experimental", failed: "--st-failed", archived: "--muted", research: "--st-research" };
+
+  var live = [
+    { n: { en: "247", de: "247" }, l: { en: "AI ENTHUSIASTS ONLINE", de: "KI-BEGEISTERTE ONLINE" } },
+    { n: { en: "What should a real JARVIS be able to do?", de: "Was sollte ein echtes JARVIS können?" }, l: { en: "LATEST DISCUSSION", de: "NEUESTE DISKUSSION" } },
+    { n: { en: "Local AI vs Cloud AI", de: "Lokale KI vs. Cloud-KI" }, l: { en: "TRENDING TOPIC", de: "TRENDTHEMA" } },
+    { n: { en: "Browser control confirmation flow", de: "Bestätigungsablauf für Browsersteuerung" }, l: { en: "LATEST JARVIS UPDATE", de: "NEUESTES JARVIS-UPDATE" } },
+    { n: { en: "Open-weight tool-calling release", de: "Offenes Modell mit Tool-Calling" }, l: { en: "NEW AI MODEL", de: "NEUES KI-MODELL" } },
+    { n: { en: "Browser Agents", de: "Browser-Agenten" }, l: { en: "ACTIVE EXPERIMENT", de: "AKTIVES EXPERIMENT" } }
+  ];
+
+  var askExamples = [
+    { en: "What are AI Agents?", de: "Was sind KI-Agenten?" },
+    { en: "Which local models are being discussed?", de: "Welche lokalen Modelle werden diskutiert?" },
+    { en: "What's new on the JARVIS project?", de: "Was gibt's Neues beim JARVIS-Projekt?" },
+    { en: "Show discussions about browser agents.", de: "Zeige Diskussionen über Browser-Agenten." }
+  ];
+
+  var selectedComponentIndex = 0;
+
+  function renderDynamic() {
+    // Architecture flow
+    var archEl = document.getElementById('arch-flow');
+    archEl.innerHTML = '';
+    archFlow.forEach(function (node, idx) {
+      var span = document.createElement('span');
+      span.className = 'arch-node' + (node.emphasis ? ' emphasis' : '');
+      span.textContent = node[currentLang];
+      archEl.appendChild(span);
+      if (idx < archFlow.length - 1) {
+        var arrow = document.createElement('span');
+        arrow.className = 'arch-arrow';
+        arrow.textContent = '→';
+        archEl.appendChild(arrow);
+      }
+    });
+
+    // Components
+    var grid = document.getElementById('component-grid');
+    var compName = document.getElementById('comp-name');
+    var compValue = document.getElementById('comp-value');
+    grid.innerHTML = '';
+    components.forEach(function (c, idx) {
+      var pair = c[currentLang];
+      var btn = document.createElement('button');
+      btn.className = 'component-chip';
+      btn.type = 'button';
+      btn.textContent = pair[0];
+      btn.setAttribute('aria-pressed', idx === selectedComponentIndex ? 'true' : 'false');
+      btn.addEventListener('click', function () {
+        selectedComponentIndex = idx;
+        grid.querySelectorAll('.component-chip').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+        btn.setAttribute('aria-pressed', 'true');
+        compName.textContent = pair[0];
+        compValue.textContent = pair[1];
+      });
+      grid.appendChild(btn);
+    });
+    compName.textContent = components[selectedComponentIndex][currentLang][0];
+    compValue.textContent = components[selectedComponentIndex][currentLang][1];
+
+    // Development status
+    var panel = document.getElementById('status-panel');
+    panel.innerHTML = '';
+    statuses.forEach(function (s) {
+      var row = document.createElement('div');
+      row.className = 'status-row';
+      row.innerHTML = '<span class="name">' + s.row[currentLang] + '</span>' +
+        '<span class="status-tag mono" style="color:var(' + statusVar[s.s] + ')">' +
+        '<span class="d" style="background:var(' + statusVar[s.s] + ')"></span>' + statusLabel[s.s][currentLang] + '</span>';
+      panel.appendChild(row);
+    });
+
+    // Community categories
+    var catGrid = document.getElementById('cat-grid');
+    catGrid.innerHTML = '';
+    cats.forEach(function (c) {
+      var pair = c[currentLang];
+      var el = document.createElement('div');
+      el.className = 'cat-card';
+      el.innerHTML = '<div class="t mono">' + pair[0] + '</div><div class="d">' + pair[1] + '</div>';
+      catGrid.appendChild(el);
+    });
+
+    // Discussions
+    var discList = document.getElementById('disc-list');
+    discList.innerHTML = '';
+    discussions.forEach(function (d) {
+      var el = document.createElement('div');
+      el.className = 'disc-card';
+      el.innerHTML =
+        '<div><div class="disc-title">' + d.t[currentLang] + '</div>' +
+        '<div class="disc-meta"><span class="disc-tag">' + d.tag[currentLang] + '</span><span>' + d.replies + ' ' + repliesWord[currentLang] + '</span>' +
+        (d.extra ? '<span>' + d.extra[currentLang] + '</span>' : '') + '</div></div>' +
+        '<span class="disc-flag ' + d.flagClass + '">' + d.flag[currentLang] + '</span>';
+      discList.appendChild(el);
+    });
+
+    // Knowledge map + tags
+    var knowMapEl = document.getElementById('know-map');
+    knowMapEl.innerHTML = '';
+    knowMap.forEach(function (node, idx) {
+      var span = document.createElement('span');
+      span.className = 'know-node';
+      span.textContent = node[currentLang];
+      knowMapEl.appendChild(span);
+      if (idx < knowMap.length - 1) {
+        var arrow = document.createElement('span');
+        arrow.className = 'know-arrow';
+        arrow.textContent = '→';
+        knowMapEl.appendChild(arrow);
+      }
+    });
+    var tagCloud = document.getElementById('tag-cloud');
+    tagCloud.innerHTML = '';
+    tags.forEach(function (tg) {
+      var el = document.createElement('span');
+      el.className = 'tag-pill';
+      el.textContent = tg[currentLang];
+      tagCloud.appendChild(el);
+    });
+
+    // News
+    var newsGrid = document.getElementById('news-grid');
+    newsGrid.innerHTML = '';
+    news.forEach(function (n) {
+      var el = document.createElement('div');
+      el.className = 'news-card';
+      el.innerHTML =
+        '<span class="news-cat mono">' + n.cat[currentLang] + '</span><h3>' + n.title[currentLang] + '</h3>' +
+        '<div class="news-meta mono">' + n.src[currentLang] + ' · ' + n.date[currentLang] + '</div>' +
+        '<p>' + n.sum[currentLang] + '</p><div class="news-why">' + n.why[currentLang] + '</div>' +
+        '<a class="news-link" href="#community">' + communityDiscussionLink[currentLang] + '</a>';
+      newsGrid.appendChild(el);
+    });
+
+    // Lab
+    var labGrid = document.getElementById('lab-grid');
+    labGrid.innerHTML = '';
+    lab.forEach(function (l) {
+      var el = document.createElement('div');
+      el.className = 'lab-card' + (l.s === 'failed' ? ' is-failed' : '');
+      el.innerHTML =
+        '<div class="t">' + l.t[currentLang] + '</div>' +
+        '<span class="lab-badge mono" style="color:var(' + labStatusVar[l.s] + '); border:1px solid var(' + labStatusVar[l.s] + ')">' + labStatusLabel[l.s][currentLang] + '</span>' +
+        '<div class="note">' + l.note[currentLang] + '</div>';
+      labGrid.appendChild(el);
+    });
+
+    // Live activity
+    var liveStrip = document.getElementById('live-strip');
+    liveStrip.innerHTML = '';
+    live.forEach(function (item) {
+      var value = item.n[currentLang];
+      var el = document.createElement('div');
+      el.className = 'live-item';
+      el.innerHTML = '<div class="n" style="font-size:' + (value.length > 6 ? '1rem' : '1.5rem') + '">' + value + '</div><div class="l">' + item.l[currentLang] + '</div>';
+      liveStrip.appendChild(el);
+    });
+
+    // Ask examples
+    var askExamplesEl = document.getElementById('ask-examples');
+    askExamplesEl.innerHTML = '';
+    askExamples.forEach(function (ex) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = ex[currentLang];
+      btn.addEventListener('click', function () {
+        document.getElementById('ask-input').value = ex[currentLang];
+      });
+      askExamplesEl.appendChild(btn);
+    });
+  }
+
+  function setLanguage(lang) {
+    currentLang = lang;
+    try { localStorage.setItem('jarvis-lang', lang); } catch (e) {}
+    applyStaticStrings();
+    renderDynamic();
+  }
+
+  document.querySelectorAll('#lang-toggle button').forEach(function (b) {
+    b.addEventListener('click', function () { setLanguage(b.getAttribute('data-lang')); });
+  });
+
+  applyStaticStrings();
+  renderDynamic();
+
+  // ---------- Ask JARVIS ----------
+  var askBtn = document.getElementById('ask-toggle');
+  var askPanel = document.getElementById('ask-panel');
+  var askClose = document.getElementById('ask-close');
+  askBtn.addEventListener('click', function () { askPanel.classList.toggle('open'); });
+  askClose.addEventListener('click', function () { askPanel.classList.remove('open'); });
+</script>
+</body>
+</html>
