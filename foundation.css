@@ -1,0 +1,453 @@
+/* ==========================================================================
+   J.A.R.V.I.S. Network — Foundation / Design System
+   Phase 02 – BODENPLATTE (Apps/JARVIS-Network/PRODUCT_ROADMAP.md)
+
+   Gemeinsame visuelle und technische Basis für spätere Seitenbereiche
+   (Phase 04+). Enthält ausschließlich Design-Tokens und allgemeine,
+   wiederverwendbare UI-Grundbausteine — keine fertigen Seitenbereiche
+   (Home/Project/Signal/Knowledge/Lab/Discuss/Ask JARVIS), keine
+   endgültige Navigation, keine Hero-Sektion. Reines statisches CSS,
+   kein Framework, kein Build-Schritt (siehe Phase-01-Technologieentscheid).
+
+   Werte für Basisfarben/Radien übernehmen bewusst die bereits in
+   index.html etablierten Konstanten (Bestand), nicht neu erfunden.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. BASIS-RESET
+   Minimaler Reset, den jede spätere Seite braucht, die dieses Fundament
+   nutzt (identisch zum bereits in index.html etablierten Bestand).
+   -------------------------------------------------------------------------- */
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--font-ui);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.mono { font-family: var(--font-mono); }
+a { color: inherit; }
+img, svg, canvas { display: block; max-width: 100%; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+/* --------------------------------------------------------------------------
+   1. DESIGN-TOKENS — Farben
+   -------------------------------------------------------------------------- */
+
+:root {
+  /* Basisfarben (identisch zu index.html, dort informeller Ursprung) */
+  --black: #05070a;
+  --anthracite: #0e1319;
+  --panel: #12181f;
+  --panel-raised: #161d26;
+  --deep-blue: #0b1f3c;
+  --line: rgba(191, 227, 240, 0.10);
+  --line-strong: rgba(191, 227, 240, 0.20);
+  --cyan: #49d3e0;
+  --cyan-dim: #2d8f9c;
+  --ice: #bfe3f0;
+  --white: #eef5f8;
+  --muted: #7f93a1;
+
+  /* Domänenspezifische Statusfarben (Bestand aus index.html:
+     Project-/Lab-Statuszeilen — bleiben unverändert für diesen Zweck) */
+  --st-active: var(--cyan);
+  --st-testing: var(--ice);
+  --st-dev: #d9a86c;
+  --st-experimental: #b79ce0;
+  --st-research: var(--muted);
+  --st-failed: #d97676;
+
+  /* Generische semantische Zustandsfarben (neu, Phase 02) — bewusst
+     dieselben Farbwerte wie oben, aber komponentenunabhängig benannt,
+     damit Button/Badge/Status-Indicator sie nutzen können, ohne an die
+     Project-/Lab-spezifische Bedeutung gebunden zu sein. */
+  --sem-online: var(--cyan);       /* ONLINE / ACTIVE */
+  --sem-warning: #d9a86c;          /* WARNING */
+  --sem-error: #d97676;            /* ERROR */
+  --sem-info: #b79ce0;             /* EXPERIMENTAL / INFO */
+  --sem-neutral: var(--muted);     /* neutral / inaktiv */
+
+  color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------
+   1b. DESIGN-TOKENS — Typografie
+   -------------------------------------------------------------------------- */
+
+:root {
+  --font-ui: -apple-system, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+}
+
+/* --------------------------------------------------------------------------
+   1c. DESIGN-TOKENS — Layout / Abstände / Radien
+   -------------------------------------------------------------------------- */
+
+:root {
+  --content-max-width: 1180px;
+  --gutter: clamp(1.1rem, 4vw, 2.5rem);
+  --section-padding-y: clamp(3.5rem, 8vw, 5.5rem);
+
+  --space-1: 0.4rem;
+  --space-2: 0.65rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.4rem;
+
+  --radius-sm: 6px;
+  --radius-md: 9px;
+  --radius-lg: 12px;
+  --radius-pill: 100px;
+
+  --overlay-blur: 14px;
+}
+
+/*
+  Breakpoints (dokumentierte Konvention, nicht als CSS-Variable nutzbar,
+  da @media keine var() auswertet):
+
+    Desktop:  ab 1024px  (Default-Stile unten)
+    Tablet:   768px – 1023px
+    Mobile:   unter 768px
+
+  Spätere Phasen (04+) sollen diese drei Stufen konsistent verwenden.
+  Die bereits in index.html vorhandenen, informellen Breakpoints
+  (860px/720px) werden hiermit NICHT rückwirkend geändert — das ist
+  bewusst Aufgabe von Phase 04, nicht von Phase 02.
+*/
+
+/* --------------------------------------------------------------------------
+   2. TYPOGRAFIE-HIERARCHIE (generische Utility-Klassen)
+   -------------------------------------------------------------------------- */
+
+.text-display {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(3rem, 11vw, 6.6rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.text-h1 {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+.text-h2 {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3.6vw, 2.3rem);
+  letter-spacing: 0.01em;
+}
+.text-h3 {
+  font-weight: 600;
+  font-size: 1.08rem;
+  line-height: 1.35;
+}
+.text-body {
+  font-size: 1rem;
+  color: var(--white);
+  line-height: 1.55;
+}
+.text-small {
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.text-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cyan-dim);
+}
+.text-system {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  color: var(--ice);
+}
+
+/* --------------------------------------------------------------------------
+   3. LAYOUT-SYSTEM
+   -------------------------------------------------------------------------- */
+
+.wrap {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+.section {
+  padding: var(--section-padding-y) 0;
+  border-bottom: 1px solid var(--line);
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+.section-header .sub {
+  margin-top: var(--space-1);
+  color: var(--muted);
+  font-size: 0.98rem;
+  max-width: 50ch;
+}
+
+/* --------------------------------------------------------------------------
+   4. OBERFLÄCHEN (Elevation-System)
+   -------------------------------------------------------------------------- */
+
+.surface-background { background: var(--black); }
+
+.surface {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+.surface-elevated {
+  background: var(--panel-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+}
+.surface-interactive {
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.surface-interactive:hover {
+  border-color: var(--cyan-dim);
+  background: rgba(73, 211, 224, 0.06);
+}
+.surface-overlay {
+  background: rgba(10, 14, 18, 0.92);
+  backdrop-filter: blur(var(--overlay-blur)) saturate(140%);
+  border: 1px solid var(--line-strong);
+}
+
+/* --------------------------------------------------------------------------
+   5. UI-GRUNDBAUSTEINE
+   Allgemeine, wiederverwendbare Grundstile — keinem konkreten
+   Seitenbereich zugeordnet.
+   -------------------------------------------------------------------------- */
+
+/* BUTTON */
+.btn {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.85rem 1.3rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: none;
+  color: var(--white);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); filter: brightness(0.95); }
+.btn:disabled, .btn[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+}
+.btn-primary {
+  background: linear-gradient(180deg, rgba(73, 211, 224, 0.16), rgba(73, 211, 224, 0.05));
+  border-color: rgba(73, 211, 224, 0.4);
+  color: var(--cyan);
+}
+.btn-primary:hover { border-color: var(--cyan); background: rgba(73, 211, 224, 0.14); }
+.btn-ghost:hover { border-color: var(--ice); }
+
+/* TEXT LINK */
+.link {
+  color: var(--white);
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+.link:hover { opacity: 1; color: var(--cyan); }
+
+/* CARD */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.3rem;
+  transition: border-color 0.2s ease, transform 0.15s ease;
+}
+.card-interactive:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+.card-elevated { background: var(--panel-raised); border-color: var(--line-strong); }
+
+/* TAG */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 0.42rem 0.9rem;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.tag:hover { color: var(--white); border-color: var(--line-strong); }
+.tag-accent { color: var(--cyan); border-color: rgba(73, 211, 224, 0.3); }
+
+/* BADGE (semantische Varianten) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  padding: 0.28rem 0.6rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid currentColor;
+}
+.badge-online { color: var(--sem-online); }
+.badge-warning { color: var(--sem-warning); }
+.badge-error { color: var(--sem-error); }
+.badge-info { color: var(--sem-info); }
+.badge-neutral { color: var(--sem-neutral); border-color: var(--line-strong); }
+
+/* STATUS INDICATOR */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+.status-dot-live { animation: foundationPulse 2.4s ease-in-out infinite; }
+@keyframes foundationPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* INPUT */
+.input {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--white);
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.6rem 0.8rem;
+  transition: border-color 0.2s ease;
+}
+.input::placeholder { color: var(--muted); }
+.input:focus-visible { outline: 2px solid var(--cyan-dim); outline-offset: 1px; border-color: var(--cyan-dim); }
+.input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* SEARCH INPUT */
+.search-input { position: relative; display: flex; align-items: center; gap: var(--space-1); }
+.search-input .input { flex: 1; }
+.search-input .kbd-hint {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  background: var(--panel-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  padding: 0.05rem 0.32rem;
+  color: var(--ice);
+  flex: none;
+}
+
+/* AVATAR PLACEHOLDER */
+.avatar-placeholder {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: var(--panel-raised);
+  border: 1px solid var(--line-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  flex: none;
+}
+.avatar-placeholder--sm { width: 1.8rem; height: 1.8rem; font-size: 0.68rem; }
+.avatar-placeholder--lg { width: 3.2rem; height: 3.2rem; font-size: 0.95rem; }
+
+/* DIVIDER */
+.divider { border: none; border-top: 1px solid var(--line); margin: var(--space-4) 0; }
+.divider-strong { border-top-color: var(--line-strong); }
+
+/* SYSTEM LABEL */
+.system-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.system-label-tag {
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-pill);
+  padding: 0.25rem 0.65rem;
+  white-space: nowrap;
+}
+
+/* Sehr dezenter Glow, nur punktuell einsetzen (siehe Bauprinzip: kein Neon) */
+.glow-cyan { box-shadow: 0 0 10px 1px color-mix(in srgb, var(--cyan) 30%, transparent); }
+
+/* --------------------------------------------------------------------------
+   6. INTERAKTION & ACCESSIBILITY
+   -------------------------------------------------------------------------- */
+
+/* prefers-reduced-motion: globaler Fallback für alle Animationen/Übergänge
+   dieses Fundaments (ergänzt die bereits in index.html vorhandenen,
+   lokalen reduced-motion-Regeln für Hero/Live-Dot). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. HINTERGRUND / ATMOSPHÄRE
+   Sehr zurückhaltend, kein Canvas/JS, kein GPU-intensiver Effekt.
+   Die vorhandene Hero-Neural-Net-Animation aus index.html gehört zu
+   Home/Hero und wird hier bewusst NICHT dupliziert oder ersetzt.
+   -------------------------------------------------------------------------- */
+
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(191, 227, 240, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(191, 227, 240, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.bg-glow {
+  background:
+    radial-gradient(ellipse 900px 480px at 82% -10%, rgba(11, 31, 60, 0.55), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 8% 110%, rgba(11, 31, 60, 0.4), transparent 60%);
+}
+
+/* --------------------------------------------------------------------------
+   8. RESPONSIVE BASIS
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  .card { padding: 0.9rem 1rem; }
+  .btn, .input { min-height: 44px; } /* ausreichend große Touch-Ziele */
+  .bg-grid, .bg-glow { opacity: 0.6; } /* reduzierte dekorative Effekte */
+}

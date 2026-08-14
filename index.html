@@ -4,52 +4,12 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>J.A.R.V.I.S. Network — Exploring the Future of Artificial Intelligence</title>
+<link rel="stylesheet" href="foundation.css" />
 <style>
-  :root {
-    --black: #05070a;
-    --anthracite: #0e1319;
-    --panel: #12181f;
-    --panel-raised: #161d26;
-    --deep-blue: #0b1f3c;
-    --line: rgba(191, 227, 240, 0.10);
-    --line-strong: rgba(191, 227, 240, 0.20);
-    --cyan: #49d3e0;
-    --cyan-dim: #2d8f9c;
-    --ice: #bfe3f0;
-    --white: #eef5f8;
-    --muted: #7f93a1;
-
-    --st-active: #49d3e0;
-    --st-testing: #bfe3f0;
-    --st-dev: #d9a86c;
-    --st-experimental: #b79ce0;
-    --st-research: #7f93a1;
-    --st-failed: #d97676;
-
-    color-scheme: dark;
-  }
-
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    background: var(--black);
-    color: var(--white);
-    font-family: -apple-system, "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
-    line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
-  }
-  .mono {
-    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
-  }
-  a { color: inherit; }
-  img, svg, canvas { display: block; max-width: 100%; }
-
-  .wrap {
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 0 clamp(1.1rem, 4vw, 2.5rem);
-  }
+  /* Seiten-/komponentenspezifische Stile. Design-Tokens, Basis-Reset,
+     .wrap und die generischen UI-Grundbausteine kommen aus
+     foundation.css (Phase 02 – Bodenplatte); hier nur, was für diese
+     konkrete Seite zusätzlich gebraucht wird. */
 
   h1, h2, h3 { text-wrap: balance; margin: 0; }
 
@@ -778,13 +738,12 @@
     <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
     <div class="nav-links">
       <a href="#home" class="current" data-i18n="nav.home">HOME</a>
-      <a href="#project" data-i18n="nav.project">JARVIS PROJECT</a>
-      <a href="#news" data-i18n="nav.news">AI NEWS</a>
-      <a href="#community" data-i18n="nav.discussions">DISCUSSIONS</a>
+      <a href="#project" data-i18n="nav.project">PROJECT</a>
+      <a href="#signal" data-i18n="nav.signal">SIGNAL</a>
+      <a href="#discuss" data-i18n="nav.discuss">DISCUSS</a>
       <a href="#knowledge" data-i18n="nav.knowledge">KNOWLEDGE</a>
       <a href="#lab" data-i18n="nav.lab">LAB</a>
-      <a href="#community" data-i18n="nav.community">COMMUNITY</a>
-      <a href="#about" data-i18n="nav.about">ABOUT</a>
+      <a href="#" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
     </div>
     <div class="nav-actions">
       <div class="lang-toggle" id="lang-toggle">
@@ -809,7 +768,7 @@
       build the next generation of intelligent systems.</p>
     <div class="hero-ctas">
       <a href="#project" class="cta primary" data-i18n="hero.cta1">EXPLORE J.A.R.V.I.S.</a>
-      <a href="#community" class="cta ghost" data-i18n="hero.cta2">ENTER AI COMMUNITY</a>
+      <a href="#discuss" class="cta ghost" data-i18n="hero.cta2">JOIN THE DISCUSSION</a>
       <a href="#knowledge" class="cta ghost" data-i18n="hero.cta3">DISCOVER AI</a>
     </div>
   </div>
@@ -854,11 +813,11 @@
   </div>
 </section>
 
-<section class="block" id="community">
+<section class="block" id="discuss">
   <div class="wrap">
     <div class="block-head">
       <div>
-        <span class="eyebrow" data-i18n="community.eyebrow">AI COMMUNITY</span>
+        <span class="eyebrow" data-i18n="community.eyebrow">DISCUSS</span>
         <h2 data-i18n="community.title">Discuss. Question. Build. Learn.</h2>
       </div>
       <span class="preview-tag" data-i18n="tag.preview">PREVIEW CONTENT</span>
@@ -884,11 +843,11 @@
   </div>
 </section>
 
-<section class="block" id="news">
+<section class="block" id="signal">
   <div class="wrap">
     <div class="block-head">
       <div>
-        <span class="eyebrow" data-i18n="news.eyebrow">AI NEWS</span>
+        <span class="eyebrow" data-i18n="news.eyebrow">SIGNAL</span>
         <h2 data-i18n="news.title">AI SIGNAL</h2>
         <p class="sub" data-i18n="news.sub">Not just headlines — why it matters, and where the community is discussing it.</p>
       </div>
@@ -939,15 +898,15 @@
         <h4 data-i18n="footer.platform">PLATFORM</h4>
         <a href="#project" data-i18n="footer.project">JARVIS Project</a>
         <a href="#knowledge" data-i18n="footer.knowledge">AI Knowledge</a>
-        <a href="#news" data-i18n="footer.news">AI Signal</a>
+        <a href="#signal" data-i18n="footer.news">AI Signal</a>
         <a href="#lab" data-i18n="footer.lab">AI Lab</a>
       </div>
       <div>
-        <h4 data-i18n="footer.community">COMMUNITY</h4>
-        <a href="#community" data-i18n="footer.discussions">Discussions</a>
-        <a href="#community" data-i18n="footer.models">Models</a>
-        <a href="#community" data-i18n="footer.ideas">Ideas</a>
-        <a href="#community" data-i18n="footer.room">JARVIS Room</a>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="#discuss" data-i18n="footer.discussions">Discussions</a>
+        <a href="#discuss" data-i18n="footer.models">Models</a>
+        <a href="#discuss" data-i18n="footer.ideas">Ideas</a>
+        <a href="#discuss" data-i18n="footer.room">JARVIS Room</a>
       </div>
       <div>
         <h4 data-i18n="footer.about">ABOUT</h4>
@@ -980,13 +939,11 @@
   // ==================================================================
   var STRINGS = {
     "nav.home": { en: "HOME", de: "STARTSEITE" },
-    "nav.project": { en: "JARVIS PROJECT", de: "JARVIS PROJEKT" },
-    "nav.news": { en: "AI NEWS", de: "KI NEWS" },
-    "nav.discussions": { en: "DISCUSSIONS", de: "DISKUSSIONEN" },
+    "nav.project": { en: "PROJECT", de: "PROJEKT" },
+    "nav.signal": { en: "SIGNAL", de: "SIGNAL" },
+    "nav.discuss": { en: "DISCUSS", de: "DISKUTIEREN" },
     "nav.knowledge": { en: "KNOWLEDGE", de: "WISSEN" },
     "nav.lab": { en: "LAB", de: "LABOR" },
-    "nav.community": { en: "COMMUNITY", de: "COMMUNITY" },
-    "nav.about": { en: "ABOUT", de: "ÜBER UNS" },
     "nav.search": { en: "SEARCH", de: "SUCHE" },
     "nav.login": { en: "LOGIN", de: "ANMELDEN" },
     "nav.online": { en: "ONLINE", de: "ONLINE" },
@@ -995,7 +952,7 @@
     "hero.subtagline": { en: "Build · Discuss · Understand · Evolve", de: "Bauen · Diskutieren · Verstehen · Weiterentwickeln" },
     "hero.intro": { en: "A place for people who want to understand, discuss and build the next generation of intelligent systems.", de: "Ein Ort für Menschen, die die nächste Generation intelligenter Systeme verstehen, diskutieren und mitgestalten wollen." },
     "hero.cta1": { en: "EXPLORE J.A.R.V.I.S.", de: "J.A.R.V.I.S. ENTDECKEN" },
-    "hero.cta2": { en: "ENTER AI COMMUNITY", de: "ZUR KI-COMMUNITY" },
+    "hero.cta2": { en: "JOIN THE DISCUSSION", de: "ZUR DISKUSSION" },
     "hero.cta3": { en: "DISCOVER AI", de: "KI ENTDECKEN" },
     "project.eyebrow": { en: "J.A.R.V.I.S. PROJECT", de: "J.A.R.V.I.S. PROJEKT" },
     "project.title": { en: "BUILDING J.A.R.V.I.S.", de: "J.A.R.V.I.S. WIRD GEBAUT" },
@@ -1005,13 +962,13 @@
     "status.sub": { en: "What's actually being worked on right now — including the parts that aren't finished yet.", de: "Woran gerade wirklich gearbeitet wird – auch an den Teilen, die noch nicht fertig sind." },
     "status.focusLabel": { en: "CURRENT DEVELOPMENT FOCUS", de: "AKTUELLER ENTWICKLUNGSSCHWERPUNKT" },
     "status.focusText": { en: "Stabilizing browser-controlled actions behind an explicit confirmation step, and extending the memory layer so it can hold a task's goal and open questions across a session.", de: "Browsergesteuerte Aktionen hinter einer ausdrücklichen Bestätigung stabilisieren, und die Gedächtnisebene so erweitern, dass sie Ziel und offene Fragen einer Aufgabe über eine Sitzung hinweg festhalten kann." },
-    "community.eyebrow": { en: "AI COMMUNITY", de: "KI-COMMUNITY" },
+    "community.eyebrow": { en: "DISCUSS", de: "DISKUTIEREN" },
     "community.title": { en: "Discuss. Question. Build. Learn.", de: "Diskutieren. Hinterfragen. Bauen. Lernen." },
     "tag.preview": { en: "PREVIEW CONTENT", de: "VORSCHAU-INHALT" },
     "knowledge.eyebrow": { en: "AI KNOWLEDGE", de: "KI-WISSEN" },
     "knowledge.title": { en: "UNDERSTAND AI", de: "KI VERSTEHEN" },
     "knowledge.sub": { en: "Articles connect into a growing, interactive map of AI concepts.", de: "Artikel verbinden sich zu einer wachsenden, interaktiven Landkarte der KI-Konzepte." },
-    "news.eyebrow": { en: "AI NEWS", de: "KI NEWS" },
+    "news.eyebrow": { en: "SIGNAL", de: "SIGNAL" },
     "news.title": { en: "AI SIGNAL", de: "KI SIGNAL" },
     "news.sub": { en: "Not just headlines — why it matters, and where the community is discussing it.", de: "Nicht nur Schlagzeilen – warum es wichtig ist, und wo die Community darüber diskutiert." },
     "lab.eyebrow": { en: "AI LAB", de: "KI LABOR" },
@@ -1026,7 +983,7 @@
     "footer.knowledge": { en: "AI Knowledge", de: "KI-Wissen" },
     "footer.news": { en: "AI Signal", de: "KI Signal" },
     "footer.lab": { en: "AI Lab", de: "KI Labor" },
-    "footer.community": { en: "COMMUNITY", de: "COMMUNITY" },
+    "footer.community": { en: "DISCUSS", de: "DISKUTIEREN" },
     "footer.discussions": { en: "Discussions", de: "Diskussionen" },
     "footer.models": { en: "Models", de: "Modelle" },
     "footer.ideas": { en: "Ideas", de: "Ideen" },
@@ -1273,6 +1230,19 @@
 
   var selectedComponentIndex = 0;
 
+  // Phase 11 (Sicherheitshaertung): alle innerHTML-Bausteine unten
+  // interpolieren Textfelder, die inzwischen aus echten, von Nutzern
+  // erstellbaren Zeilen stammen koennen (z.B. discuss_topics.title, von
+  // jedem 'member' setzbar, siehe AUTH_AND_ROLES.md). Ohne Escaping waere
+  // das gespeichertes XSS. escapeHtml() wird konsequent auf jedes
+  // interpolierte Feld angewendet, nicht nur auf die aktuell echt
+  // live-gebundenen.
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
   function renderDynamic() {
     // Architecture flow
     var archEl = document.getElementById('arch-flow');
@@ -1320,9 +1290,9 @@
     statuses.forEach(function (s) {
       var row = document.createElement('div');
       row.className = 'status-row';
-      row.innerHTML = '<span class="name">' + s.row[currentLang] + '</span>' +
+      row.innerHTML = '<span class="name">' + escapeHtml(s.row[currentLang]) + '</span>' +
         '<span class="status-tag mono" style="color:var(' + statusVar[s.s] + ')">' +
-        '<span class="d" style="background:var(' + statusVar[s.s] + ')"></span>' + statusLabel[s.s][currentLang] + '</span>';
+        '<span class="d" style="background:var(' + statusVar[s.s] + ')"></span>' + escapeHtml(statusLabel[s.s][currentLang]) + '</span>';
       panel.appendChild(row);
     });
 
@@ -1333,7 +1303,7 @@
       var pair = c[currentLang];
       var el = document.createElement('div');
       el.className = 'cat-card';
-      el.innerHTML = '<div class="t mono">' + pair[0] + '</div><div class="d">' + pair[1] + '</div>';
+      el.innerHTML = '<div class="t mono">' + escapeHtml(pair[0]) + '</div><div class="d">' + escapeHtml(pair[1]) + '</div>';
       catGrid.appendChild(el);
     });
 
@@ -1344,10 +1314,10 @@
       var el = document.createElement('div');
       el.className = 'disc-card';
       el.innerHTML =
-        '<div><div class="disc-title">' + d.t[currentLang] + '</div>' +
-        '<div class="disc-meta"><span class="disc-tag">' + d.tag[currentLang] + '</span><span>' + d.replies + ' ' + repliesWord[currentLang] + '</span>' +
-        (d.extra ? '<span>' + d.extra[currentLang] + '</span>' : '') + '</div></div>' +
-        '<span class="disc-flag ' + d.flagClass + '">' + d.flag[currentLang] + '</span>';
+        '<div><div class="disc-title">' + escapeHtml(d.t[currentLang]) + '</div>' +
+        '<div class="disc-meta"><span class="disc-tag">' + escapeHtml(d.tag[currentLang]) + '</span><span>' + escapeHtml(String(d.replies)) + ' ' + escapeHtml(repliesWord[currentLang]) + '</span>' +
+        (d.extra ? '<span>' + escapeHtml(d.extra[currentLang]) + '</span>' : '') + '</div></div>' +
+        '<span class="disc-flag ' + d.flagClass + '">' + escapeHtml(d.flag[currentLang]) + '</span>';
       discList.appendChild(el);
     });
 
@@ -1382,10 +1352,10 @@
       var el = document.createElement('div');
       el.className = 'news-card';
       el.innerHTML =
-        '<span class="news-cat mono">' + n.cat[currentLang] + '</span><h3>' + n.title[currentLang] + '</h3>' +
-        '<div class="news-meta mono">' + n.src[currentLang] + ' · ' + n.date[currentLang] + '</div>' +
-        '<p>' + n.sum[currentLang] + '</p><div class="news-why">' + n.why[currentLang] + '</div>' +
-        '<a class="news-link" href="#community">' + communityDiscussionLink[currentLang] + '</a>';
+        '<span class="news-cat mono">' + escapeHtml(n.cat[currentLang]) + '</span><h3>' + escapeHtml(n.title[currentLang]) + '</h3>' +
+        '<div class="news-meta mono">' + escapeHtml(n.src[currentLang]) + ' · ' + escapeHtml(n.date[currentLang]) + '</div>' +
+        '<p>' + escapeHtml(n.sum[currentLang]) + '</p><div class="news-why">' + escapeHtml(n.why[currentLang]) + '</div>' +
+        '<a class="news-link" href="#discuss">' + escapeHtml(communityDiscussionLink[currentLang]) + '</a>';
       newsGrid.appendChild(el);
     });
 
@@ -1396,9 +1366,9 @@
       var el = document.createElement('div');
       el.className = 'lab-card' + (l.s === 'failed' ? ' is-failed' : '');
       el.innerHTML =
-        '<div class="t">' + l.t[currentLang] + '</div>' +
-        '<span class="lab-badge mono" style="color:var(' + labStatusVar[l.s] + '); border:1px solid var(' + labStatusVar[l.s] + ')">' + labStatusLabel[l.s][currentLang] + '</span>' +
-        '<div class="note">' + l.note[currentLang] + '</div>';
+        '<div class="t">' + escapeHtml(l.t[currentLang]) + '</div>' +
+        '<span class="lab-badge mono" style="color:var(' + labStatusVar[l.s] + '); border:1px solid var(' + labStatusVar[l.s] + ')">' + escapeHtml(labStatusLabel[l.s][currentLang]) + '</span>' +
+        '<div class="note">' + escapeHtml(l.note[currentLang]) + '</div>';
       labGrid.appendChild(el);
     });
 
@@ -1409,7 +1379,7 @@
       var value = item.n[currentLang];
       var el = document.createElement('div');
       el.className = 'live-item';
-      el.innerHTML = '<div class="n" style="font-size:' + (value.length > 6 ? '1rem' : '1.5rem') + '">' + value + '</div><div class="l">' + item.l[currentLang] + '</div>';
+      el.innerHTML = '<div class="n" style="font-size:' + (value.length > 6 ? '1rem' : '1.5rem') + '">' + escapeHtml(value) + '</div><div class="l">' + escapeHtml(item.l[currentLang]) + '</div>';
       liveStrip.appendChild(el);
     });
 
@@ -1441,12 +1411,138 @@
   applyStaticStrings();
   renderDynamic();
 
+  // ==================================================================
+  // Phase 11 (Weg 2) — Vorbereitung der echten Supabase-Anbindung.
+  // Konfiguration ist absichtlich leer, bis eine echte Provisionierung
+  // stattgefunden hat (siehe supabase/README.md). Solange leer: KEIN
+  // Netzwerkaufruf — die Seite verhält sich exakt wie mit den
+  // statischen Beispieldaten oben. Nur der öffentliche anon-Key gehört
+  // hierher, niemals ein Service-Key (siehe supabase/README.md).
+  // ==================================================================
+  var JARVIS_NETWORK_CONFIG = {
+    supabaseUrl: 'https://dvnfgqgfwkjdlfpkaefq.supabase.co',              // z. B. 'https://xxxxx.supabase.co' nach Provisionierung
+    supabasePublishableKey: 'sb_publishable_n733LwdTlQkOi3aFg4uUXA_SgTwoI06',   // NUR der oeffentliche publishable-Key
+    gatewayUrl: ''                // Phase 09 Gateway/Adapter-Service, noch nicht gehostet
+  };
+
+  function isSupabaseConfigured() {
+    return !!(
+      JARVIS_NETWORK_CONFIG.supabaseUrl &&
+      JARVIS_NETWORK_CONFIG.supabaseUrl.indexOf('https://') === 0 &&
+      JARVIS_NETWORK_CONFIG.supabasePublishableKey
+    );
+  }
+
+  function restFetch(path) {
+    var url = JARVIS_NETWORK_CONFIG.supabaseUrl.replace(/\/+$/, '') + '/rest/v1/' + path;
+    return fetch(url, {
+      headers: {
+        apikey: JARVIS_NETWORK_CONFIG.supabasePublishableKey
+      }
+    }).then(function (res) {
+      if (!res.ok) { throw new Error('Supabase request failed: ' + res.status + ' ' + path); }
+      return res.json();
+    });
+  }
+
+  var discussFlagLabel = {
+    active: { en: 'ACTIVE NOW', de: 'GERADE AKTIV' },
+    trending: { en: 'TRENDING', de: 'IM TREND' },
+    updated: { en: 'UPDATED', de: 'AKTUALISIERT' }
+  };
+
+  function loadLiveDataIfConfigured() {
+    if (!isSupabaseConfigured()) { return; } // kein Netzwerkaufruf ohne echte Konfiguration
+
+    var anyLoaded = false;
+    var rerender = function () { if (anyLoaded) { renderDynamic(); } };
+    var warn = function (label) {
+      return function (e) { console.warn('[jarvis-network] live ' + label + ' load failed:', e); };
+    };
+
+    restFetch('signals?select=*&published=eq.true').then(function (rows) {
+      if (!rows.length) { return; }
+      news = rows.map(function (r) {
+        return {
+          cat: r.category, title: r.title,
+          src: { en: r.source, de: r.source },
+          date: { en: r.date_value, de: r.date_value },
+          sum: r.summary, why: r.jarvis_einordnung
+        };
+      });
+      anyLoaded = true; rerender();
+    }).catch(warn('signals'));
+
+    restFetch('knowledge_concepts?select=*&published=eq.true&order=sort_order.asc').then(function (rows) {
+      if (!rows.length) { return; }
+      knowMap = rows.map(function (r) { return r.label; });
+      anyLoaded = true; rerender();
+    }).catch(warn('knowledge_concepts'));
+
+    restFetch('knowledge_tags?select=*&published=eq.true').then(function (rows) {
+      if (!rows.length) { return; }
+      tags = rows.map(function (r) { return r.label; });
+      anyLoaded = true; rerender();
+    }).catch(warn('knowledge_tags'));
+
+    restFetch('lab_entries?select=*&published=eq.true').then(function (rows) {
+      if (!rows.length) { return; }
+      lab = rows.map(function (r) { return { t: r.title, s: r.status, note: r.insights }; });
+      anyLoaded = true; rerender();
+    }).catch(warn('lab_entries'));
+
+    restFetch('project_components?select=*&published=eq.true&order=sort_order.asc').then(function (rows) {
+      if (!rows.length) { return; }
+      components = rows.map(function (r) {
+        return { en: [r.name.en, r.description.en], de: [r.name.de, r.description.de] };
+      });
+      anyLoaded = true; rerender();
+    }).catch(warn('project_components'));
+
+    restFetch('project_status?select=*&published=eq.true').then(function (rows) {
+      if (!rows.length) { return; }
+      statuses = rows.map(function (r) { return { row: r.component, s: r.status }; });
+      anyLoaded = true; rerender();
+    }).catch(warn('project_status'));
+
+    restFetch('discuss_categories?select=*&published=eq.true').then(function (rows) {
+      if (!rows.length) { return; }
+      cats = rows.map(function (r) {
+        return { en: [r.title.en, r.description.en], de: [r.title.de, r.description.de] };
+      });
+      anyLoaded = true; rerender();
+    }).catch(warn('discuss_categories'));
+
+    restFetch('discuss_topics?select=*,discuss_categories(title)&published=eq.true&hidden=eq.false').then(function (rows) {
+      if (!rows.length) { return; }
+      discussions = rows.map(function (r) {
+        var flagLabel = discussFlagLabel[r.flag] || { en: '', de: '' };
+        return {
+          t: r.title,
+          tag: r.discuss_categories ? r.discuss_categories.title : { en: '', de: '' },
+          replies: r.replies,
+          extra: r.participants ? { en: r.participants + ' participants', de: r.participants + ' Teilnehmer' } : null,
+          flag: flagLabel,
+          flagClass: r.flag || 'updated'
+        };
+      });
+      anyLoaded = true; rerender();
+    }).catch(warn('discuss_topics'));
+  }
+
+  loadLiveDataIfConfigured();
+
   // ---------- Ask JARVIS ----------
   var askBtn = document.getElementById('ask-toggle');
   var askPanel = document.getElementById('ask-panel');
   var askClose = document.getElementById('ask-close');
+  var navAsk = document.getElementById('nav-ask-jarvis');
   askBtn.addEventListener('click', function () { askPanel.classList.toggle('open'); });
   askClose.addEventListener('click', function () { askPanel.classList.remove('open'); });
+  navAsk.addEventListener('click', function (e) {
+    e.preventDefault();
+    askPanel.classList.add('open');
+  });
 </script>
 </body>
 </html>
