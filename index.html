@@ -866,6 +866,23 @@
   .login-status { margin-top: 0.7rem; font-size: 0.76rem; color: var(--muted); min-height: 1em; }
   .login-status.is-error { color: var(--sem-error); }
   .login-status.is-ok { color: var(--cyan); }
+  .login-link {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: none;
+    border: none;
+    color: var(--cyan-dim);
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: 0.6rem;
+    padding: 0.2rem;
+  }
+  .login-link:hover { color: var(--cyan); }
+  .login-hint { font-size: 0.78rem; color: var(--muted); margin: 0 0 0.8rem; }
 
   :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 </style>
@@ -1063,7 +1080,7 @@
 
 <div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
   <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
-  <div class="login-tabs">
+  <div class="login-tabs" id="login-tabs">
     <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
     <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
   </div>
@@ -1077,6 +1094,28 @@
       <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
     </label>
     <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
   </form>
   <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
 </div>
@@ -1193,7 +1232,21 @@
     "login.signupCheckEmail": { en: "Check your email to confirm your account.", de: "Bitte bestätige dein Konto per E-Mail." },
     "login.errorMissing": { en: "Please enter email and password.", de: "Bitte E-Mail und Passwort eingeben." },
     "login.errorGeneric": { en: "Sign-in failed. Please try again.", de: "Anmeldung fehlgeschlagen. Bitte erneut versuchen." },
-    "login.signedOut": { en: "Signed out.", de: "Abgemeldet." }
+    "login.signedOut": { en: "Signed out.", de: "Abgemeldet." },
+    "login.forgotLink": { en: "Forgot password?", de: "Passwort vergessen?" },
+    "login.forgotHint": { en: "Enter your email and we'll send you a reset link.", de: "Gib deine E-Mail-Adresse ein, wir senden dir einen Reset-Link." },
+    "login.forgotSubmit": { en: "SEND RESET LINK", de: "RESET-LINK SENDEN" },
+    "login.backToSignin": { en: "Back to sign in", de: "Zurück zur Anmeldung" },
+    "login.recoveryHint": { en: "Enter a new password for your account.", de: "Gib ein neues Passwort für dein Konto ein." },
+    "login.newPassword": { en: "New password", de: "Neues Passwort" },
+    "login.confirmPassword": { en: "Confirm password", de: "Passwort bestätigen" },
+    "login.recoverySubmit": { en: "SET NEW PASSWORD", de: "NEUES PASSWORT SETZEN" },
+    "login.resetEmailSent": { en: "Check your email for a password reset link.", de: "Prüfe deine E-Mails für den Reset-Link." },
+    "login.passwordUpdated": { en: "Password updated. You're signed in.", de: "Passwort aktualisiert. Du bist angemeldet." },
+    "login.errorMissingEmail": { en: "Please enter your email.", de: "Bitte E-Mail-Adresse eingeben." },
+    "login.errorPasswordTooShort": { en: "Password must be at least 6 characters.", de: "Passwort muss mindestens 6 Zeichen haben." },
+    "login.errorPasswordMismatch": { en: "Passwords do not match.", de: "Passwörter stimmen nicht überein." },
+    "login.recoveryLinkInvalid": { en: "This reset link is invalid or has expired. Please request a new one.", de: "Dieser Reset-Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an." }
   };
   var PAGE_TITLE = {
     en: "J.A.R.V.I.S. Network — Exploring the Future of Artificial Intelligence",
@@ -1771,6 +1824,21 @@
     var loginStatus = document.getElementById('login-status');
     var loginTabSignin = document.getElementById('login-tab-signin');
     var loginTabSignup = document.getElementById('login-tab-signup');
+    var loginTabs = document.getElementById('login-tabs');
+    var loginForgotLink = document.getElementById('login-forgot-link');
+    var forgotForm = document.getElementById('forgot-form');
+    var forgotEmail = document.getElementById('forgot-email');
+    var forgotSubmit = document.getElementById('forgot-submit');
+    var forgotBackLink = document.getElementById('forgot-back-link');
+    var recoveryForm = document.getElementById('recovery-form');
+    var recoveryPassword = document.getElementById('recovery-password');
+    var recoveryPasswordConfirm = document.getElementById('recovery-password-confirm');
+    var recoverySubmit = document.getElementById('recovery-submit');
+
+    // Fixed, single allowed redirect target - never derived from the
+    // current location, so this can't be manipulated into pointing
+    // anywhere else (e.g. via a crafted query string).
+    var PASSWORD_RESET_REDIRECT_URL = 'https://jarvis-network-ai.github.io/';
 
     var askInput = document.getElementById('ask-input');
     var askSend = document.getElementById('ask-send');
@@ -1812,9 +1880,16 @@
 
     function setLoginMode(mode) {
       loginMode = mode;
-      loginTabSignin.classList.toggle('active', mode === 'signin');
-      loginTabSignup.classList.toggle('active', mode === 'signup');
-      loginSubmit.textContent = t(mode === 'signin' ? 'login.submitSignin' : 'login.submitSignup');
+      var isAuthMode = mode === 'signin' || mode === 'signup';
+      loginTabs.hidden = !isAuthMode;
+      loginForm.hidden = !isAuthMode;
+      forgotForm.hidden = mode !== 'forgot';
+      recoveryForm.hidden = mode !== 'recovery';
+      if (isAuthMode) {
+        loginTabSignin.classList.toggle('active', mode === 'signin');
+        loginTabSignup.classList.toggle('active', mode === 'signup');
+        loginSubmit.textContent = t(mode === 'signin' ? 'login.submitSignin' : 'login.submitSignup');
+      }
       setLoginStatus('');
     }
 
@@ -1829,6 +1904,82 @@
     loginClose.addEventListener('click', closeLoginPanel);
     loginTabSignin.addEventListener('click', function () { setLoginMode('signin'); });
     loginTabSignup.addEventListener('click', function () { setLoginMode('signup'); });
+    loginForgotLink.addEventListener('click', function () { setLoginMode('forgot'); });
+    forgotBackLink.addEventListener('click', function () { setLoginMode('signin'); });
+
+    forgotForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = forgotEmail.value.trim();
+      if (!email) {
+        setLoginStatus(t('login.errorMissingEmail'), 'error');
+        return;
+      }
+      forgotSubmit.disabled = true;
+      setLoginStatus(t('login.working'), null);
+      supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: PASSWORD_RESET_REDIRECT_URL
+      }).then(function (res) {
+        forgotSubmit.disabled = false;
+        if (res.error) {
+          setLoginStatus(res.error.message || t('login.errorGeneric'), 'error');
+          return;
+        }
+        setLoginStatus(t('login.resetEmailSent'), 'ok');
+      }).catch(function () {
+        forgotSubmit.disabled = false;
+        setLoginStatus(t('login.errorGeneric'), 'error');
+      });
+    });
+
+    recoveryForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var password = recoveryPassword.value;
+      var confirmPassword = recoveryPasswordConfirm.value;
+      if (!password || password.length < 6) {
+        setLoginStatus(t('login.errorPasswordTooShort'), 'error');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setLoginStatus(t('login.errorPasswordMismatch'), 'error');
+        return;
+      }
+      recoverySubmit.disabled = true;
+      setLoginStatus(t('login.working'), null);
+      supabase.auth.updateUser({ password: password }).then(function (res) {
+        recoverySubmit.disabled = false;
+        if (res.error) {
+          setLoginStatus(res.error.message || t('login.errorGeneric'), 'error');
+          return;
+        }
+        recoveryForm.reset();
+        setLoginStatus(t('login.passwordUpdated'), 'ok');
+        window.setTimeout(function () {
+          setLoginMode('signin');
+          closeLoginPanel();
+        }, 1200);
+      }).catch(function () {
+        recoverySubmit.disabled = false;
+        setLoginStatus(t('login.errorGeneric'), 'error');
+      });
+    });
+
+    // Supabase redirects a failed/expired recovery link back here with
+    // error_code/error_description in the URL hash or query string,
+    // rather than firing PASSWORD_RECOVERY - handle that cleanly instead
+    // of leaving the user on a page that silently does nothing.
+    function checkAuthCallbackParams() {
+      var rawHash = window.location.hash || '';
+      var hashParams = new URLSearchParams(rawHash.indexOf('#') === 0 ? rawHash.slice(1) : rawHash);
+      var searchParams = new URLSearchParams(window.location.search || '');
+      var errorCode = hashParams.get('error_code') || hashParams.get('error') ||
+        searchParams.get('error_code') || searchParams.get('error');
+      if (!errorCode) { return; }
+      openLoginPanel();
+      setLoginMode('forgot');
+      setLoginStatus(t('login.recoveryLinkInvalid'), 'error');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    checkAuthCallbackParams();
 
     loginForm.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -1866,10 +2017,15 @@
       updateLoginButton();
       updateAskAuthGate();
     });
-    supabase.auth.onAuthStateChange(function (_event, newSession) {
+    supabase.auth.onAuthStateChange(function (event, newSession) {
       session = newSession || null;
       updateLoginButton();
       updateAskAuthGate();
+      if (event === 'PASSWORD_RECOVERY') {
+        openLoginPanel();
+        setLoginMode('recovery');
+        setLoginStatus('');
+      }
     });
 
     // Language toggle already re-applies data-i18n text via the classic
