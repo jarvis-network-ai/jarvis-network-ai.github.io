@@ -664,7 +664,10 @@
     position: fixed;
     right: 1.4rem; bottom: 4.6rem;
     z-index: 61;
-    width: min(340px, calc(100vw - 2.8rem));
+    width: min(680px, 90vw);
+    max-height: 75vh;
+    display: flex;
+    flex-direction: column;
     border: 1px solid var(--line-strong);
     border-radius: 12px;
     background: rgba(14, 19, 25, 0.96);
@@ -675,6 +678,9 @@
     opacity: 0;
     pointer-events: none;
     transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), opacity 0.22s ease;
+  }
+  @media (max-width: 760px) {
+    .ask-panel { right: 0.6rem; left: 0.6rem; width: auto; max-height: 80vh; }
   }
   .ask-panel.open { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
   .ask-panel .head {
@@ -753,26 +759,84 @@
     flex: none;
   }
   @keyframes askspin { to { transform: rotate(360deg); } }
-  .ask-answer {
-    margin-top: 0.9rem;
+  .ask-status.is-error { color: var(--sem-error); }
+
+  .ask-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    margin-top: 0.7rem;
     padding-top: 0.8rem;
     border-top: 1px solid var(--line);
-    font-size: 0.85rem;
+  }
+  .ask-section-label {
+    font-family: ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cyan-dim);
+    margin-bottom: 0.5rem;
+  }
+  .ask-answer {
+    font-size: 0.92rem;
     color: var(--white);
-    line-height: 1.5;
-    white-space: pre-wrap;
+    line-height: 1.6;
     overflow-wrap: anywhere;
   }
-  .ask-sources { margin-top: 0.7rem; display: flex; flex-direction: column; gap: 0.4rem; }
-  .ask-sources a {
+  .ask-answer p { margin: 0 0 0.85rem; }
+  .ask-answer p:last-child { margin-bottom: 0; }
+  .ask-answer.is-placeholder { color: var(--muted); font-style: italic; }
+
+  .ask-details { margin-top: 1.1rem; border-top: 1px solid var(--line); padding-top: 0.8rem; }
+  .ask-details summary {
+    cursor: pointer;
     font-family: ui-monospace, monospace;
-    font-size: 0.72rem;
-    color: var(--cyan);
-    text-decoration: none;
-    word-break: break-all;
+    font-size: 0.74rem;
+    letter-spacing: 0.03em;
+    color: var(--cyan-dim);
   }
-  .ask-sources a:hover { text-decoration: underline; }
-  .ask-error { margin-top: 0.8rem; font-size: 0.8rem; color: var(--sem-error); }
+  .ask-details summary:hover { color: var(--cyan); }
+  .ask-details-body { margin-top: 0.8rem; }
+  .ask-detail-block { margin-bottom: 0.9rem; }
+  .ask-detail-block:last-child { margin-bottom: 0; }
+  .ask-detail-block h4 {
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.4rem;
+    font-weight: 500;
+  }
+  .ask-detail-block ul { margin: 0; padding-left: 1.1rem; }
+  .ask-detail-block li {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.55;
+    margin-bottom: 0.3rem;
+    overflow-wrap: anywhere;
+  }
+
+  .ask-sources-section { margin-top: 1.2rem; border-top: 1px solid var(--line); padding-top: 0.9rem; }
+  .ask-sources { display: flex; flex-direction: column; gap: 0.5rem; }
+  .ask-source-card {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    padding: 0.7rem 0.9rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease;
+  }
+  .ask-source-card:hover { border-color: var(--cyan-dim); }
+  .ask-source-card .domain {
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    color: var(--cyan);
+    letter-spacing: 0.03em;
+  }
+  .ask-source-card .title { margin-top: 0.25rem; font-size: 0.84rem; color: var(--white); }
+
   .ask-auth-required { margin-top: 0.8rem; font-size: 0.8rem; color: var(--muted); }
   .ask-auth-required button {
     color: var(--cyan);
@@ -1129,14 +1193,29 @@
     <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
   </div>
   <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
-  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner"></span><span id="ask-status-text"></span></div>
-  <div class="ask-answer" id="ask-answer" hidden></div>
-  <div class="ask-sources" id="ask-sources"></div>
-  <div class="ask-error" id="ask-error" role="alert" hidden></div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
   <div class="ask-auth-required" id="ask-auth-required" hidden>
     <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
     <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
   </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <div class="ask-section-label" data-i18n="ask.sectionSources">SOURCES</div>
+      <div class="ask-sources" id="ask-sources"></div>
+    </div>
+  </div>
+
   <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
 </div>
 
@@ -1220,6 +1299,16 @@
     "ask.error.user_context_missing": { en: "Please sign in again.", de: "Bitte melde dich erneut an." },
     "ask.error.network_turn_timeout": { en: "J.A.R.V.I.S. took too long to answer. Please try again.", de: "J.A.R.V.I.S. hat zu lange für die Antwort gebraucht. Bitte erneut versuchen." },
     "ask.error.network_turn_answer_empty": { en: "J.A.R.V.I.S. didn't produce an answer. Please try again.", de: "J.A.R.V.I.S. hat keine Antwort erzeugt. Bitte erneut versuchen." },
+    "ask.sectionAnswer": { en: "ANSWER", de: "ANTWORT" },
+    "ask.sectionSources": { en: "SOURCES", de: "QUELLEN" },
+    "ask.answerPlaceholder": { en: "Here's where J.A.R.V.I.S.'s answer will appear.", de: "Hier erscheint die Antwort von J.A.R.V.I.S." },
+    "ask.showDetails": { en: "Show research details", de: "Recherche-Details anzeigen" },
+    "ask.detail.Fakten": { en: "Facts", de: "Fakten" },
+    "ask.detail.Daten": { en: "Data", de: "Daten" },
+    "ask.detail.Ursachen": { en: "Causes", de: "Ursachen" },
+    "ask.detail.Auswirkungen": { en: "Effects", de: "Auswirkungen" },
+    "ask.detail.Einordnung": { en: "Context", de: "Einordnung" },
+    "ask.detail.Unsicherheiten": { en: "Uncertainties", de: "Unsicherheiten" },
     "login.title": { en: "SIGN IN", de: "ANMELDEN" },
     "login.tabSignin": { en: "SIGN IN", de: "ANMELDEN" },
     "login.tabSignup": { en: "SIGN UP", de: "REGISTRIEREN" },
@@ -1844,10 +1933,13 @@
     var askSend = document.getElementById('ask-send');
     var askCharCount = document.getElementById('ask-char-count');
     var askStatus = document.getElementById('ask-status');
+    var askStatusSpinner = document.getElementById('ask-status-spinner');
     var askStatusText = document.getElementById('ask-status-text');
     var askAnswer = document.getElementById('ask-answer');
+    var askDetails = document.getElementById('ask-details');
+    var askDetailsBody = document.getElementById('ask-details-body');
+    var askSourcesSection = document.getElementById('ask-sources-section');
     var askSources = document.getElementById('ask-sources');
-    var askError = document.getElementById('ask-error');
     var askAuthRequired = document.getElementById('ask-auth-required');
     var askAuthLoginLink = document.getElementById('ask-auth-login-link');
 
@@ -2095,12 +2187,15 @@
 
     askAuthLoginLink.addEventListener('click', openLoginPanel);
 
-    function clearAskOutputs() {
-      askAnswer.hidden = true;
-      askAnswer.textContent = '';
+    function resetAnswerToPlaceholder() {
+      askAnswer.setAttribute('data-i18n', 'ask.answerPlaceholder');
+      askAnswer.textContent = t('ask.answerPlaceholder');
+      askAnswer.classList.add('is-placeholder');
+      askDetails.hidden = true;
+      askDetails.open = false;
+      while (askDetailsBody.firstChild) { askDetailsBody.removeChild(askDetailsBody.firstChild); }
+      askSourcesSection.hidden = true;
       while (askSources.firstChild) { askSources.removeChild(askSources.firstChild); }
-      askError.hidden = true;
-      askError.textContent = '';
     }
 
     var ASK_STATUS_LABELS = {
@@ -2115,37 +2210,112 @@
       return translated !== key ? translated : t('ask.errorGeneric');
     }
 
-    function renderAskState(state) {
-      updateAskAuthGate();
-      if (state.phase === 'submitting' || state.phase === 'pending' || state.phase === 'processing') {
-        clearAskOutputs();
-        askStatus.hidden = false;
-        askStatusText.textContent = t(ASK_STATUS_LABELS[state.phase] || 'ask.statusPending');
-        return;
+    function detailBlockTitle(name) {
+      var key = 'ask.detail.' + name;
+      var translated = t(key);
+      return translated !== key ? translated : name;
+    }
+
+    // Renders a parsed, successful answer: the short "Kurzfassung" as
+    // separate readable paragraphs (the answer proper), the remaining
+    // recognized sections behind the collapsible "Recherche-Details", and
+    // the canonical sources[] (real URLs from the API, never parsed out
+    // of the "Quellen:" text) as clickable cards. Every piece of network-
+    // derived text is placed via textContent - never innerHTML.
+    function renderAnswer(answerText, sources) {
+      var parsed = AJC.parseAskAnswer(answerText);
+
+      askAnswer.removeAttribute('data-i18n');
+      askAnswer.classList.remove('is-placeholder');
+      while (askAnswer.firstChild) { askAnswer.removeChild(askAnswer.firstChild); }
+      parsed.summaryParagraphs.forEach(function (paragraph) {
+        var p = document.createElement('p');
+        p.textContent = paragraph; // textContent only - never model HTML
+        askAnswer.appendChild(p);
+      });
+
+      while (askDetailsBody.firstChild) { askDetailsBody.removeChild(askDetailsBody.firstChild); }
+      if (parsed.detailSections.length) {
+        parsed.detailSections.forEach(function (section) {
+          var block = document.createElement('div');
+          block.className = 'ask-detail-block';
+          var heading = document.createElement('h4');
+          heading.textContent = detailBlockTitle(section.title);
+          block.appendChild(heading);
+          var list = document.createElement('ul');
+          section.items.forEach(function (item) {
+            var li = document.createElement('li');
+            li.textContent = item; // textContent only - never model HTML
+            list.appendChild(li);
+          });
+          block.appendChild(list);
+          askDetailsBody.appendChild(block);
+        });
+        askDetails.hidden = false;
+      } else {
+        askDetails.hidden = true;
+        askDetails.open = false;
       }
-      askStatus.hidden = true;
-      if (state.phase === 'success' && state.result) {
-        askAnswer.hidden = false;
-        askAnswer.textContent = state.result.answer; // textContent only - never HTML
-        state.result.sources.forEach(function (source) {
-          if (!AJC.isSafeHttpUrl(source.url)) { return; }
+
+      while (askSources.firstChild) { askSources.removeChild(askSources.firstChild); }
+      var validSources = (sources || []).filter(function (source) {
+        return AJC.isSafeHttpUrl(source.url);
+      });
+      if (validSources.length) {
+        validSources.forEach(function (source) {
           var a = document.createElement('a');
-          a.href = source.url;                          // safe: passed isSafeHttpUrl
-          a.textContent = source.title || source.url;    // text only, never HTML
+          a.className = 'ask-source-card';
+          a.href = source.url;                 // safe: passed isSafeHttpUrl
           a.target = '_blank';
           a.rel = 'noopener noreferrer nofollow';
+          var domain = document.createElement('div');
+          domain.className = 'domain';
+          domain.textContent = AJC.urlHostname(source.url) || source.url; // text only
+          var title = document.createElement('div');
+          title.className = 'title';
+          title.textContent = AJC.humanizeUrlLabel(source.url); // text only, derived from URL
+          a.appendChild(domain);
+          a.appendChild(title);
           askSources.appendChild(a);
         });
+        askSourcesSection.hidden = false;
+      } else {
+        askSourcesSection.hidden = true;
+      }
+    }
+
+    function renderAskState(state) {
+      updateAskAuthGate();
+      if (state.phase === 'submitting') {
+        // A brand new question was just sent - clear whatever the
+        // previous request left behind so it can't be mistaken for the
+        // new one's answer.
+        resetAnswerToPlaceholder();
+      }
+      if (state.phase === 'submitting' || state.phase === 'pending' || state.phase === 'processing') {
+        askStatus.hidden = false;
+        askStatus.classList.remove('is-error');
+        askStatusSpinner.hidden = false;
+        askStatusText.textContent = t(ASK_STATUS_LABELS[state.phase] || 'ask.statusPending');
+        return; // answer area stays exactly as-is, visible throughout
+      }
+      if (state.phase === 'success' && state.result) {
+        askStatus.hidden = true;
+        renderAnswer(state.result.answer, state.result.sources);
         return;
       }
       if (state.phase === 'error') {
-        askError.hidden = false;
-        askError.textContent = askErrorText(state.errorCode);
-        return;
+        askStatus.hidden = false;
+        askStatusSpinner.hidden = true;
+        askStatus.classList.add('is-error');
+        askStatusText.textContent = askErrorText(state.errorCode);
+        return; // answer area is never repurposed as a generic error box
       }
       if (state.phase === 'expired') {
-        askError.hidden = false;
-        askError.textContent = t('ask.expired');
+        askStatus.hidden = false;
+        askStatusSpinner.hidden = true;
+        askStatus.classList.add('is-error');
+        askStatusText.textContent = t('ask.expired');
       }
     }
 
