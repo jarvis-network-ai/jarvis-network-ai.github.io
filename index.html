@@ -817,25 +817,26 @@
     overflow-wrap: anywhere;
   }
 
-  .ask-sources-section { margin-top: 1.2rem; border-top: 1px solid var(--line); padding-top: 0.9rem; }
-  .ask-sources { display: flex; flex-direction: column; gap: 0.5rem; }
-  .ask-source-card {
-    display: block;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--panel);
-    padding: 0.7rem 0.9rem;
-    text-decoration: none;
-    transition: border-color 0.2s ease;
+  .ask-sources-section {
+    margin-top: 0.9rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.82rem;
   }
-  .ask-source-card:hover { border-color: var(--cyan-dim); }
-  .ask-source-card .domain {
+  .ask-sources-label {
     font-family: ui-monospace, monospace;
     font-size: 0.7rem;
-    color: var(--cyan);
-    letter-spacing: 0.03em;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-right: 0.5rem;
   }
-  .ask-source-card .title { margin-top: 0.25rem; font-size: 0.84rem; color: var(--white); }
+  .ask-sources { display: inline; }
+  .ask-sources a {
+    color: var(--cyan);
+    text-decoration: none;
+    margin-right: 0.7rem;
+  }
+  .ask-sources a:hover { text-decoration: underline; }
 
   .ask-auth-required { margin-top: 0.8rem; font-size: 0.8rem; color: var(--muted); }
   .ask-auth-required button {
@@ -1211,8 +1212,7 @@
     </details>
 
     <div class="ask-sources-section" id="ask-sources-section" hidden>
-      <div class="ask-section-label" data-i18n="ask.sectionSources">SOURCES</div>
-      <div class="ask-sources" id="ask-sources"></div>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
     </div>
   </div>
 
@@ -1300,7 +1300,8 @@
     "ask.error.network_turn_timeout": { en: "J.A.R.V.I.S. took too long to answer. Please try again.", de: "J.A.R.V.I.S. hat zu lange für die Antwort gebraucht. Bitte erneut versuchen." },
     "ask.error.network_turn_answer_empty": { en: "J.A.R.V.I.S. didn't produce an answer. Please try again.", de: "J.A.R.V.I.S. hat keine Antwort erzeugt. Bitte erneut versuchen." },
     "ask.sectionAnswer": { en: "ANSWER", de: "ANTWORT" },
-    "ask.sectionSources": { en: "SOURCES", de: "QUELLEN" },
+    "ask.sourceLabelSingular": { en: "Source:", de: "Quelle:" },
+    "ask.sourceLabelPlural": { en: "Sources:", de: "Quellen:" },
     "ask.answerPlaceholder": { en: "Here's where J.A.R.V.I.S.'s answer will appear.", de: "Hier erscheint die Antwort von J.A.R.V.I.S." },
     "ask.showDetails": { en: "Show research details", de: "Recherche-Details anzeigen" },
     "ask.detail.Fakten": { en: "Facts", de: "Fakten" },
@@ -1939,6 +1940,7 @@
     var askDetails = document.getElementById('ask-details');
     var askDetailsBody = document.getElementById('ask-details-body');
     var askSourcesSection = document.getElementById('ask-sources-section');
+    var askSourcesLabel = document.getElementById('ask-sources-label');
     var askSources = document.getElementById('ask-sources');
     var askAuthRequired = document.getElementById('ask-auth-required');
     var askAuthLoginLink = document.getElementById('ask-auth-login-link');
@@ -2257,25 +2259,22 @@
         askDetails.open = false;
       }
 
+      // Compact, plain links - not cards: "Quelle:"/"Quellen:" plus one
+      // short link per source, nothing else (no snippet, no metadata).
       while (askSources.firstChild) { askSources.removeChild(askSources.firstChild); }
       var validSources = (sources || []).filter(function (source) {
         return AJC.isSafeHttpUrl(source.url);
       });
       if (validSources.length) {
+        askSourcesLabel.textContent = t(
+          validSources.length === 1 ? 'ask.sourceLabelSingular' : 'ask.sourceLabelPlural'
+        );
         validSources.forEach(function (source) {
           var a = document.createElement('a');
-          a.className = 'ask-source-card';
           a.href = source.url;                 // safe: passed isSafeHttpUrl
           a.target = '_blank';
           a.rel = 'noopener noreferrer nofollow';
-          var domain = document.createElement('div');
-          domain.className = 'domain';
-          domain.textContent = AJC.urlHostname(source.url) || source.url; // text only
-          var title = document.createElement('div');
-          title.className = 'title';
-          title.textContent = AJC.humanizeUrlLabel(source.url); // text only, derived from URL
-          a.appendChild(domain);
-          a.appendChild(title);
+          a.textContent = AJC.urlHostname(source.url) || source.url; // text only
           askSources.appendChild(a);
         });
         askSourcesSection.hidden = false;
