@@ -493,6 +493,121 @@
   }
   .tag-pill:hover { color: var(--white); border-color: var(--line-strong); }
 
+  /* ================= OBSERVATIONS (Collective Knowledge, Slice 1) ================= */
+
+  .obs-form-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    padding: 1.2rem 1.3rem;
+    margin-bottom: 1.8rem;
+  }
+  .obs-field {
+    display: flex; flex-direction: column; gap: 0.35rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 0.7rem;
+  }
+  .obs-field textarea {
+    background: var(--panel-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    color: var(--white);
+    font-family: inherit;
+    font-size: 0.88rem;
+    padding: 0.6rem 0.75rem;
+    resize: vertical;
+    min-height: 5.2em;
+  }
+  .obs-field input[type="url"] {
+    background: var(--panel-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    color: var(--white);
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 0.55rem 0.75rem;
+  }
+  .obs-field textarea:focus-visible, .obs-field input:focus-visible {
+    outline: 2px solid var(--cyan-dim); outline-offset: 1px;
+  }
+  .obs-char-count {
+    font-family: ui-monospace, monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: right;
+    margin-top: -0.4rem;
+    margin-bottom: 0.7rem;
+  }
+  .obs-char-count.is-over { color: var(--sem-error); }
+  .obs-source-row {
+    display: flex; flex-wrap: wrap; gap: 1.2rem;
+    font-size: 0.85rem;
+    color: var(--ice);
+    margin-bottom: 0.7rem;
+  }
+  .obs-source-row label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+  .obs-submit {
+    font-family: ui-monospace, monospace;
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    color: var(--black);
+    background: var(--cyan);
+    border: none;
+    border-radius: 7px;
+    padding: 0.6rem 1.1rem;
+    cursor: pointer;
+  }
+  .obs-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .obs-field textarea:disabled, .obs-field input:disabled { opacity: 0.5; cursor: not-allowed; }
+  .obs-status { margin-top: 0.7rem; font-size: 0.78rem; color: var(--muted); min-height: 1em; }
+  .obs-status.is-error { color: var(--sem-error); }
+  .obs-status.is-ok { color: var(--cyan); }
+  .obs-auth-required { margin-bottom: 1.8rem; font-size: 0.85rem; color: var(--muted); }
+  .obs-auth-required button {
+    color: var(--cyan);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0;
+  }
+
+  .obs-list { display: flex; flex-direction: column; gap: 0.8rem; }
+  .obs-card {
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    padding: 1.1rem 1.3rem;
+  }
+  .obs-body {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--white);
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+  .obs-meta {
+    display: flex; align-items: center; gap: 0.9rem;
+    margin-top: 0.7rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+  .obs-meta a { color: var(--cyan); text-decoration: none; }
+  .obs-meta a:hover { text-decoration: underline; }
+  .obs-empty {
+    color: var(--muted);
+    font-size: 0.88rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: 9px;
+    padding: 1.3rem;
+    text-align: center;
+  }
+
   /* ================= NEWS ================= */
 
   .news-grid {
@@ -962,6 +1077,7 @@
       <a href="#project" data-i18n="nav.project">PROJECT</a>
       <a href="#signal" data-i18n="nav.signal">SIGNAL</a>
       <a href="#discuss" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="#observations" data-i18n="nav.observations">OBSERVATIONS</a>
       <a href="#knowledge" data-i18n="nav.knowledge">KNOWLEDGE</a>
       <a href="#lab" data-i18n="nav.lab">LAB</a>
       <a href="#" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
@@ -1047,6 +1163,45 @@
     <div class="cat-grid" id="cat-grid"></div>
 
     <div class="disc-list" id="disc-list"></div>
+  </div>
+</section>
+
+<section class="block" id="observations">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="obs.eyebrow">COLLECTIVE KNOWLEDGE</span>
+        <h2 data-i18n="obs.title">Observations</h2>
+        <p class="sub" data-i18n="obs.sub">Real experiences from real use of local, hybrid and external AI — the first layer of collective knowledge.</p>
+      </div>
+    </div>
+
+    <div class="obs-form-card" id="obs-form-card">
+      <form id="obs-form" novalidate>
+        <label class="obs-field">
+          <span data-i18n="obs.bodyLabel">Your observation</span>
+          <textarea id="obs-body" maxlength="4000" required></textarea>
+        </label>
+        <div class="obs-char-count" id="obs-char-count">0 / 4000</div>
+        <div class="obs-source-row">
+          <label><input type="radio" name="obs-source-kind" value="own_experience" checked /><span data-i18n="obs.sourceOwn">Own experience</span></label>
+          <label><input type="radio" name="obs-source-kind" value="external_link" /><span data-i18n="obs.sourceExternal">External source</span></label>
+        </div>
+        <label class="obs-field" id="obs-url-field" hidden>
+          <span data-i18n="obs.urlLabel">Source URL</span>
+          <input type="url" id="obs-url" data-i18n-placeholder="obs.urlPlaceholder" placeholder="https://…" />
+        </label>
+        <button type="submit" class="obs-submit" id="obs-submit" data-i18n="obs.submit">Share observation</button>
+        <p class="obs-status" id="obs-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+    <div class="obs-auth-required" id="obs-auth-required" hidden>
+      <span data-i18n="obs.authRequired">Sign in to share an observation.</span>
+      <button type="button" id="obs-auth-login-link" data-i18n="obs.authRequiredLink">Sign in</button>
+    </div>
+
+    <div class="obs-list" id="obs-list"></div>
+    <p class="obs-empty" id="obs-empty" hidden data-i18n="obs.empty">No observations shared yet.</p>
   </div>
 </section>
 
@@ -1310,6 +1465,26 @@
     "ask.detail.Auswirkungen": { en: "Effects", de: "Auswirkungen" },
     "ask.detail.Einordnung": { en: "Context", de: "Einordnung" },
     "ask.detail.Unsicherheiten": { en: "Uncertainties", de: "Unsicherheiten" },
+    "nav.observations": { en: "OBSERVATIONS", de: "BEOBACHTUNGEN" },
+    "obs.eyebrow": { en: "COLLECTIVE KNOWLEDGE", de: "COLLECTIVE KNOWLEDGE" },
+    "obs.title": { en: "Observations", de: "Beobachtungen" },
+    "obs.sub": { en: "Real experiences from real use of local, hybrid and external AI — the first layer of collective knowledge.", de: "Echte Erfahrungen aus der echten Nutzung lokaler, hybrider und externer KI — die erste Ebene von gemeinsamem Wissen." },
+    "obs.bodyLabel": { en: "Your observation", de: "Deine Beobachtung" },
+    "obs.sourceOwn": { en: "Own experience", de: "Eigene Erfahrung" },
+    "obs.sourceExternal": { en: "External source", de: "Externe Quelle" },
+    "obs.urlLabel": { en: "Source URL", de: "Quell-URL" },
+    "obs.urlPlaceholder": { en: "https://…", de: "https://…" },
+    "obs.submit": { en: "Share observation", de: "Beobachtung teilen" },
+    "obs.statusSubmitting": { en: "Sharing…", de: "Wird geteilt…" },
+    "obs.statusSuccess": { en: "Shared. Thank you.", de: "Geteilt. Danke." },
+    "obs.errorGeneric": { en: "Something went wrong. Please try again.", de: "Etwas ist schiefgelaufen. Bitte erneut versuchen." },
+    "obs.error.body_required": { en: "Please enter your observation.", de: "Bitte gib deine Beobachtung ein." },
+    "obs.error.body_too_long": { en: "That's too long (max. 4000 characters).", de: "Das ist zu lang (max. 4000 Zeichen)." },
+    "obs.error.url_required": { en: "Please enter the source URL.", de: "Bitte gib die Quell-URL ein." },
+    "obs.error.url_invalid": { en: "Please enter a valid http:// or https:// URL.", de: "Bitte gib eine gültige http:// oder https:// URL ein." },
+    "obs.authRequired": { en: "Sign in to share an observation.", de: "Melde dich an, um eine Beobachtung zu teilen." },
+    "obs.authRequiredLink": { en: "Sign in", de: "Anmelden" },
+    "obs.empty": { en: "No observations shared yet.", de: "Noch keine Beobachtungen geteilt." },
     "login.title": { en: "SIGN IN", de: "ANMELDEN" },
     "login.tabSignin": { en: "SIGN IN", de: "ANMELDEN" },
     "login.tabSignup": { en: "SIGN UP", de: "REGISTRIEREN" },
@@ -1945,6 +2120,21 @@
     var askAuthRequired = document.getElementById('ask-auth-required');
     var askAuthLoginLink = document.getElementById('ask-auth-login-link');
 
+    var obsFormCard = document.getElementById('obs-form-card');
+    var obsForm = document.getElementById('obs-form');
+    var obsBody = document.getElementById('obs-body');
+    var obsCharCount = document.getElementById('obs-char-count');
+    var obsSourceRadios = document.querySelectorAll('input[name="obs-source-kind"]');
+    var obsUrlField = document.getElementById('obs-url-field');
+    var obsUrl = document.getElementById('obs-url');
+    var obsSubmit = document.getElementById('obs-submit');
+    var obsStatus = document.getElementById('obs-status');
+    var obsAuthRequired = document.getElementById('obs-auth-required');
+    var obsAuthLoginLink = document.getElementById('obs-auth-login-link');
+    var obsList = document.getElementById('obs-list');
+    var obsEmpty = document.getElementById('obs-empty');
+    var observations = [];
+
     var loginMode = 'signin';
     var session = null;
 
@@ -2110,11 +2300,13 @@
       session = (res.data && res.data.session) || null;
       updateLoginButton();
       updateAskAuthGate();
+      updateObsAuthGate();
     });
     supabase.auth.onAuthStateChange(function (event, newSession) {
       session = newSession || null;
       updateLoginButton();
       updateAskAuthGate();
+      updateObsAuthGate();
       if (event === 'PASSWORD_RECOVERY') {
         openLoginPanel();
         setLoginMode('recovery');
@@ -2344,6 +2536,191 @@
     // down. A hard reload starts an entirely fresh JS context anyway;
     // this only guards the *current* context during navigation away.
     window.addEventListener('pagehide', function () { controller.stopPolling(); });
+
+    // ---------- Collective Knowledge, Slice 1: "Beobachtung teilen" ----------
+    // Browser talks to Supabase only with the public publishable key plus
+    // the signed-in user's own session token (never a service key). INSERT
+    // sends only body/source_kind/source_url - author_id/topic_area/
+    // knowledge_level/status are never set from the frontend; they are
+    // enforced server-side by the guard trigger in
+    // supabase/migrations/0009_collective_observations.sql, exactly like
+    // the ask-jarvis request flow above never sets its own server fields.
+    // Every piece of stored text is rendered via textContent, never
+    // innerHTML - same discipline as escapeHtml()/renderAnswer() above.
+
+    function updateObsAuthGate() {
+      var authed = isAuthenticated();
+      obsAuthRequired.hidden = authed;
+      obsBody.disabled = !authed;
+      obsUrl.disabled = !authed;
+      obsSubmit.disabled = !authed;
+      Array.prototype.forEach.call(obsSourceRadios, function (r) { r.disabled = !authed; });
+    }
+    obsAuthLoginLink.addEventListener('click', openLoginPanel);
+
+    function obsSourceKindValue() {
+      var checked = document.querySelector('input[name="obs-source-kind"]:checked');
+      return checked ? checked.value : 'own_experience';
+    }
+    Array.prototype.forEach.call(obsSourceRadios, function (r) {
+      r.addEventListener('change', function () {
+        var isExternal = obsSourceKindValue() === 'external_link';
+        obsUrlField.hidden = !isExternal;
+        if (!isExternal) { obsUrl.value = ''; }
+      });
+    });
+
+    function updateObsCharCount() {
+      var length = obsBody.value.length;
+      obsCharCount.textContent = length + ' / 4000';
+      obsCharCount.classList.toggle('is-over', length > 4000);
+    }
+    obsBody.addEventListener('input', updateObsCharCount);
+    updateObsCharCount();
+
+    function setObsStatus(message, kind) {
+      obsStatus.textContent = message || '';
+      obsStatus.classList.remove('is-error', 'is-ok');
+      if (kind) { obsStatus.classList.add(kind === 'error' ? 'is-error' : 'is-ok'); }
+    }
+
+    // Mirrors the DB constraints in 0009_collective_observations.sql
+    // client-side for a fast, clear error message - the database remains
+    // the authoritative check (defense in depth, not the only defense).
+    function validateObservationInput(bodyText, sourceKind, sourceUrl) {
+      var trimmedBody = String(bodyText || '').trim();
+      if (!trimmedBody) { return { ok: false, reason: 'body_required' }; }
+      if (trimmedBody.length > 4000) { return { ok: false, reason: 'body_too_long' }; }
+      if (sourceKind === 'external_link') {
+        var trimmedUrl = String(sourceUrl || '').trim();
+        if (!trimmedUrl) { return { ok: false, reason: 'url_required' }; }
+        if (!AJC.isSafeHttpUrl(trimmedUrl)) { return { ok: false, reason: 'url_invalid' }; }
+        return { ok: true, body: trimmedBody, sourceKind: 'external_link', sourceUrl: trimmedUrl };
+      }
+      return { ok: true, body: trimmedBody, sourceKind: 'own_experience', sourceUrl: null };
+    }
+
+    // INSERT only ever carries the three legitimate input fields. No
+    // author_id/topic_area/knowledge_level/status key exists in this
+    // payload at all - there is nothing here for a compromised client to
+    // "forget to omit"; the guard trigger would overwrite them anyway even
+    // if present, but this function structurally cannot send them.
+    function insertObservation(payload) {
+      var url = cfg.supabaseUrl.replace(/\/+$/, '') + '/rest/v1/collective_observations';
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          apikey: cfg.supabasePublishableKey,
+          Authorization: 'Bearer ' + accessToken(),
+          Prefer: 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      }).then(function (res) {
+        if (res.ok) { return { ok: true }; }
+        return { ok: false, status: res.status };
+      });
+    }
+
+    function formatObsDate(isoString) {
+      try {
+        var locale = currentLang === 'de' ? 'de-DE' : 'en-US';
+        return new Date(isoString).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
+      } catch (error) {
+        return String(isoString || '');
+      }
+    }
+
+    // knowledge_level is intentionally never rendered here - internally
+    // every row is 'observation' (Wissensstufe 1), but showing that label
+    // prominently on every card would be noise, not information, for a V1
+    // with exactly one level. See COLLECTIVE_KNOWLEDGE.md, "Wissensstufen".
+    function renderObservations() {
+      while (obsList.firstChild) { obsList.removeChild(obsList.firstChild); }
+      if (!observations.length) {
+        obsEmpty.hidden = false;
+        return;
+      }
+      obsEmpty.hidden = true;
+      observations.forEach(function (o) {
+        var card = document.createElement('div');
+        card.className = 'obs-card';
+
+        var body = document.createElement('p');
+        body.className = 'obs-body';
+        body.textContent = o.body; // textContent only - never innerHTML
+        card.appendChild(body);
+
+        var meta = document.createElement('div');
+        meta.className = 'obs-meta';
+
+        var dateEl = document.createElement('span');
+        dateEl.textContent = formatObsDate(o.created_at);
+        meta.appendChild(dateEl);
+
+        if (o.source_kind === 'external_link' && AJC.isSafeHttpUrl(o.source_url)) {
+          var a = document.createElement('a');
+          a.href = o.source_url;                 // safe: passed isSafeHttpUrl
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer nofollow';
+          a.textContent = AJC.urlHostname(o.source_url) || o.source_url; // text only
+          meta.appendChild(a);
+        } else {
+          var ownEl = document.createElement('span');
+          ownEl.textContent = t('obs.sourceOwn');
+          meta.appendChild(ownEl);
+        }
+
+        card.appendChild(meta);
+        obsList.appendChild(card);
+      });
+    }
+
+    function loadObservations() {
+      return restFetch(
+        'collective_observations?select=id,body,source_kind,source_url,created_at' +
+        '&status=eq.visible&order=created_at.desc&limit=50'
+      ).then(function (rows) {
+        observations = rows;
+        renderObservations();
+      }).catch(function (e) {
+        console.warn('[jarvis-network] observations load failed:', e);
+      });
+    }
+
+    obsForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!isAuthenticated()) { openLoginPanel(); return; }
+      var validation = validateObservationInput(obsBody.value, obsSourceKindValue(), obsUrl.value);
+      if (!validation.ok) {
+        setObsStatus(t('obs.error.' + validation.reason), 'error');
+        return;
+      }
+      obsSubmit.disabled = true;
+      setObsStatus(t('obs.statusSubmitting'), null);
+      insertObservation({
+        body: validation.body,
+        source_kind: validation.sourceKind,
+        source_url: validation.sourceUrl
+      }).then(function (res) {
+        obsSubmit.disabled = !isAuthenticated();
+        if (!res.ok) {
+          setObsStatus(t('obs.errorGeneric'), 'error');
+          return;
+        }
+        obsForm.reset();
+        obsUrlField.hidden = true;
+        updateObsCharCount();
+        setObsStatus(t('obs.statusSuccess'), 'ok');
+        loadObservations();
+      }, function () {
+        obsSubmit.disabled = !isAuthenticated();
+        setObsStatus(t('obs.errorGeneric'), 'error');
+      });
+    });
+
+    updateObsAuthGate();
+    if (isSupabaseConfigured()) { loadObservations(); }
 
     updateAskAuthGate();
   })();
