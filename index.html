@@ -728,6 +728,145 @@
   }
   .ask-note { margin-top: 0.7rem; font-size: 0.72rem; color: var(--muted); }
 
+  .ask-input-row input:disabled { opacity: 0.5; cursor: not-allowed; }
+  .ask-input-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .ask-char-count {
+    font-family: ui-monospace, monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 0.3rem;
+  }
+  .ask-char-count.is-over { color: var(--sem-error); }
+  .ask-status {
+    margin-top: 0.8rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--cyan);
+  }
+  .ask-status .spinner {
+    width: 9px; height: 9px; border-radius: 50%;
+    border: 2px solid rgba(73, 211, 224, 0.25);
+    border-top-color: var(--cyan);
+    animation: askspin 0.8s linear infinite;
+    flex: none;
+  }
+  @keyframes askspin { to { transform: rotate(360deg); } }
+  .ask-answer {
+    margin-top: 0.9rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.85rem;
+    color: var(--white);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .ask-sources { margin-top: 0.7rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  .ask-sources a {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--cyan);
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .ask-sources a:hover { text-decoration: underline; }
+  .ask-error { margin-top: 0.8rem; font-size: 0.8rem; color: var(--sem-error); }
+  .ask-auth-required { margin-top: 0.8rem; font-size: 0.8rem; color: var(--muted); }
+  .ask-auth-required button {
+    color: var(--cyan);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0;
+  }
+
+  /* ================= LOGIN ================= */
+
+  .login-panel {
+    position: fixed;
+    top: 68px; right: 1.4rem;
+    z-index: 71;
+    width: min(320px, calc(100vw - 2.8rem));
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: rgba(14, 19, 25, 0.97);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    padding: 1.1rem 1.2rem 1.3rem;
+    transform: translateY(-6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), opacity 0.22s ease;
+  }
+  .login-panel.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .login-panel .head {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+    margin-bottom: 0.8rem;
+  }
+  .login-panel .head button {
+    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem;
+  }
+  .login-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.9rem; }
+  .login-tab {
+    flex: 1;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    color: var(--muted);
+    padding: 0.5rem;
+    cursor: pointer;
+  }
+  .login-tab.active {
+    color: var(--cyan);
+    border-color: rgba(73, 211, 224, 0.35);
+    background: rgba(73, 211, 224, 0.06);
+  }
+  .login-field {
+    display: flex; flex-direction: column; gap: 0.3rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 0.7rem;
+  }
+  .login-field input {
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    color: var(--white);
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 0.5rem 0.7rem;
+  }
+  .login-field input:focus-visible { outline: 2px solid var(--cyan-dim); outline-offset: 1px; }
+  .login-submit {
+    width: 100%;
+    font-family: ui-monospace, monospace;
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    color: var(--black);
+    background: var(--cyan);
+    border: none;
+    border-radius: 7px;
+    padding: 0.6rem;
+    cursor: pointer;
+    margin-top: 0.2rem;
+  }
+  .login-submit:disabled { opacity: 0.55; cursor: default; }
+  .login-status { margin-top: 0.7rem; font-size: 0.76rem; color: var(--muted); min-height: 1em; }
+  .login-status.is-error { color: var(--sem-error); }
+  .login-status.is-ok { color: var(--cyan); }
+
   :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 </style>
 </head>
@@ -751,7 +890,7 @@
         <button type="button" data-lang="de">DE</button>
       </div>
       <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
-      <a href="#" class="login-btn" data-i18n="nav.login">LOGIN</a>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
       <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
     </div>
   </div>
@@ -922,15 +1061,44 @@
   </div>
 </footer>
 
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
 <button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
 <div class="ask-panel" id="ask-panel">
   <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
   <div class="ask-examples" id="ask-examples"></div>
   <div class="ask-input-row">
-    <input type="text" id="ask-input" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
-    <button type="button" data-i18n="ask.send">ASK</button>
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
   </div>
-  <p class="ask-note" data-i18n="ask.note">Concept preview — will query the platform's real knowledge and community content once connected.</p>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-answer" id="ask-answer" hidden></div>
+  <div class="ask-sources" id="ask-sources"></div>
+  <div class="ask-error" id="ask-error" role="alert" hidden></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
 </div>
 
 <script>
@@ -997,7 +1165,35 @@
     "ask.btn": { en: "ASK J.A.R.V.I.S.", de: "J.A.R.V.I.S. FRAGEN" },
     "ask.placeholder": { en: "Ask about anything on this platform…", de: "Frag alles über diese Plattform…" },
     "ask.send": { en: "ASK", de: "FRAGEN" },
-    "ask.note": { en: "Concept preview — will query the platform's real knowledge and community content once connected.", de: "Konzept-Vorschau – wird später echtes Wissen und echte Community-Inhalte der Plattform abfragen." }
+    "ask.note": { en: "Ask a question and get a real, cited answer from J.A.R.V.I.S.", de: "Stelle eine Frage und erhalte eine echte, belegte Antwort von J.A.R.V.I.S." },
+    "ask.statusSubmitting": { en: "Sending…", de: "Wird gesendet…" },
+    "ask.statusPending": { en: "Waiting in queue…", de: "Wartet in der Warteschlange…" },
+    "ask.statusProcessing": { en: "J.A.R.V.I.S. is researching…", de: "J.A.R.V.I.S. recherchiert…" },
+    "ask.authRequired": { en: "Sign in to ask J.A.R.V.I.S.", de: "Melde dich an, um J.A.R.V.I.S. zu fragen." },
+    "ask.authRequiredLink": { en: "Sign in", de: "Anmelden" },
+    "ask.expired": { en: "This request took too long and expired. Please try again.", de: "Diese Anfrage hat zu lange gedauert und ist abgelaufen. Bitte erneut versuchen." },
+    "ask.errorGeneric": { en: "Something went wrong. Please try again.", de: "Etwas ist schiefgelaufen. Bitte erneut versuchen." },
+    "ask.error.network_request_rate_limited": { en: "Too many questions in a short time. Please wait a moment.", de: "Zu viele Fragen in kurzer Zeit. Bitte kurz warten." },
+    "ask.error.network_request_user_busy": { en: "You already have an open question. Please wait for it to finish.", de: "Du hast bereits eine offene Frage. Bitte warte, bis sie fertig ist." },
+    "ask.error.network_request_queue_full": { en: "J.A.R.V.I.S. is busy right now. Please try again shortly.", de: "J.A.R.V.I.S. ist gerade ausgelastet. Bitte versuche es gleich noch einmal." },
+    "ask.error.network_request_question_invalid": { en: "That question isn't valid (empty or too long).", de: "Diese Frage ist ungültig (leer oder zu lang)." },
+    "ask.error.network_request_user_invalid": { en: "Please sign in again.", de: "Bitte melde dich erneut an." },
+    "ask.error.user_context_missing": { en: "Please sign in again.", de: "Bitte melde dich erneut an." },
+    "ask.error.network_turn_timeout": { en: "J.A.R.V.I.S. took too long to answer. Please try again.", de: "J.A.R.V.I.S. hat zu lange für die Antwort gebraucht. Bitte erneut versuchen." },
+    "ask.error.network_turn_answer_empty": { en: "J.A.R.V.I.S. didn't produce an answer. Please try again.", de: "J.A.R.V.I.S. hat keine Antwort erzeugt. Bitte erneut versuchen." },
+    "login.title": { en: "SIGN IN", de: "ANMELDEN" },
+    "login.tabSignin": { en: "SIGN IN", de: "ANMELDEN" },
+    "login.tabSignup": { en: "SIGN UP", de: "REGISTRIEREN" },
+    "login.email": { en: "Email", de: "E-Mail" },
+    "login.password": { en: "Password", de: "Passwort" },
+    "login.submitSignin": { en: "SIGN IN", de: "ANMELDEN" },
+    "login.submitSignup": { en: "CREATE ACCOUNT", de: "KONTO ERSTELLEN" },
+    "login.working": { en: "Working…", de: "Einen Moment…" },
+    "login.success": { en: "Signed in.", de: "Angemeldet." },
+    "login.signupCheckEmail": { en: "Check your email to confirm your account.", de: "Bitte bestätige dein Konto per E-Mail." },
+    "login.errorMissing": { en: "Please enter email and password.", de: "Bitte E-Mail und Passwort eingeben." },
+    "login.errorGeneric": { en: "Sign-in failed. Please try again.", de: "Anmeldung fehlgeschlagen. Bitte erneut versuchen." },
+    "login.signedOut": { en: "Signed out.", de: "Abgemeldet." }
   };
   var PAGE_TITLE = {
     en: "J.A.R.V.I.S. Network — Exploring the Future of Artificial Intelligence",
@@ -1543,6 +1739,289 @@
     e.preventDefault();
     askPanel.classList.add('open');
   });
+</script>
+<script src="ask-jarvis-client.js"></script>
+<script type="module">
+  // ==================================================================
+  // Live Ask-J.A.R.V.I.S. wiring: Supabase Auth (own account, own JWT)
+  // + the ask-jarvis Edge Function (create + poll). Uses only the public
+  // publishable key above and the signed-in user's own session token -
+  // never a service key. Runs after the classic script above (module
+  // scripts are deferred), so window.JARVIS_NETWORK_CONFIG, window.t()
+  // and window.AskJarvisClient already exist.
+  // ==================================================================
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+  (function () {
+    var cfg = window.JARVIS_NETWORK_CONFIG;
+    var AJC = window.AskJarvisClient;
+    if (!cfg || !cfg.supabaseUrl || !cfg.supabasePublishableKey || !AJC) { return; }
+
+    var supabase = createClient(cfg.supabaseUrl, cfg.supabasePublishableKey);
+    var t = window.t;
+    var EDGE_FUNCTION_URL = cfg.supabaseUrl.replace(/\/+$/, '') + '/functions/v1/ask-jarvis';
+
+    var loginBtn = document.getElementById('nav-login-btn');
+    var loginPanel = document.getElementById('login-panel');
+    var loginClose = document.getElementById('login-close');
+    var loginForm = document.getElementById('login-form');
+    var loginEmail = document.getElementById('login-email');
+    var loginPassword = document.getElementById('login-password');
+    var loginSubmit = document.getElementById('login-submit');
+    var loginStatus = document.getElementById('login-status');
+    var loginTabSignin = document.getElementById('login-tab-signin');
+    var loginTabSignup = document.getElementById('login-tab-signup');
+
+    var askInput = document.getElementById('ask-input');
+    var askSend = document.getElementById('ask-send');
+    var askCharCount = document.getElementById('ask-char-count');
+    var askStatus = document.getElementById('ask-status');
+    var askStatusText = document.getElementById('ask-status-text');
+    var askAnswer = document.getElementById('ask-answer');
+    var askSources = document.getElementById('ask-sources');
+    var askError = document.getElementById('ask-error');
+    var askAuthRequired = document.getElementById('ask-auth-required');
+    var askAuthLoginLink = document.getElementById('ask-auth-login-link');
+
+    var loginMode = 'signin';
+    var session = null;
+
+    // ---------- auth ----------
+    function isAuthenticated() { return !!session; }
+
+    function accessToken() {
+      return session && session.access_token ? session.access_token : '';
+    }
+
+    function updateLoginButton() {
+      if (session && session.user) {
+        loginBtn.textContent = session.user.email || t('login.signedIn');
+      } else {
+        loginBtn.textContent = t('nav.login');
+      }
+    }
+
+    function setLoginStatus(message, kind) {
+      loginStatus.textContent = message || '';
+      loginStatus.classList.remove('is-error', 'is-ok');
+      if (kind) { loginStatus.classList.add(kind === 'error' ? 'is-error' : 'is-ok'); }
+    }
+
+    function openLoginPanel() { loginPanel.classList.add('open'); }
+    function closeLoginPanel() { loginPanel.classList.remove('open'); setLoginStatus(''); }
+
+    function setLoginMode(mode) {
+      loginMode = mode;
+      loginTabSignin.classList.toggle('active', mode === 'signin');
+      loginTabSignup.classList.toggle('active', mode === 'signup');
+      loginSubmit.textContent = t(mode === 'signin' ? 'login.submitSignin' : 'login.submitSignup');
+      setLoginStatus('');
+    }
+
+    loginBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (session) {
+        supabase.auth.signOut();
+        return;
+      }
+      loginPanel.classList.toggle('open');
+    });
+    loginClose.addEventListener('click', closeLoginPanel);
+    loginTabSignin.addEventListener('click', function () { setLoginMode('signin'); });
+    loginTabSignup.addEventListener('click', function () { setLoginMode('signup'); });
+
+    loginForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = loginEmail.value.trim();
+      var password = loginPassword.value;
+      if (!email || !password) {
+        setLoginStatus(t('login.errorMissing'), 'error');
+        return;
+      }
+      loginSubmit.disabled = true;
+      setLoginStatus(t('login.working'), null);
+      var action = loginMode === 'signin'
+        ? supabase.auth.signInWithPassword({ email: email, password: password })
+        : supabase.auth.signUp({ email: email, password: password });
+      action.then(function (res) {
+        loginSubmit.disabled = false;
+        if (res.error) {
+          setLoginStatus(res.error.message || t('login.errorGeneric'), 'error');
+          return;
+        }
+        if (loginMode === 'signup' && res.data && !res.data.session) {
+          setLoginStatus(t('login.signupCheckEmail'), 'ok');
+          return;
+        }
+        setLoginStatus(t('login.success'), 'ok');
+        window.setTimeout(closeLoginPanel, 700);
+      }).catch(function () {
+        loginSubmit.disabled = false;
+        setLoginStatus(t('login.errorGeneric'), 'error');
+      });
+    });
+
+    supabase.auth.getSession().then(function (res) {
+      session = (res.data && res.data.session) || null;
+      updateLoginButton();
+      updateAskAuthGate();
+    });
+    supabase.auth.onAuthStateChange(function (_event, newSession) {
+      session = newSession || null;
+      updateLoginButton();
+      updateAskAuthGate();
+    });
+
+    // Language toggle already re-applies data-i18n text via the classic
+    // script's own listener; this only refreshes the login button, whose
+    // text depends on auth state and isn't a static data-i18n string.
+    document.querySelectorAll('#lang-toggle button').forEach(function (b) {
+      b.addEventListener('click', function () { updateLoginButton(); });
+    });
+
+    // ---------- Ask J.A.R.V.I.S. request flow ----------
+    function postCreate(question) {
+      return fetch(EDGE_FUNCTION_URL, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          apikey: cfg.supabasePublishableKey,
+          Authorization: 'Bearer ' + accessToken()
+        },
+        body: JSON.stringify({ question: question })
+      }).then(function (res) {
+        return res.json().catch(function () { return null; }).then(function (body) {
+          if (res.status === 202 && body && body.request_id) {
+            return { ok: true, status: body.status, requestId: body.request_id };
+          }
+          return { ok: false, errorCode: (body && body.error) || ('http_' + res.status) };
+        });
+      });
+    }
+
+    function getStatus(requestId) {
+      var url = EDGE_FUNCTION_URL + '?request_id=' + encodeURIComponent(requestId);
+      return fetch(url, {
+        method: 'GET',
+        headers: {
+          apikey: cfg.supabasePublishableKey,
+          Authorization: 'Bearer ' + accessToken()
+        }
+      }).then(function (res) {
+        return res.json().catch(function () { return null; }).then(function (body) {
+          if (res.status === 200 && body && body.status) {
+            return {
+              ok: true,
+              status: body.status,
+              answer: body.answer,
+              sources: body.sources,
+              errorCode: body.error_code
+            };
+          }
+          return { ok: false, errorCode: (body && body.error) || ('http_' + res.status) };
+        });
+      });
+    }
+
+    var controller = AJC.createController({
+      postCreate: postCreate,
+      getStatus: getStatus,
+      onStateChange: renderAskState
+    });
+
+    function updateAskAuthGate() {
+      var authed = isAuthenticated();
+      askAuthRequired.hidden = authed;
+      var busy = controller.isBusy();
+      askInput.disabled = !authed || busy;
+      askSend.disabled = !authed || busy;
+    }
+
+    askAuthLoginLink.addEventListener('click', openLoginPanel);
+
+    function clearAskOutputs() {
+      askAnswer.hidden = true;
+      askAnswer.textContent = '';
+      while (askSources.firstChild) { askSources.removeChild(askSources.firstChild); }
+      askError.hidden = true;
+      askError.textContent = '';
+    }
+
+    var ASK_STATUS_LABELS = {
+      submitting: 'ask.statusSubmitting',
+      pending: 'ask.statusPending',
+      processing: 'ask.statusProcessing'
+    };
+
+    function askErrorText(errorCode) {
+      var key = 'ask.error.' + errorCode;
+      var translated = t(key);
+      return translated !== key ? translated : t('ask.errorGeneric');
+    }
+
+    function renderAskState(state) {
+      updateAskAuthGate();
+      if (state.phase === 'submitting' || state.phase === 'pending' || state.phase === 'processing') {
+        clearAskOutputs();
+        askStatus.hidden = false;
+        askStatusText.textContent = t(ASK_STATUS_LABELS[state.phase] || 'ask.statusPending');
+        return;
+      }
+      askStatus.hidden = true;
+      if (state.phase === 'success' && state.result) {
+        askAnswer.hidden = false;
+        askAnswer.textContent = state.result.answer; // textContent only - never HTML
+        state.result.sources.forEach(function (source) {
+          if (!AJC.isSafeHttpUrl(source.url)) { return; }
+          var a = document.createElement('a');
+          a.href = source.url;                          // safe: passed isSafeHttpUrl
+          a.textContent = source.title || source.url;    // text only, never HTML
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer nofollow';
+          askSources.appendChild(a);
+        });
+        return;
+      }
+      if (state.phase === 'error') {
+        askError.hidden = false;
+        askError.textContent = askErrorText(state.errorCode);
+        return;
+      }
+      if (state.phase === 'expired') {
+        askError.hidden = false;
+        askError.textContent = t('ask.expired');
+      }
+    }
+
+    function updateCharCount() {
+      var length = askInput.value.length;
+      askCharCount.textContent = length + ' / ' + AJC.MAX_QUESTION_LENGTH;
+      askCharCount.classList.toggle('is-over', length > AJC.MAX_QUESTION_LENGTH);
+    }
+    askInput.addEventListener('input', updateCharCount);
+    updateCharCount();
+
+    function submitAskQuestion() {
+      var question = askInput.value;
+      controller.submit(question, isAuthenticated()).then(function (result) {
+        if (!result.ok && result.reason === 'not_authenticated') {
+          openLoginPanel();
+        }
+      });
+    }
+    askSend.addEventListener('click', submitAskQuestion);
+    askInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { submitAskQuestion(); }
+    });
+
+    // Clean refresh/abort handling: stop any in-flight polling so no
+    // dangling network call keeps firing while the tab is being torn
+    // down. A hard reload starts an entirely fresh JS context anyway;
+    // this only guards the *current* context during navigation away.
+    window.addEventListener('pagehide', function () { controller.stopPolling(); });
+
+    updateAskAuthGate();
+  })();
 </script>
 </body>
 </html>
