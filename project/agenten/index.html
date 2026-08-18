@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agents at J.A.R.V.I.S. — J.A.R.V.I.S. Project</title>
+<link rel="stylesheet" href="../../foundation.css" />
+<link rel="stylesheet" href="../../site-chrome.css" />
+<style>
+  /* AGENTEN-page-only styles. Shared chrome comes from ../../site-chrome.css
+     - see WEBSITE_ARCHITECTURE_V1.md, Redesign-Schritt 4J. First page of
+     "HANDELN & RECHERCHIEREN" - own character: roles and a handoff flow,
+     not an agent swarm/org-chart/neon-bot-network (Abschnitt 22 of the
+     4J-Auftrag). */
+
+  .agents-hero { padding: 1.6rem 0 clamp(2.6rem, 5vw, 4rem); }
+  .agents-hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    letter-spacing: 0.01em;
+    max-width: 20ch;
+    margin-top: 0.6rem;
+  }
+  .agents-lede {
+    margin-top: 0.9rem;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: var(--ice);
+    font-weight: 500;
+  }
+  .agents-hero .body-copy { margin-top: 1.2rem; }
+
+  .body-copy { max-width: 64ch; }
+  .body-copy p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+  .body-copy p:last-child { margin-bottom: 0; }
+
+  .agents-section h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    max-width: 34ch;
+    margin-bottom: 1.2rem;
+  }
+  .agents-section h3 {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan-dim);
+    margin: 0 0 0.9rem;
+  }
+
+  .def-list { margin: 1.2rem 0 0; padding: 0; list-style: none; max-width: 66ch; }
+  .def-list li { padding: 0.9rem 0; border-bottom: 1px solid var(--line); }
+  .def-list li:last-child { border-bottom: none; }
+  .def-list .term {
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-dim);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+  .def-list .desc { color: var(--muted); font-size: 0.94rem; line-height: 1.6; }
+
+  .plain-list { margin: 0.8rem 0 0; padding-left: 1.2rem; color: var(--muted); font-size: 0.95rem; line-height: 1.8; max-width: 64ch; }
+  .plain-list li { margin-bottom: 0.3rem; }
+
+  .agents-quote {
+    margin: 1.6rem 0;
+    padding: 1.1rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    color: var(--ice);
+    font-size: 1.02rem;
+    line-height: 1.6;
+    max-width: 52ch;
+  }
+
+  /* Role comparison (Section 3: Agent != Planner != Tool != Executor) -
+     a small labeled grid, not cards with icons. */
+  .role-compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+  }
+  .role-item {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    padding: 1.1rem 1.3rem;
+  }
+  .role-item .k {
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-dim);
+  }
+  .role-item .q { margin-top: 0.5rem; color: var(--white); font-size: 0.96rem; line-height: 1.5; }
+
+  .agents-flows { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2.2rem; margin-top: 1.8rem; }
+  @media (max-width: 900px) { .agents-flows { grid-template-columns: minmax(0, 1fr); } }
+  .agents-flow-panel { border: 1px solid var(--line); border-radius: 12px; padding: clamp(1.4rem, 3vw, 1.8rem); background: var(--panel); }
+  .agents-flow-panel h3 { margin-bottom: 1.1rem; }
+  .agents-flow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+  .agents-flow .arch-node { font-size: 0.8rem; white-space: normal; max-width: 100%; overflow-wrap: break-word; }
+  .agents-flow .arch-arrow { display: block; padding: 0.26rem 0 0.26rem 1.1rem; transform: rotate(90deg); transform-origin: left center; }
+  .agents-flow-note { margin-top: 1rem; font-size: 0.8rem; color: var(--muted); font-style: italic; }
+
+  .status-rows { margin: 1rem 0 0; max-width: 66ch; }
+  .status-rows .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .status-rows .row:last-child { border-bottom: none; }
+  .status-rows .name { color: var(--white); font-size: 0.94rem; }
+  .status-rows .sub { display: block; margin-top: 0.2rem; color: var(--muted); font-size: 0.78rem; font-family: ui-monospace, monospace; }
+  .status-rows .tag {
+    font-family: ui-monospace, monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+    color: var(--cyan);
+    white-space: nowrap;
+    text-align: right;
+  }
+  .status-rows .tag.secondary { color: var(--st-experimental); }
+  .status-rows .tag.inactive { color: var(--muted); }
+  @media (max-width: 480px) {
+    .status-rows .row { flex-wrap: wrap; }
+    .status-rows .tag { text-align: left; }
+  }
+
+  .agents-network-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+  }
+  .agents-network-link {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .agents-network-link:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+  .agents-network-link .t { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--cyan); }
+  .agents-network-link .q { margin-top: 0.4rem; color: var(--white); font-size: 0.9rem; }
+  .agents-network-link.future { opacity: 0.7; cursor: default; }
+  .agents-network-link.future .t { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="../../" data-i18n="nav.home">HOME</a>
+      <a href="../" class="current" data-i18n="nav.project">PROJECT</a>
+      <a href="../../signal/" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="../../lab/" data-i18n="nav.lab">LAB</a>
+      <a href="../../discuss/" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="../../ask/" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap breadcrumb">
+    <a href="../../" data-i18n="nav.home">HOME</a><span class="sep">/</span><a href="../" data-i18n="nav.project">PROJECT</a><span class="sep">/</span><span class="current" data-i18n="agents.breadcrumb">AGENTS</span>
+  </div>
+
+  <section class="block agents-hero">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="project.eyebrow">J.A.R.V.I.S. PROJECT</span>
+      <h1 data-i18n="agents.h1">Agents at J.A.R.V.I.S.</h1>
+      <p class="agents-lede" data-i18n="agents.lede">Not every task needs the same role.</p>
+      <div class="body-copy" id="agents-intro-body"></div>
+      <nav class="pnav" id="project-nav" aria-label="Project-Navigation"></nav>
+    </div>
+  </section>
+
+  <section class="block agents-section" id="agents-what">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="agents.what.eyebrow">WHAT IS AN AGENT</span>
+      <h2 data-i18n="agents.what.title">What is an agent, exactly?</h2>
+      <div class="body-copy" id="agents-what-body"></div>
+      <blockquote class="agents-quote" data-i18n="agents.what.quote">An agent doesn't just get "more freedom". It gets a clearer job.</blockquote>
+    </div>
+  </section>
+
+  <section class="block agents-section" id="agents-compare">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="agents.compare.eyebrow">ROUTER ≠ PLANNER ≠ AGENT ≠ TOOL ≠ EXECUTOR</span>
+      <h2 data-i18n="agents.compare.title">Five different jobs, not one word for all of them.</h2>
+      <div class="body-copy" id="agents-compare-body"></div>
+      <div class="role-compare" id="agents-compare-list"></div>
+    </div>
+  </section>
+
+  <section class="block agents-section" id="agents-why">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="agents.why.eyebrow">WHY SPECIALIZE</span>
+      <h2 data-i18n="agents.why.title">Why specialized roles at all?</h2>
+      <div class="body-copy" id="agents-why-body"></div>
+    </div>
+  </section>
+
+  <section class="block agents-section" id="agents-path">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="agents.path.eyebrow">THE REAL PATH</span>
+      <h2 data-i18n="agents.path.title">The real agent path.</h2>
+      <div class="body-copy" id="agents-path-body"></div>
+      <div class="agents-flows">
+        <div class="agents-flow-panel">
+          <h3 data-i18n="agents.path.plain.title">IN PLAIN TERMS</h3>
+          <div class="agents-flow" id="agents-flow-plain" aria-hidden="true"></div>
+        </div>
+        <div class="agents-flow-panel">
+          <h3 data-i18n="agents.path.tech.title">TECHNICAL VIEW</h3>
+          <div class="agents-flow" id="agents-flow-tech" aria-hidden="true"></div>
+          <p class="agents-flow-note" data-i18n="agents.path.tech.note">Real module names from the current codebase (Core/intent_router.py, Core/multi_agent_research_report.py, Core/agent_planner.py, Core/plan_execution.py) — a simplified view of the actual call order, not the full source.</p>
+        </div>
+      </div>
+      <div class="body-copy" id="agents-path-body-2" style="margin-top:1rem;"></div>
+    </div>
+  </section>
+
+  <section class="block agents-section" id="agents-roles">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="agents.roles.eyebrow">WHICH AGENTS EXIST TODAY</span>
+      <h2 data-i18n="agents.roles.title">Which agents exist today?</h2>
+      <div class="status-rows" id="agents-roles-list"></div>
+    </div>
+  </section>
+
+  <section class="block agents-section" id="agents-multi">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="agents.multi.eyebrow">MULTI-AGENT AT J.A.R.V.I.S.</span>
+      <h2 data-i18n="agents.multi.title">Several specialized roles are not the same as a general multi-agent system.</h2>
+      <div class="body-copy" id="agents-multi-body"></div>
+    </div>
+  </section>
+
+  <section class="block agents-section" id="agents-back">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="agents.back.eyebrow">BACK INTO THE NORMAL PLAN</span>
+      <h2 data-i18n="agents.back.title">From the agents back into the normal plan.</h2>
+      <div class="body-copy" id="agents-back-body"></div>
+    </div>
+  </section>
+
+  <section class="block agents-section" id="agents-control">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="agents.control.eyebrow">CONTROL &amp; LIMITS</span>
+      <h2 data-i18n="agents.control.title">Control and limits.</h2>
+      <div class="body-copy" id="agents-control-body"></div>
+      <blockquote class="agents-quote" data-i18n="agents.control.quote">Specialization is meant to make J.A.R.V.I.S. more targeted — not less controlled.</blockquote>
+    </div>
+  </section>
+
+  <section class="block agents-section" id="agents-works">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="agents.works.eyebrow">WHAT WORKS TODAY</span>
+      <h2 data-i18n="agents.works.title">What works today.</h2>
+      <div class="status-rows" id="agents-works-list"></div>
+    </div>
+  </section>
+
+  <section class="block agents-section" id="agents-target">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="agents.target.eyebrow">STILL TARGET ARCHITECTURE</span>
+      <h2 data-i18n="agents.target.title">What is still target architecture?</h2>
+      <div class="body-copy" id="agents-target-body"></div>
+    </div>
+  </section>
+
+  <section class="block agents-section" id="agents-limits">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="agents.limits.eyebrow">KNOWN LIMITS</span>
+      <h2 data-i18n="agents.limits.title">Known limits.</h2>
+      <ul class="plain-list" id="agents-limits-list"></ul>
+      <p class="body-copy" id="agents-limits-note" style="margin-top:1rem;"></p>
+    </div>
+  </section>
+
+  <section class="block agents-section" id="agents-connections" style="border-bottom:none;">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="agents.connections.eyebrow">CONNECTED TO</span>
+      <h2 data-i18n="agents.connections.title">Connection to other PROJECT areas.</h2>
+      <div class="agents-network-links">
+        <a class="agents-network-link" href="../kern/">
+          <div class="t mono" data-i18n="project.nav.core">CORE</div>
+          <div class="q" data-i18n="agents.connections.core">Runs the plan an agent role helped produce.</div>
+        </a>
+        <a class="agents-network-link" href="../gedaechtnis/">
+          <div class="t mono" data-i18n="project.nav.memory">MEMORY</div>
+          <div class="q" data-i18n="agents.connections.memory">Supplies context an agent role can use.</div>
+        </a>
+        <a class="agents-network-link" href="../planung/">
+          <div class="t mono" data-i18n="agents.connections.planning.t">PLANNING</div>
+          <div class="q" data-i18n="agents.connections.planning.q">Every agent role ends in the same kind of plan.</div>
+        </a>
+        <a class="agents-network-link" href="../sprache/">
+          <div class="t mono" data-i18n="project.nav.voice">VOICE</div>
+          <div class="q" data-i18n="agents.connections.voice">A request can start as speech, before any role runs.</div>
+        </a>
+        <a class="agents-network-link" href="../vision/">
+          <div class="t mono" data-i18n="agents.connections.vision.t">VISION</div>
+          <div class="q" data-i18n="agents.connections.vision.q">A request can need a look at the screen, before any role runs.</div>
+        </a>
+        <a class="agents-network-link" href="../hardware/">
+          <div class="t mono" data-i18n="project.nav.hardware">HARDWARE</div>
+          <div class="q" data-i18n="agents.connections.hardware">Determines how fast a specialized role can work.</div>
+        </a>
+        <div class="agents-network-link future">
+          <div class="t mono" data-i18n="agents.connections.research.t">RESEARCH</div>
+          <div class="q" data-i18n="agents.connections.research.q">Its own page is still to come.</div>
+        </div>
+        <div class="agents-network-link future">
+          <div class="t mono" data-i18n="agents.connections.browser.t">BROWSER</div>
+          <div class="q" data-i18n="agents.connections.browser.q">Its own page is still to come.</div>
+        </div>
+        <div class="agents-network-link future">
+          <div class="t mono" data-i18n="agents.connections.tools.t">TOOLS</div>
+          <div class="q" data-i18n="agents.connections.tools.q">Its own page is still to come.</div>
+        </div>
+        <div class="agents-network-link future">
+          <div class="t mono" data-i18n="agents.connections.automation.t">AUTOMATION</div>
+          <div class="q" data-i18n="agents.connections.automation.q">Its own page is still to come.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="../" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="../../signal/" data-i18n="footer.news">AI Signal</a>
+        <a href="../../lab/" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="../../discuss/" data-i18n="footer.discussions">Discussions</a>
+        <a href="../../discuss/" data-i18n="footer.models">Models</a>
+        <a href="../../discuss/" data-i18n="footer.ideas">Ideas</a>
+        <a href="../../discuss/" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="../../#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../../#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../../#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+  </div>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+    </div>
+  </div>
+
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+</div>
+
+<script src="../../site-chrome.js"></script>
+<script src="../../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // AGENTEN-page-only content: strings, flow data, and the small
+  // renderAgents() function. Everything global comes from
+  // ../../site-chrome.js - see Redesign-Schritt 4J.
+  //
+  // Fact-checking note: verified against current Core/intent_router.py,
+  // Core/agent_decision.py, Core/agent_planner.py, Core/plan_execution.py,
+  // Core/agent_execution.py, Core/multi_agent_research_report.py,
+  // Core/skill_manager.py, root ROADMAP.md and HANDOFF.md before writing
+  // this page (read-only, no Core file changed).
+  //
+  // Real, wired path (M156a, "fully implemented, 157 tests green and
+  // live-verified" per ROADMAP.md): IntentRouter.handle() can select a
+  // narrow, guarded multi-agent research request
+  // (MultiAgentResearchReport.select_request()), which runs exactly two
+  // fixed roles - research_specialist_v1, then document_specialist_v1 -
+  // and then calls the SAME AgentPlanner.create_plan_from_payload() used
+  // by every other plan in the system. The resulting plan runs through
+  // the SAME PlanExecutionCoordinator/SkillManager/approval path as any
+  // other plan - no separate agent executor, no bypass. IntentRouter,
+  // AgentPlanner, AgentExecutionCoordinator and PlanExecutionCoordinator
+  // are all instantiated once inside IntentRouter and used for every
+  // routed command, agent-originated or not.
+  //
+  // Explicitly NOT described as active: there is no general/autonomous
+  // multi-agent orchestrator. Root ROADMAP.md states outright that a
+  // "Multi-Agent-Orchestrator" is target architecture, not implemented,
+  // and that M156a deliberately does NOT build a general multi-agent
+  // platform, additional planners/executors, or an agent store. No
+  // invented roles (coding agent, vision agent, memory agent, voice
+  // agent, supervisor agent) are named - only the two real, named roles.
+  // No evidence was found that this multi-agent path is reachable
+  // through the Network/network_gateway path - not claimed as available
+  // there. Core/manual_agent_test_mode.py and
+  // Core/live_agent_test_catalog.py look like standalone/manual test
+  // harnesses, not part of the production handle_command call chain -
+  // not described as the real path.
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "project.eyebrow": { en: "J.A.R.V.I.S. PROJECT", de: "J.A.R.V.I.S. PROJECT" },
+    "project.nav.core": { en: "CORE", de: "KERN" },
+    "project.nav.memory": { en: "MEMORY", de: "GEDÄCHTNIS" },
+    "project.nav.voice": { en: "VOICE", de: "SPRACHE" },
+    "project.nav.hardware": { en: "HARDWARE", de: "HARDWARE" },
+    "agents.breadcrumb": { en: "AGENTS", de: "AGENTEN" },
+    "agents.h1": { en: "Agents at J.A.R.V.I.S.", de: "Agenten bei J.A.R.V.I.S." },
+    "agents.lede": { en: "Not every task needs the same role.", de: "Nicht jede Aufgabe braucht dieselbe Rolle." },
+
+    "agents.what.eyebrow": { en: "WHAT IS AN AGENT", de: "WAS IST EIN AGENT" },
+    "agents.what.title": { en: "What is an agent, exactly?", de: "Was ist ein Agent eigentlich?" },
+    "agents.what.quote": {
+      en: "An agent doesn't just get \"more freedom\". It gets a clearer job.",
+      de: "Ein Agent bekommt nicht einfach „mehr Freiheit“. Er bekommt eine klarere Aufgabe."
+    },
+
+    "agents.compare.eyebrow": { en: "ROUTER ≠ PLANNER ≠ AGENT ≠ TOOL ≠ EXECUTOR", de: "ROUTER ≠ PLANNER ≠ AGENT ≠ TOOL ≠ EXECUTOR" },
+    "agents.compare.title": { en: "Five different jobs, not one word for all of them.", de: "Fünf unterschiedliche Aufgaben, nicht ein Wort für alles." },
+    "agents.compare.router.k": { en: "ROUTER", de: "ROUTER" },
+    "agents.compare.router.q": { en: "Which kind of handling does this request need?", de: "Welche Art von Behandlung braucht diese Anfrage?" },
+    "agents.compare.planner.k": { en: "PLANNER", de: "PLANNER" },
+    "agents.compare.planner.q": { en: "Which steps are needed?", de: "Welche Schritte sind nötig?" },
+    "agents.compare.agent.k": { en: "AGENT", de: "AGENT" },
+    "agents.compare.agent.q": { en: "Which specialized role handles part of the task?", de: "Welche spezialisierte Rolle bearbeitet einen Teil der Aufgabe?" },
+    "agents.compare.tool.k": { en: "TOOL / SKILL", de: "TOOL / SKILL" },
+    "agents.compare.tool.q": { en: "Which concrete capability gets used?", de: "Welche konkrete Fähigkeit wird benutzt?" },
+    "agents.compare.executor.k": { en: "EXECUTOR", de: "EXECUTOR" },
+    "agents.compare.executor.q": { en: "Which allowed step actually gets carried out?", de: "Welcher erlaubte Schritt wird tatsächlich ausgeführt?" },
+
+    "agents.why.eyebrow": { en: "WHY SPECIALIZE", de: "WARUM SPEZIALISIERUNG" },
+    "agents.why.title": { en: "Why specialized roles at all?", de: "Warum überhaupt spezialisierte Rollen?" },
+
+    "agents.path.eyebrow": { en: "THE REAL PATH", de: "DER REALE WEG" },
+    "agents.path.title": { en: "The real agent path.", de: "Der reale Agentenpfad." },
+    "agents.path.plain.title": { en: "IN PLAIN TERMS", de: "FÜR ALLE VERSTÄNDLICH" },
+    "agents.path.tech.title": { en: "TECHNICAL VIEW", de: "TECHNISCHE SICHT" },
+    "agents.path.tech.note": {
+      en: "Real module names from the current codebase (Core/intent_router.py, Core/multi_agent_research_report.py, Core/agent_planner.py, Core/plan_execution.py) — a simplified view of the actual call order, not the full source.",
+      de: "Echte Modulnamen aus dem aktuellen Code (Core/intent_router.py, Core/multi_agent_research_report.py, Core/agent_planner.py, Core/plan_execution.py) – eine vereinfachte Sicht auf die tatsächliche Aufrufreihenfolge, nicht der vollständige Quellcode."
+    },
+
+    "agents.roles.eyebrow": { en: "WHICH AGENTS EXIST TODAY", de: "WELCHE AGENTEN EXISTIEREN HEUTE" },
+    "agents.roles.title": { en: "Which agents exist today?", de: "Welche Agenten existieren heute?" },
+
+    "agents.multi.eyebrow": { en: "MULTI-AGENT AT J.A.R.V.I.S.", de: "MULTI-AGENT BEI J.A.R.V.I.S." },
+    "agents.multi.title": { en: "Several specialized roles are not the same as a general multi-agent system.", de: "Mehrere spezialisierte Rollen sind nicht dasselbe wie ein allgemeines Multi-Agent-System." },
+
+    "agents.back.eyebrow": { en: "BACK INTO THE NORMAL PLAN", de: "ZURÜCK IN DEN NORMALEN PLAN" },
+    "agents.back.title": { en: "From the agents back into the normal plan.", de: "Vom Agenten zurück in den normalen Plan." },
+
+    "agents.control.eyebrow": { en: "CONTROL & LIMITS", de: "KONTROLLE & GRENZEN" },
+    "agents.control.title": { en: "Control and limits.", de: "Kontrolle und Grenzen." },
+    "agents.control.quote": {
+      en: "Specialization is meant to make J.A.R.V.I.S. more targeted — not less controlled.",
+      de: "Spezialisierung soll J.A.R.V.I.S. gezielter machen – nicht unkontrollierter."
+    },
+
+    "agents.works.eyebrow": { en: "WHAT WORKS TODAY", de: "WAS FUNKTIONIERT HEUTE" },
+    "agents.works.title": { en: "What works today.", de: "Was funktioniert heute?" },
+
+    "agents.target.eyebrow": { en: "STILL TARGET ARCHITECTURE", de: "NOCH ZIELARCHITEKTUR" },
+    "agents.target.title": { en: "What is still target architecture?", de: "Was ist noch Zielarchitektur?" },
+
+    "agents.limits.eyebrow": { en: "KNOWN LIMITS", de: "BEKANNTE GRENZEN" },
+    "agents.limits.title": { en: "Known limits.", de: "Bekannte Grenzen." },
+
+    "agents.connections.eyebrow": { en: "CONNECTED TO", de: "VERBUNDEN MIT" },
+    "agents.connections.title": { en: "Connection to other PROJECT areas.", de: "Verbindung zu anderen PROJECT-Bereichen." },
+    "agents.connections.core": { en: "Runs the plan an agent role helped produce.", de: "Führt den Plan aus, an dem eine Agentenrolle mitgewirkt hat." },
+    "agents.connections.memory": { en: "Supplies context an agent role can use.", de: "Liefert Kontext, den eine Agentenrolle nutzen kann." },
+    "agents.connections.planning.t": { en: "PLANNING", de: "PLANUNG" },
+    "agents.connections.planning.q": { en: "Every agent role ends in the same kind of plan.", de: "Jede Agentenrolle mündet in dieselbe Art von Plan." },
+    "agents.connections.voice": { en: "A request can start as speech, before any role runs.", de: "Eine Anfrage kann als Sprache beginnen, bevor eine Rolle läuft." },
+    "agents.connections.vision.t": { en: "VISION", de: "VISION" },
+    "agents.connections.vision.q": { en: "A request can need a look at the screen, before any role runs.", de: "Eine Anfrage kann einen Blick auf den Bildschirm brauchen, bevor eine Rolle läuft." },
+    "agents.connections.hardware": { en: "Determines how fast a specialized role can work.", de: "Bestimmt, wie schnell eine spezialisierte Rolle arbeiten kann." },
+    "agents.connections.research.t": { en: "RESEARCH", de: "RECHERCHE" },
+    "agents.connections.research.q": { en: "Its own page is still to come.", de: "Eigene Seite folgt noch." },
+    "agents.connections.browser.t": { en: "BROWSER", de: "BROWSER" },
+    "agents.connections.browser.q": { en: "Its own page is still to come.", de: "Eigene Seite folgt noch." },
+    "agents.connections.tools.t": { en: "TOOLS", de: "WERKZEUGE" },
+    "agents.connections.tools.q": { en: "Its own page is still to come.", de: "Eigene Seite folgt noch." },
+    "agents.connections.automation.t": { en: "AUTOMATION", de: "AUTOMATISIERUNG" },
+    "agents.connections.automation.q": { en: "Its own page is still to come.", de: "Eigene Seite folgt noch." }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "Agents at J.A.R.V.I.S. — J.A.R.V.I.S. Project",
+    de: "Agenten bei J.A.R.V.I.S. — J.A.R.V.I.S. Project"
+  });
+
+  var introParagraphs = {
+    en: [
+      "A single language model can already answer a lot of things.",
+      "For more complex tasks, though, it helps to separate responsibilities clearly.",
+      "An agent at J.A.R.V.I.S. isn't simply a second AI running somewhere in parallel.",
+      "It takes on a defined task inside a controlled system."
+    ],
+    de: [
+      "Ein einzelnes Sprachmodell kann schon vieles beantworten.",
+      "Bei komplexeren Aufgaben hilft es aber, Verantwortlichkeiten klar zu trennen.",
+      "Ein Agent ist bei J.A.R.V.I.S. deshalb nicht einfach eine zweite KI, die irgendwo parallel losläuft.",
+      "Er übernimmt eine definierte Aufgabe innerhalb eines kontrollierten Systems."
+    ]
+  };
+
+  var whatParagraphs = {
+    en: [
+      "In everyday use, most requests go through the normal router and planner path — no agent role is involved at all.",
+      "For a narrow set of more complex requests, J.A.R.V.I.S. can hand part of the work to a specialized role instead: one focused on research, another focused on turning research into a document.",
+      "That role doesn't get broader permissions or a separate identity. It gets a narrower, clearer job than a general-purpose answer would require."
+    ],
+    de: [
+      "Im alltäglichen Gebrauch läuft der Großteil der Anfragen über den normalen Router-/Planner-Pfad – ganz ohne Agentenrolle.",
+      "Für eine eng begrenzte Gruppe komplexerer Anfragen kann J.A.R.V.I.S. stattdessen einen Teil der Arbeit an eine spezialisierte Rolle übergeben: eine auf Recherche fokussiert, eine weitere darauf, aus der Recherche ein Dokument zu machen.",
+      "Diese Rolle bekommt dadurch keine weitergehenden Rechte oder eine eigene Identität. Sie bekommt eine engere, klarere Aufgabe, als eine allgemeine Antwort sie bräuchte."
+    ]
+  };
+
+  var compareParagraphs = {
+    en: [
+      "These words get used loosely in AI discussions. At J.A.R.V.I.S. they map to distinct, real components — not interchangeable synonyms."
+    ],
+    de: [
+      "Diese Begriffe werden in KI-Diskussionen oft locker verwendet. Bei J.A.R.V.I.S. stehen sie für unterschiedliche, reale Komponenten – keine austauschbaren Synonyme."
+    ]
+  };
+  var compareItems = [
+    { k: 'agents.compare.router.k', q: 'agents.compare.router.q' },
+    { k: 'agents.compare.planner.k', q: 'agents.compare.planner.q' },
+    { k: 'agents.compare.agent.k', q: 'agents.compare.agent.q' },
+    { k: 'agents.compare.tool.k', q: 'agents.compare.tool.q' },
+    { k: 'agents.compare.executor.k', q: 'agents.compare.executor.q' }
+  ];
+
+  var whyParagraphs = {
+    en: [
+      "For a complex task, different roles can be genuinely useful: one part of the work benefits from a research-focused approach, another from turning results into a clear document.",
+      "Today that pattern exists in exactly one guarded shape: research first, then document — not a general toolbox of interchangeable roles.",
+      "After both roles have done their part, the result becomes one normal plan, handled the same way as any other plan at J.A.R.V.I.S."
+    ],
+    de: [
+      "Bei einer komplexen Aufgabe können unterschiedliche Rollen wirklich hilfreich sein: Ein Teil der Arbeit profitiert von einem rechercheorientierten Vorgehen, ein anderer davon, Ergebnisse in ein klares Dokument zu überführen.",
+      "Heute existiert dieses Muster in genau einer bewachten Form: erst Recherche, dann Dokument – kein allgemeiner Baukasten austauschbarer Rollen.",
+      "Nachdem beide Rollen ihren Teil erledigt haben, wird daraus ein ganz normaler Plan, der genauso behandelt wird wie jeder andere Plan bei J.A.R.V.I.S."
+    ]
+  };
+
+  var pathParagraphs = {
+    en: [
+      "This is the real, current path — checked against today's code before writing this page, not a historical or planned diagram."
+    ],
+    de: [
+      "Das ist der reale, aktuelle Weg – vor dem Schreiben dieser Seite gegen den heutigen Code geprüft, kein historisches oder geplantes Diagramm."
+    ]
+  };
+  var flowPlain = [
+    { en: "REQUEST", de: "ANFRAGE" },
+    { en: "ROUTER", de: "ROUTER" },
+    { en: "RESEARCH SPECIALIST", de: "RECHERCHE-SPEZIALIST" },
+    { en: "DOCUMENT SPECIALIST", de: "DOKUMENT-SPEZIALIST" },
+    { en: "ONE NORMAL PLAN", de: "EIN NORMALER PLAN" },
+    { en: "EXISTING EXECUTION PATH", de: "BESTEHENDER AUSFÜHRUNGSPFAD" }
+  ];
+  var flowTech = [
+    { en: "IntentRouter.handle()", de: "IntentRouter.handle()" },
+    { en: "MultiAgentResearchReport.select_request()", de: "MultiAgentResearchReport.select_request()" },
+    { en: "research_specialist_v1 → document_specialist_v1", de: "research_specialist_v1 → document_specialist_v1" },
+    { en: "AgentPlanner.create_plan_from_payload()", de: "AgentPlanner.create_plan_from_payload()" },
+    { en: "PlanExecutionCoordinator.execute_plan()", de: "PlanExecutionCoordinator.execute_plan()" }
+  ];
+  var pathParagraphs2 = {
+    en: [
+      "Agents don't form a second J.A.R.V.I.S. IntentRouter, AgentPlanner and PlanExecutionCoordinator are each set up once and used for every routed command, whether an agent role was involved or not."
+    ],
+    de: [
+      "Agenten bilden keinen zweiten J.A.R.V.I.S. IntentRouter, AgentPlanner und PlanExecutionCoordinator werden jeweils einmal eingerichtet und für jeden gerouteten Befehl verwendet – unabhängig davon, ob eine Agentenrolle beteiligt war."
+    ]
+  };
+
+  var rolesRows = [
+    { n: { en: 'Research Specialist', de: 'Recherche-Spezialist' }, sub: 'research_specialist_v1', s: { en: 'ACTIVE (narrow, guarded)', de: 'AKTIV (eng begrenzt, bewacht)' }, cls: '' },
+    { n: { en: 'Document Specialist', de: 'Dokument-Spezialist' }, sub: 'document_specialist_v1', s: { en: 'ACTIVE (narrow, guarded)', de: 'AKTIV (eng begrenzt, bewacht)' }, cls: '' },
+    { n: { en: 'General-purpose agent roles beyond these two', de: 'Allgemeine Agentenrollen über diese zwei hinaus' }, sub: '', s: { en: 'NOT PRESENT', de: 'NICHT VORHANDEN' }, cls: 'inactive' }
+  ];
+
+  var multiParagraphs = {
+    en: [
+      "Today there is a narrow, guarded two-role path for research → document. It exists, it's tested, and it's been verified against the live system.",
+      "That path always ends in exactly one AgentPlanner plan — not an open-ended team of agents negotiating among themselves.",
+      "A general, autonomous multi-agent orchestrator — one that could freely form and coordinate arbitrary agent teams — is target architecture. It is documented as not implemented, not a hidden current capability."
+    ],
+    de: [
+      "Heute gibt es einen schmalen, bewachten Zwei-Rollen-Pfad für Recherche → Dokument. Er existiert, ist getestet und gegen das reale System verifiziert.",
+      "Dieser Pfad mündet immer in genau einen AgentPlanner-Plan – kein offenes Team aus Agenten, das sich untereinander abstimmt.",
+      "Ein allgemeiner, autonomer Multi-Agent-Orchestrator – der frei beliebige Agententeams bilden und koordinieren könnte – ist Zielarchitektur. Er ist ausdrücklich als nicht implementiert dokumentiert, nicht als verborgene aktuelle Fähigkeit."
+    ]
+  };
+
+  var backParagraphs = {
+    en: [
+      "Once the research and document roles have done their part, their output doesn't get executed directly. It becomes a plan through the same AgentPlanner used everywhere else.",
+      "That plan then runs through the existing execution path — the same PlanExecutionCoordinator, the same SkillManager, the same approval rules as any other plan. Agents don't get a separate execution shortcut."
+    ],
+    de: [
+      "Sobald die Recherche- und Dokumentrolle ihren Teil erledigt haben, wird ihre Ausgabe nicht direkt ausgeführt. Sie wird zu einem Plan über denselben AgentPlanner, der überall sonst verwendet wird.",
+      "Dieser Plan läuft anschließend über den bestehenden Ausführungspfad – denselben PlanExecutionCoordinator, denselben SkillManager, dieselben Freigaberegeln wie jeder andere Plan. Agenten bekommen keine eigene Abkürzung bei der Ausführung."
+    ]
+  };
+
+  var controlParagraphs = {
+    en: [
+      "A role doesn't get to do more just because it's called an agent. Tool and skill execution stays governed by the same rules as any other plan, including the standard approval mechanism for actions that need it.",
+      "This isn't a claim of \"fully secure\" — it's a claim that agent work doesn't quietly skip the controls that already apply to everything else."
+    ],
+    de: [
+      "Eine Rolle darf nicht mehr, nur weil sie „Agent“ heißt. Tool- und Skill-Ausführung bleibt denselben Regeln unterworfen wie jeder andere Plan, einschließlich des normalen Freigabemechanismus für Aktionen, die ihn brauchen.",
+      "Das ist keine Behauptung von „vollständig sicher“ – sondern die Aussage, dass Agentenarbeit die ohnehin geltenden Kontrollen nicht stillschweigend umgeht."
+    ]
+  };
+
+  var worksRows = [
+    { n: { en: 'Narrow research → document agent path', de: 'Schmaler Recherche → Dokument-Agentenpfad' }, s: { en: 'ACTIVE', de: 'AKTIV' }, cls: '' },
+    { n: { en: 'AgentPlanner used for every plan, agent-originated or not', de: 'AgentPlanner für jeden Plan verwendet, ob agentenerzeugt oder nicht' }, s: { en: 'ACTIVE', de: 'AKTIV' }, cls: '' },
+    { n: { en: 'Agent-produced plans run through the existing execution path', de: 'Agentenerzeugte Pläne laufen über den bestehenden Ausführungspfad' }, s: { en: 'ACTIVE', de: 'AKTIV' }, cls: '' },
+    { n: { en: 'Controlled tool execution and approval for agent plans', de: 'Kontrollierte Toolausführung und Freigabe für Agentenpläne' }, s: { en: 'ACTIVE', de: 'AKTIV' }, cls: '' }
+  ];
+
+  var targetParagraphs = {
+    en: [
+      "The longer-term idea goes further: more specialized roles, better delegation between them, and a more general orchestrator.",
+      "That's not the same as today's productive path. Right now it's exactly two named roles, funneled into one plan — documented that way, not as a hidden broader system."
+    ],
+    de: [
+      "Die langfristige Idee geht weiter: mehr spezialisierte Rollen, bessere Delegation zwischen ihnen und ein allgemeinerer Orchestrator.",
+      "Das ist nicht dasselbe wie der heutige produktive Pfad. Aktuell sind es genau zwei benannte Rollen, die in einen Plan münden – so dokumentiert, nicht als verborgenes größeres System."
+    ]
+  };
+
+  var limitsItems = {
+    en: [
+      "Agent quality still depends on the underlying model, the same as everywhere else at J.A.R.V.I.S.",
+      "A specialized role can still produce a wrong or incomplete intermediate result.",
+      "Handing work from one role to the next creates an extra point where something can go wrong.",
+      "More agents don't automatically mean better results — they mean more handoffs.",
+      "General multi-agent orchestration isn't productive yet, so it can't be relied on today."
+    ],
+    de: [
+      "Die Qualität einer Agentenrolle hängt weiterhin vom zugrunde liegenden Modell ab, genau wie überall sonst bei J.A.R.V.I.S.",
+      "Eine spezialisierte Rolle kann weiterhin ein falsches oder unvollständiges Zwischenergebnis liefern.",
+      "Die Übergabe von einer Rolle zur nächsten schafft eine zusätzliche Stelle, an der etwas schiefgehen kann.",
+      "Mehr Agenten bedeuten nicht automatisch bessere Ergebnisse – sie bedeuten mehr Übergaben.",
+      "Allgemeine Multi-Agent-Orchestrierung ist noch nicht produktiv, darauf lässt sich heute also nicht verlassen."
+    ]
+  };
+  var limitsNote = {
+    en: "More agents solve a problem about as reliably as more meetings do. Sometimes they help. Sometimes you just end up with more participants afterward.",
+    de: "Mehr Agenten lösen ein Problem ungefähr so zuverlässig wie mehr Meetings. Manchmal helfen sie. Manchmal hat man danach nur mehr Beteiligte."
+  };
+
+  function renderAgents() {
+    var lang = SiteChrome.getLang();
+
+    SiteChrome.renderParagraphs(document.getElementById('agents-intro-body'), introParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('agents-what-body'), whatParagraphs);
+
+    SiteChrome.renderParagraphs(document.getElementById('agents-compare-body'), compareParagraphs);
+    var compareList = document.getElementById('agents-compare-list');
+    if (compareList) {
+      compareList.innerHTML = '';
+      compareItems.forEach(function (item) {
+        var div = document.createElement('div');
+        div.className = 'role-item';
+        var k = document.createElement('div');
+        k.className = 'k';
+        k.textContent = SiteChrome.t(item.k);
+        var q = document.createElement('div');
+        q.className = 'q';
+        q.textContent = SiteChrome.t(item.q);
+        div.appendChild(k);
+        div.appendChild(q);
+        compareList.appendChild(div);
+      });
+    }
+
+    SiteChrome.renderParagraphs(document.getElementById('agents-why-body'), whyParagraphs);
+
+    SiteChrome.renderParagraphs(document.getElementById('agents-path-body'), pathParagraphs);
+    SiteChrome.renderNodeFlow(document.getElementById('agents-flow-plain'), flowPlain);
+    SiteChrome.renderNodeFlow(document.getElementById('agents-flow-tech'), flowTech);
+    SiteChrome.renderParagraphs(document.getElementById('agents-path-body-2'), pathParagraphs2);
+
+    var rolesList = document.getElementById('agents-roles-list');
+    if (rolesList) {
+      rolesList.innerHTML = '';
+      rolesRows.forEach(function (row) {
+        var div = document.createElement('div');
+        div.className = 'row';
+        var name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = row.n[lang];
+        if (row.sub) {
+          var sub = document.createElement('span');
+          sub.className = 'sub';
+          sub.textContent = row.sub;
+          name.appendChild(sub);
+        }
+        var tag = document.createElement('span');
+        tag.className = 'tag' + (row.cls ? ' ' + row.cls : '');
+        tag.textContent = row.s[lang];
+        div.appendChild(name);
+        div.appendChild(tag);
+        rolesList.appendChild(div);
+      });
+    }
+
+    SiteChrome.renderParagraphs(document.getElementById('agents-multi-body'), multiParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('agents-back-body'), backParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('agents-control-body'), controlParagraphs);
+
+    var worksList = document.getElementById('agents-works-list');
+    if (worksList) {
+      worksList.innerHTML = '';
+      worksRows.forEach(function (row) {
+        var div = document.createElement('div');
+        div.className = 'row';
+        var name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = row.n[lang];
+        var tag = document.createElement('span');
+        tag.className = 'tag' + (row.cls ? ' ' + row.cls : '');
+        tag.textContent = row.s[lang];
+        div.appendChild(name);
+        div.appendChild(tag);
+        worksList.appendChild(div);
+      });
+    }
+
+    SiteChrome.renderParagraphs(document.getElementById('agents-target-body'), targetParagraphs);
+
+    var limitsList = document.getElementById('agents-limits-list');
+    if (limitsList) {
+      limitsList.innerHTML = '';
+      limitsItems[lang].forEach(function (text) {
+        var li = document.createElement('li');
+        li.textContent = text;
+        limitsList.appendChild(li);
+      });
+    }
+    var limitsNoteEl = document.getElementById('agents-limits-note');
+    if (limitsNoteEl) { limitsNoteEl.textContent = limitsNote[lang]; }
+  }
+
+  SiteChrome.applyStaticStrings();
+  renderAgents();
+  SiteChrome.onLanguageChange(renderAgents);
+
+  SiteChrome.initMobileNav();
+  SiteChrome.initProjectNav('agents', '../');
+  SiteChrome.initAuthAndAsk();
+</script>
+</body>
+</html>

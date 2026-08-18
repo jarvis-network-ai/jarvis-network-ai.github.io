@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Research at J.A.R.V.I.S. — J.A.R.V.I.S. Project</title>
+<link rel="stylesheet" href="../../foundation.css" />
+<link rel="stylesheet" href="../../site-chrome.css" />
+<style>
+  /* RECHERCHE-page-only styles. Shared chrome comes from ../../site-chrome.css
+     - see WEBSITE_ARCHITECTURE_V1.md, Redesign-Schritt 4K. Second page of
+     "HANDELN & RECHERCHIEREN" - own character: an information chain
+     (query -> sources -> reading -> synthesis -> answer), a redactional/
+     document feel, not a search-engine clone or spider-web graphic
+     (Abschnitt 24 of the 4K-Auftrag). */
+
+  .research-hero { padding: 1.6rem 0 clamp(2.6rem, 5vw, 4rem); }
+  .research-hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    letter-spacing: 0.01em;
+    max-width: 20ch;
+    margin-top: 0.6rem;
+  }
+  .research-lede {
+    margin-top: 0.9rem;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: var(--ice);
+    font-weight: 500;
+  }
+  .research-hero .body-copy { margin-top: 1.2rem; }
+
+  .body-copy { max-width: 64ch; }
+  .body-copy p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+  .body-copy p:last-child { margin-bottom: 0; }
+
+  .research-section h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    max-width: 34ch;
+    margin-bottom: 1.2rem;
+  }
+  .research-section h3 {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan-dim);
+    margin: 0 0 0.9rem;
+  }
+
+  .def-list { margin: 1.2rem 0 0; padding: 0; list-style: none; max-width: 66ch; }
+  .def-list li { padding: 0.9rem 0; border-bottom: 1px solid var(--line); }
+  .def-list li:last-child { border-bottom: none; }
+  .def-list .term {
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-dim);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+  .def-list .desc { color: var(--muted); font-size: 0.94rem; line-height: 1.6; }
+
+  .plain-list { margin: 0.8rem 0 0; padding-left: 1.2rem; color: var(--muted); font-size: 0.95rem; line-height: 1.8; max-width: 64ch; }
+  .plain-list li { margin-bottom: 0.3rem; }
+
+  .research-quote {
+    margin: 1.6rem 0;
+    padding: 1.1rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    color: var(--ice);
+    font-size: 1.02rem;
+    line-height: 1.6;
+    max-width: 52ch;
+  }
+
+  .research-flows { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2.2rem; margin-top: 1.8rem; }
+  @media (max-width: 900px) { .research-flows { grid-template-columns: minmax(0, 1fr); } }
+  .research-flow-panel { border: 1px solid var(--line); border-radius: 12px; padding: clamp(1.4rem, 3vw, 1.8rem); background: var(--panel); }
+  .research-flow-panel h3 { margin-bottom: 1.1rem; }
+  .research-flow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+  .research-flow .arch-node { font-size: 0.8rem; white-space: normal; max-width: 100%; overflow-wrap: break-word; }
+  .research-flow .arch-arrow { display: block; padding: 0.26rem 0 0.26rem 1.1rem; transform: rotate(90deg); transform-origin: left center; }
+  .research-flow-note { margin-top: 1rem; font-size: 0.8rem; color: var(--muted); font-style: italic; }
+
+  /* Source field grid (Section 10: Quellen & Nachvollziehbarkeit) -
+     small labeled tags, a document/citation feel, not search cards. */
+  .source-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.7rem;
+    margin-top: 1.2rem;
+  }
+  .source-field {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    padding: 0.8rem 1rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    color: var(--cyan-dim);
+  }
+  .source-field span { display: block; margin-top: 0.35rem; color: var(--muted); font-size: 0.78rem; font-family: inherit; letter-spacing: 0; }
+
+  .status-rows { margin: 1rem 0 0; max-width: 66ch; }
+  .status-rows .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .status-rows .row:last-child { border-bottom: none; }
+  .status-rows .name { color: var(--white); font-size: 0.94rem; }
+  .status-rows .tag {
+    font-family: ui-monospace, monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+    color: var(--cyan);
+    white-space: nowrap;
+    text-align: right;
+  }
+  .status-rows .tag.secondary { color: var(--st-experimental); }
+  .status-rows .tag.inactive { color: var(--muted); }
+  @media (max-width: 480px) {
+    .status-rows .row { flex-wrap: wrap; }
+    .status-rows .tag { text-align: left; }
+  }
+
+  .research-network-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+  }
+  .research-network-link {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .research-network-link:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+  .research-network-link .t { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--cyan); }
+  .research-network-link .q { margin-top: 0.4rem; color: var(--white); font-size: 0.9rem; }
+  .research-network-link.future { opacity: 0.7; cursor: default; }
+  .research-network-link.future .t { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="../../" data-i18n="nav.home">HOME</a>
+      <a href="../" class="current" data-i18n="nav.project">PROJECT</a>
+      <a href="../../signal/" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="../../lab/" data-i18n="nav.lab">LAB</a>
+      <a href="../../discuss/" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="../../ask/" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap breadcrumb">
+    <a href="../../" data-i18n="nav.home">HOME</a><span class="sep">/</span><a href="../" data-i18n="nav.project">PROJECT</a><span class="sep">/</span><span class="current" data-i18n="research.breadcrumb">RESEARCH</span>
+  </div>
+
+  <section class="block research-hero">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="project.eyebrow">J.A.R.V.I.S. PROJECT</span>
+      <h1 data-i18n="research.h1">Research at J.A.R.V.I.S.</h1>
+      <p class="research-lede" data-i18n="research.lede">A search engine finds links. Research needs more.</p>
+      <div class="body-copy" id="research-intro-body"></div>
+      <nav class="pnav" id="project-nav" aria-label="Project-Navigation"></nav>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-notsearch">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.notsearch.eyebrow">SEARCH ≠ RESEARCH</span>
+      <h2 data-i18n="research.notsearch.title">Search is not research.</h2>
+      <div class="body-copy" id="research-notsearch-body"></div>
+      <blockquote class="research-quote" data-i18n="research.notsearch.quote">Ten search results aren't an answer yet. Sometimes they're just ten new things you first have to read.</blockquote>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-when">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.when.eyebrow">WHEN THE WEB IS NEEDED</span>
+      <h2 data-i18n="research.when.title">When does J.A.R.V.I.S. need the web?</h2>
+      <div class="body-copy" id="research-when-body"></div>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-path">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.path.eyebrow">THE REAL PATH</span>
+      <h2 data-i18n="research.path.title">The real research path.</h2>
+      <div class="body-copy" id="research-path-body"></div>
+      <div class="research-flows">
+        <div class="research-flow-panel">
+          <h3 data-i18n="research.path.plain.title">IN PLAIN TERMS</h3>
+          <div class="research-flow" id="research-flow-plain" aria-hidden="true"></div>
+        </div>
+        <div class="research-flow-panel">
+          <h3 data-i18n="research.path.tech.title">TECHNICAL VIEW</h3>
+          <div class="research-flow" id="research-flow-tech" aria-hidden="true"></div>
+          <p class="research-flow-note" data-i18n="research.path.tech.note">Real module names from the current codebase (Core/web_search_service.py, Core/web_provider.py, Core/web_summary.py) — a simplified view of the actual call order, not the full source.</p>
+        </div>
+      </div>
+      <div class="body-copy" id="research-path-body-2" style="margin-top:1rem;"></div>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-sources">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.sources.eyebrow">FINDING SOURCES</span>
+      <h2 data-i18n="research.sources.title">Finding sources.</h2>
+      <div class="body-copy" id="research-sources-body"></div>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-reading">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.reading.eyebrow">READING SOURCES</span>
+      <h2 data-i18n="research.reading.title">Reading sources.</h2>
+      <div class="body-copy" id="research-reading-body"></div>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-synthesis">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.synthesis.eyebrow">BRINGING INFORMATION TOGETHER</span>
+      <h2 data-i18n="research.synthesis.title">Bringing information together.</h2>
+      <div class="body-copy" id="research-synthesis-body"></div>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-engine">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.engine.eyebrow">RESEARCH ENGINE AND BROWSER</span>
+      <h2 data-i18n="research.engine.title">Research engine and browser.</h2>
+      <div class="body-copy" id="research-engine-body"></div>
+      <div class="def-list" id="research-engine-list"></div>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-agents">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.agents.eyebrow">AGENTS IN RESEARCH</span>
+      <h2 data-i18n="research.agents.title">Agents in research.</h2>
+      <div class="body-copy" id="research-agents-body"></div>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-citations">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.citations.eyebrow">SOURCES &amp; TRACEABILITY</span>
+      <h2 data-i18n="research.citations.title">Sources and traceability.</h2>
+      <div class="body-copy" id="research-citations-body"></div>
+      <div class="source-fields" id="research-citations-fields"></div>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-works">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.works.eyebrow">WHAT WORKS TODAY</span>
+      <h2 data-i18n="research.works.title">What works today.</h2>
+      <div class="status-rows" id="research-works-list"></div>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-errors">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.errors.eyebrow">FAILURE CASES</span>
+      <h2 data-i18n="research.errors.title">Failure cases and limits.</h2>
+      <div class="body-copy" id="research-errors-body"></div>
+      <ul class="plain-list" id="research-errors-list"></ul>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-inactive">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.inactive.eyebrow">NOT ACTIVE YET</span>
+      <h2 data-i18n="research.inactive.title">What is not active yet?</h2>
+      <div class="status-rows" id="research-inactive-list"></div>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-limits">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.limits.eyebrow">KNOWN LIMITS</span>
+      <h2 data-i18n="research.limits.title">Known limits.</h2>
+      <ul class="plain-list" id="research-limits-list"></ul>
+      <p class="body-copy" id="research-limits-note" style="margin-top:1rem;"></p>
+    </div>
+  </section>
+
+  <section class="block research-section" id="research-connections" style="border-bottom:none;">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="research.connections.eyebrow">CONNECTED TO</span>
+      <h2 data-i18n="research.connections.title">Connection to other PROJECT areas.</h2>
+      <div class="research-network-links">
+        <a class="research-network-link" href="../kern/">
+          <div class="t mono" data-i18n="project.nav.core">CORE</div>
+          <div class="q" data-i18n="research.connections.core">Decides when a request needs the web at all.</div>
+        </a>
+        <a class="research-network-link" href="../gedaechtnis/">
+          <div class="t mono" data-i18n="project.nav.memory">MEMORY</div>
+          <div class="q" data-i18n="research.connections.memory">Supplies context a research request can use.</div>
+        </a>
+        <a class="research-network-link" href="../planung/">
+          <div class="t mono" data-i18n="research.connections.planning.t">PLANNING</div>
+          <div class="q" data-i18n="research.connections.planning.q">Research results can become part of a plan.</div>
+        </a>
+        <a class="research-network-link" href="../agenten/">
+          <div class="t mono" data-i18n="research.connections.agents.t">AGENTS</div>
+          <div class="q" data-i18n="research.connections.agents.q">The research and document roles reuse this exact path.</div>
+        </a>
+        <a class="research-network-link" href="../sprache/">
+          <div class="t mono" data-i18n="project.nav.voice">VOICE</div>
+          <div class="q" data-i18n="research.connections.voice">A research request can start as speech.</div>
+        </a>
+        <a class="research-network-link" href="../vision/">
+          <div class="t mono" data-i18n="research.connections.vision.t">VISION</div>
+          <div class="q" data-i18n="research.connections.vision.q">A different, separate way to bring in outside information.</div>
+        </a>
+        <a class="research-network-link" href="../hardware/">
+          <div class="t mono" data-i18n="project.nav.hardware">HARDWARE</div>
+          <div class="q" data-i18n="research.connections.hardware">Determines how fast synthesis can run locally.</div>
+        </a>
+        <div class="research-network-link future">
+          <div class="t mono" data-i18n="research.connections.browser.t">BROWSER</div>
+          <div class="q" data-i18n="research.connections.browser.q">Its own page is still to come.</div>
+        </div>
+        <div class="research-network-link future">
+          <div class="t mono" data-i18n="research.connections.tools.t">TOOLS</div>
+          <div class="q" data-i18n="research.connections.tools.q">Its own page is still to come.</div>
+        </div>
+        <div class="research-network-link future">
+          <div class="t mono" data-i18n="research.connections.automation.t">AUTOMATION</div>
+          <div class="q" data-i18n="research.connections.automation.q">Its own page is still to come.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="../" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="../../signal/" data-i18n="footer.news">AI Signal</a>
+        <a href="../../lab/" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="../../discuss/" data-i18n="footer.discussions">Discussions</a>
+        <a href="../../discuss/" data-i18n="footer.models">Models</a>
+        <a href="../../discuss/" data-i18n="footer.ideas">Ideas</a>
+        <a href="../../discuss/" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="../../#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../../#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../../#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+  </div>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+    </div>
+  </div>
+
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+</div>
+
+<script src="../../site-chrome.js"></script>
+<script src="../../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // RECHERCHE-page-only content: strings, flow data, and the small
+  // renderResearch() function. Everything global comes from
+  // ../../site-chrome.js - see Redesign-Schritt 4K.
+  //
+  // Fact-checking note: verified against current Core/agent_decision.py,
+  // Core/intent_router.py, Core/web_search_service.py, Core/web_provider.py,
+  // Core/web_summary.py, Core/web_models.py, Core/gecko_research_engine.py,
+  // Core/multi_agent_research_report.py, Skills/browser_skill.py, root
+  // ROADMAP.md and HANDOFF.md before writing this page (read-only, no
+  // Core/Research/Gecko file changed).
+  //
+  // Real, wired path: IntentRouter can decide decision_type="needs_web".
+  // The web.search tool calls WebSearchService.search(), which uses
+  // create_web_search_provider() - default and only real provider is
+  // Brave (BraveSearchProvider, endpoint api.search.brave.com), API key
+  // via the capability-issued secret vault, never read directly. Brave
+  // returns search-result snippets/metadata, not full page bodies. A
+  // second, narrowly-scoped mechanism, gecko_research_engine.run_domain_research,
+  // is used ONLY when the query contains exactly one explicit
+  // "site:<domain>" filter - it opens that domain via the Gecko-backed
+  // BrowserSkill (browser.open_url/read_page_text/list_page_links),
+  // reads real page text, and follows up to 2 same-domain links one hop
+  // deep, falling back to Brave on any failure (never raises). Ordinary
+  // multi-result queries stay on Brave snippets - Gecko is a bounded
+  // fetch/read mechanism the research engine can call, not the default
+  // research engine itself. Results are normalized into WebSource
+  // objects (source_id, title, url, domain, snippet, published_at,
+  // retrieved_at, trust_score, relevance_score, freshness_score) and
+  // passed to compose_short_answer() (Core/web_summary.py), which
+  // synthesizes a short answer via a local Ollama model - on failure it
+  // silently falls back to the detailed summary text, and the result
+  // carries an answer_synthesized flag. multi_agent_research_report.py
+  // requires the SAME needs_web decision and the SAME web.search tool
+  // result (tool_name=="web.search", action=="search") before running
+  // research_specialist_v1 -> document_specialist_v1 -> one AgentPlanner
+  // plan - it does not have separate search logic.
+  //
+  // Explicitly NOT described as active: no second/fallback search
+  // provider exists (no DuckDuckGo/SerpAPI - misconfiguration hard-fails
+  // instead of silently switching providers). No claim that J.A.R.V.I.S.
+  // reads every web page in full - only Brave snippets by default, full
+  // text only for the narrow single-domain Gecko case. No "answered_in"
+  // field exists in code - not described. No automatic fact-checking of
+  // sources is claimed. No unbounded/continuous/parallel-agent deep
+  // research is claimed - the agent path is the same fixed two-role path
+  // documented on the AGENTS page. Real, cited error codes are used
+  // (web_configuration_missing, web_timeout, web_search_failed,
+  // web_invalid_response, web_result_empty, web_content_too_large,
+  // web_authentication_failed, web_provider_unavailable, web_fetch_failed,
+  // web_redirect_blocked, web_sensitive_query_blocked,
+  // provider_url_blocked) - no invented error categories.
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "project.eyebrow": { en: "J.A.R.V.I.S. PROJECT", de: "J.A.R.V.I.S. PROJECT" },
+    "project.nav.core": { en: "CORE", de: "KERN" },
+    "project.nav.memory": { en: "MEMORY", de: "GEDÄCHTNIS" },
+    "project.nav.voice": { en: "VOICE", de: "SPRACHE" },
+    "project.nav.hardware": { en: "HARDWARE", de: "HARDWARE" },
+    "research.breadcrumb": { en: "RESEARCH", de: "RECHERCHE" },
+    "research.h1": { en: "Research at J.A.R.V.I.S.", de: "Recherche mit J.A.R.V.I.S." },
+    "research.lede": { en: "A search engine finds links. Research needs more.", de: "Eine Suchmaschine findet Links. Recherche braucht mehr." },
+
+    "research.notsearch.eyebrow": { en: "SEARCH ≠ RESEARCH", de: "SUCHE ≠ RECHERCHE" },
+    "research.notsearch.title": { en: "Search is not research.", de: "Suche ist nicht Recherche." },
+    "research.notsearch.quote": {
+      en: "Ten search results aren't an answer yet. Sometimes they're just ten new things you first have to read.",
+      de: "Zehn Suchtreffer sind noch keine Antwort. Manchmal sind sie nur zehn neue Dinge, die man erst einmal lesen muss."
+    },
+
+    "research.when.eyebrow": { en: "WHEN THE WEB IS NEEDED", de: "WANN DAS WEB GEBRAUCHT WIRD" },
+    "research.when.title": { en: "When does J.A.R.V.I.S. need the web?", de: "Wann braucht J.A.R.V.I.S. das Web?" },
+
+    "research.path.eyebrow": { en: "THE REAL PATH", de: "DER REALE WEG" },
+    "research.path.title": { en: "The real research path.", de: "Der reale Recherchepfad." },
+    "research.path.plain.title": { en: "IN PLAIN TERMS", de: "FÜR ALLE VERSTÄNDLICH" },
+    "research.path.tech.title": { en: "TECHNICAL VIEW", de: "TECHNISCHE SICHT" },
+    "research.path.tech.note": {
+      en: "Real module names from the current codebase (Core/web_search_service.py, Core/web_provider.py, Core/web_summary.py) — a simplified view of the actual call order, not the full source.",
+      de: "Echte Modulnamen aus dem aktuellen Code (Core/web_search_service.py, Core/web_provider.py, Core/web_summary.py) – eine vereinfachte Sicht auf die tatsächliche Aufrufreihenfolge, nicht der vollständige Quellcode."
+    },
+
+    "research.sources.eyebrow": { en: "FINDING SOURCES", de: "QUELLEN FINDEN" },
+    "research.sources.title": { en: "Finding sources.", de: "Quellen finden." },
+
+    "research.reading.eyebrow": { en: "READING SOURCES", de: "QUELLEN LESEN" },
+    "research.reading.title": { en: "Reading sources.", de: "Quellen lesen." },
+
+    "research.synthesis.eyebrow": { en: "BRINGING INFORMATION TOGETHER", de: "INFORMATIONEN ZUSAMMENFÜHREN" },
+    "research.synthesis.title": { en: "Bringing information together.", de: "Informationen zusammenführen." },
+
+    "research.engine.eyebrow": { en: "RESEARCH ENGINE AND BROWSER", de: "RESEARCH ENGINE UND BROWSER" },
+    "research.engine.title": { en: "Research engine and browser.", de: "Research Engine und Browser." },
+    "research.engine.engine.t": { en: "RESEARCH ENGINE", de: "RESEARCH ENGINE" },
+    "research.engine.engine.d": { en: "Coordinates research: which sources, which content, how it's put together.", de: "Koordiniert die Recherche: welche Quellen, welche Inhalte, wie sie zusammengeführt werden." },
+    "research.engine.browser.t": { en: "BROWSER (GECKO)", de: "BROWSER (GECKO)" },
+    "research.engine.browser.d": { en: "The technical way a specific web page actually gets opened and read, when that's needed.", de: "Der technische Weg, über den eine konkrete Webseite tatsächlich geöffnet und gelesen wird, wenn das nötig ist." },
+
+    "research.agents.eyebrow": { en: "AGENTS IN RESEARCH", de: "AGENTEN IN DER RECHERCHE" },
+    "research.agents.title": { en: "Agents in research.", de: "Agenten in der Recherche." },
+
+    "research.citations.eyebrow": { en: "SOURCES & TRACEABILITY", de: "QUELLEN & NACHVOLLZIEHBARKEIT" },
+    "research.citations.title": { en: "Sources and traceability.", de: "Quellen und Nachvollziehbarkeit." },
+    "research.citations.title.f": { en: "TITLE", de: "TITEL" },
+    "research.citations.url.f": { en: "URL", de: "URL" },
+    "research.citations.domain.f": { en: "DOMAIN", de: "DOMAIN" },
+    "research.citations.snippet.f": { en: "SNIPPET", de: "AUSSCHNITT" },
+    "research.citations.published.f": { en: "PUBLISHED / RETRIEVED", de: "VERÖFFENTLICHT / ABGERUFEN" },
+    "research.citations.trust.f": { en: "TRUST / RELEVANCE SCORE", de: "TRUST-/RELEVANZ-SCORE" },
+
+    "research.works.eyebrow": { en: "WHAT WORKS TODAY", de: "WAS FUNKTIONIERT HEUTE" },
+    "research.works.title": { en: "What works today.", de: "Was funktioniert heute?" },
+
+    "research.errors.eyebrow": { en: "FAILURE CASES", de: "FEHLERFÄLLE" },
+    "research.errors.title": { en: "Failure cases and limits.", de: "Fehlerfälle und Grenzen." },
+
+    "research.inactive.eyebrow": { en: "NOT ACTIVE YET", de: "NOCH NICHT AKTIV" },
+    "research.inactive.title": { en: "What is not active yet?", de: "Was ist noch nicht aktiv?" },
+
+    "research.limits.eyebrow": { en: "KNOWN LIMITS", de: "BEKANNTE GRENZEN" },
+    "research.limits.title": { en: "Known limits.", de: "Bekannte Grenzen." },
+
+    "research.connections.eyebrow": { en: "CONNECTED TO", de: "VERBUNDEN MIT" },
+    "research.connections.title": { en: "Connection to other PROJECT areas.", de: "Verbindung zu anderen PROJECT-Bereichen." },
+    "research.connections.core": { en: "Decides when a request needs the web at all.", de: "Entscheidet, ob eine Anfrage überhaupt das Web braucht." },
+    "research.connections.memory": { en: "Supplies context a research request can use.", de: "Liefert Kontext, den eine Rechercheanfrage nutzen kann." },
+    "research.connections.planning.t": { en: "PLANNING", de: "PLANUNG" },
+    "research.connections.planning.q": { en: "Research results can become part of a plan.", de: "Rechercheergebnisse können Teil eines Plans werden." },
+    "research.connections.agents.t": { en: "AGENTS", de: "AGENTEN" },
+    "research.connections.agents.q": { en: "The research and document roles reuse this exact path.", de: "Die Recherche- und Dokumentrolle nutzen genau diesen Pfad mit." },
+    "research.connections.voice": { en: "A research request can start as speech.", de: "Eine Rechercheanfrage kann als Sprache beginnen." },
+    "research.connections.vision.t": { en: "VISION", de: "VISION" },
+    "research.connections.vision.q": { en: "A different, separate way to bring in outside information.", de: "Ein anderer, eigenständiger Weg, externe Informationen einzubringen." },
+    "research.connections.hardware": { en: "Determines how fast synthesis can run locally.", de: "Bestimmt, wie schnell die Synthese lokal laufen kann." },
+    "research.connections.browser.t": { en: "BROWSER", de: "BROWSER" },
+    "research.connections.browser.q": { en: "Its own page is still to come.", de: "Eigene Seite folgt noch." },
+    "research.connections.tools.t": { en: "TOOLS", de: "WERKZEUGE" },
+    "research.connections.tools.q": { en: "Its own page is still to come.", de: "Eigene Seite folgt noch." },
+    "research.connections.automation.t": { en: "AUTOMATION", de: "AUTOMATISIERUNG" },
+    "research.connections.automation.q": { en: "Its own page is still to come.", de: "Eigene Seite folgt noch." }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "Research at J.A.R.V.I.S. — J.A.R.V.I.S. Project",
+    de: "Recherche mit J.A.R.V.I.S. — J.A.R.V.I.S. Project"
+  });
+
+  var introParagraphs = {
+    en: [
+      "A web search (Search) can very quickly show where an answer might be.",
+      "That alone doesn't tell J.A.R.V.I.S. whether a source is relevant (Fetch/Read), what actually stands in it, or how several pieces of information fit together (Research).",
+      "Research is what happens after plain search stops."
+    ],
+    de: [
+      "Eine Websuche (Search) kann sehr schnell zeigen, wo eine Antwort stehen könnte.",
+      "Damit weiß J.A.R.V.I.S. aber noch nicht, ob eine Quelle relevant ist (Fetch/Lesen), was tatsächlich darin steht, oder wie mehrere Informationen zusammenpassen (Recherche).",
+      "Recherche beginnt dort, wo die reine Suche aufhört."
+    ]
+  };
+
+  var notsearchParagraphs = {
+    en: [
+      "A search result is a list of possibly relevant pages — titles, URLs, short snippets. Nothing more.",
+      "Turning that into research takes several more steps: reading what's actually in a source, comparing information across sources, and putting a traceable answer together — not just handing back the list."
+    ],
+    de: [
+      "Ein Suchtreffer ist eine Liste möglicherweise relevanter Seiten – Titel, URLs, kurze Ausschnitte. Nicht mehr.",
+      "Daraus wird Recherche erst durch weitere Schritte: lesen, was tatsächlich in einer Quelle steht, Informationen über mehrere Quellen vergleichen, und daraus eine nachvollziehbare Antwort zusammensetzen – nicht einfach die Liste zurückgeben."
+    ]
+  };
+
+  var whenParagraphs = {
+    en: [
+      "The router can decide that a request needs the web (a decision type called needs_web) instead of answering from what J.A.R.V.I.S. already knows.",
+      "Not every question needs this. A lot of requests get a normal answer without ever touching a search provider — needs_web is for cases where current or external information is actually required.",
+      "A needs_web decision doesn't automatically mean a full multi-source research pass runs — it means the web.search tool becomes available for this request."
+    ],
+    de: [
+      "Der Router kann entscheiden, dass eine Anfrage das Web braucht (ein Entscheidungstyp namens needs_web), statt aus dem zu antworten, was J.A.R.V.I.S. bereits weiß.",
+      "Nicht jede Frage braucht das. Viele Anfragen bekommen eine normale Antwort, ohne je einen Suchprovider zu berühren – needs_web ist für Fälle gedacht, in denen tatsächlich aktuelle oder externe Informationen gebraucht werden.",
+      "Eine needs_web-Entscheidung bedeutet nicht automatisch, dass ein vollständiger Mehrquellen-Recherchedurchlauf startet – sie bedeutet, dass für diese Anfrage das web.search-Tool verfügbar wird."
+    ]
+  };
+
+  var pathParagraphs = {
+    en: [
+      "This is the real, current path — checked against today's code before writing this page, not a historical or planned diagram."
+    ],
+    de: [
+      "Das ist der reale, aktuelle Weg – vor dem Schreiben dieser Seite gegen den heutigen Code geprüft, kein historisches oder geplantes Diagramm."
+    ]
+  };
+  var flowPlain = [
+    { en: "QUESTION", de: "FRAGE" },
+    { en: "WEB NEEDED?", de: "WEB ERFORDERLICH?" },
+    { en: "SEARCH", de: "SUCHEN" },
+    { en: "SELECT SOURCES", de: "QUELLEN AUSWÄHLEN" },
+    { en: "READ CONTENT", de: "INHALTE LESEN" },
+    { en: "SYNTHESIZE ANSWER", de: "ANTWORT SYNTHETISIEREN" },
+    { en: "SOURCES", de: "QUELLEN" }
+  ];
+  var flowTech = [
+    { en: "IntentRouter: decision_type=\"needs_web\"", de: "IntentRouter: decision_type=\"needs_web\"" },
+    { en: "web.search tool → WebSearchService.search()", de: "web.search-Tool → WebSearchService.search()" },
+    { en: "BraveSearchProvider (default) / gecko_research_engine (site: only)", de: "BraveSearchProvider (Standard) / gecko_research_engine (nur bei site:)" },
+    { en: "normalize → WebSource objects", de: "normalisieren → WebSource-Objekte" },
+    { en: "compose_short_answer() (local Ollama)", de: "compose_short_answer() (lokales Ollama)" },
+    { en: "JarvisResult (sources, answer_synthesized)", de: "JarvisResult (sources, answer_synthesized)" }
+  ];
+  var pathParagraphs2 = {
+    en: [
+      "Research doesn't create a second J.A.R.V.I.S. web.search is one tool among others, reached through the same router/tool path as everything else."
+    ],
+    de: [
+      "Recherche erzeugt keinen zweiten J.A.R.V.I.S. web.search ist ein Tool unter anderen, erreicht über denselben Router-/Tool-Pfad wie alles andere."
+    ]
+  };
+
+  var sourcesParagraphs = {
+    en: [
+      "Today there is exactly one active search provider: Brave. It's the default and the only one with real, working code behind it — there is no second provider that quietly takes over if Brave has a problem. If the configuration is wrong, the request fails clearly instead of silently switching to something else.",
+      "Search results from Brave are titles, URLs and short snippets, not full page content — that distinction matters for the next step."
+    ],
+    de: [
+      "Heute gibt es genau einen aktiven Suchprovider: Brave. Er ist der Standard und der einzige mit echtem, funktionierendem Code dahinter – es gibt keinen zweiten Provider, der bei einem Brave-Problem leise übernimmt. Ist die Konfiguration falsch, schlägt die Anfrage klar fehl, statt still auf etwas anderes umzuschalten.",
+      "Suchergebnisse von Brave sind Titel, URLs und kurze Ausschnitte, kein vollständiger Seiteninhalt – dieser Unterschied ist für den nächsten Schritt wichtig."
+    ]
+  };
+
+  var readingParagraphs = {
+    en: [
+      "By default, J.A.R.V.I.S. works from the short snippets Brave already returns with a search — it doesn't automatically open and read every result in full.",
+      "There's one narrow exception: when a query names exactly one specific domain, a separate, bounded mechanism can actually open that domain through the browser layer, read its real page text, and follow a couple of links one step further on the same domain. That fetch/read step has real size limits and a timeout, and falls back to a normal Brave search if it doesn't work.",
+      "J.A.R.V.I.S. doesn't read every website — the default is working from search snippets, with full-page reading limited to that one specific, bounded case."
+    ],
+    de: [
+      "Im Regelfall arbeitet J.A.R.V.I.S. mit den kurzen Ausschnitten, die Brave bei einer Suche ohnehin mitliefert – nicht jedes Ergebnis wird automatisch vollständig geöffnet und gelesen.",
+      "Es gibt eine eng begrenzte Ausnahme: Nennt eine Anfrage genau eine bestimmte Domain, kann ein separater, eng begrenzter Mechanismus diese Domain tatsächlich über die Browser-Ebene öffnen, ihren echten Seitentext lesen und ein paar Links auf derselben Domain einen Schritt weiterverfolgen. Dieser Lese-Schritt hat reale Größenlimits und ein Timeout und fällt bei einem Problem auf eine normale Brave-Suche zurück.",
+      "J.A.R.V.I.S. liest nicht jede Website – Standard ist die Arbeit mit Suchausschnitten, vollständiges Seitenlesen bleibt auf diesen einen konkreten, eng begrenzten Fall beschränkt."
+    ]
+  };
+
+  var synthesisParagraphs = {
+    en: [
+      "Once sources are found (and, in the narrow case, read), a synthesis step turns them into a short, readable answer — running on a local model, not a cloud service.",
+      "If that synthesis step fails or times out, J.A.R.V.I.S. doesn't fail silently: it falls back to a more detailed, structured summary of what it found instead.",
+      "Several sources can help build a more complete picture. They don't automatically prove anything is true — a source can itself be wrong, outdated, or contradict another source, and J.A.R.V.I.S. doesn't run an automatic truth check on them."
+    ],
+    de: [
+      "Sobald Quellen gefunden (und im eng begrenzten Fall gelesen) sind, macht ein Synthese-Schritt daraus eine kurze, lesbare Antwort – ausgeführt auf einem lokalen Modell, nicht in der Cloud.",
+      "Schlägt dieser Synthese-Schritt fehl oder läuft in ein Timeout, scheitert J.A.R.V.I.S. nicht stillschweigend: Es fällt stattdessen auf eine ausführlichere, strukturierte Zusammenfassung dessen zurück, was gefunden wurde.",
+      "Mehrere Quellen können helfen, ein vollständigeres Bild zu bekommen. Sie beweisen dadurch nicht automatisch, dass etwas wahr ist – eine Quelle kann selbst falsch, veraltet sein oder einer anderen widersprechen, und J.A.R.V.I.S. führt daran keine automatische Wahrheitsprüfung durch."
+    ]
+  };
+
+  var engineParagraphs = {
+    en: [
+      "These two things are easy to mix up, so they get kept separate here on purpose."
+    ],
+    de: [
+      "Diese beiden Dinge lassen sich leicht verwechseln, deshalb werden sie hier bewusst getrennt gehalten."
+    ]
+  };
+  var engineItems = [
+    { term: 'research.engine.engine.t', desc: 'research.engine.engine.d' },
+    { term: 'research.engine.browser.t', desc: 'research.engine.browser.d' }
+  ];
+
+  var agentsParagraphs = {
+    en: [
+      "The specialized research and document roles described on the Agents page don't have their own, separate way of searching the web — they use this exact same web.search path and the exact same result data, then hand the outcome to the research and document roles in turn.",
+      "Not every web question runs through that agent path. It exists for a narrow, guarded case; an ordinary request that needs the web usually just uses web.search directly, without involving a specialized role at all."
+    ],
+    de: [
+      "Die auf der Agenten-Seite beschriebenen spezialisierten Recherche- und Dokumentrollen haben keinen eigenen, separaten Weg, das Web zu durchsuchen – sie nutzen genau diesen web.search-Pfad und genau dieselben Ergebnisdaten und geben das Ergebnis anschließend an die Recherche- und Dokumentrolle weiter.",
+      "Nicht jede Webfrage läuft über diesen Agentenpfad. Er existiert für einen eng begrenzten, bewachten Fall; eine normale Anfrage, die das Web braucht, nutzt meist einfach web.search direkt, ganz ohne eine spezialisierte Rolle."
+    ]
+  };
+
+  var citationsParagraphs = {
+    en: [
+      "Only fields that are actually present in today's data are shown here — nothing invented."
+    ],
+    de: [
+      "Hier stehen nur Felder, die im heutigen Datenmodell tatsächlich vorhanden sind – nichts erfunden."
+    ]
+  };
+  var citationFields = [
+    'research.citations.title.f', 'research.citations.url.f', 'research.citations.domain.f',
+    'research.citations.snippet.f', 'research.citations.published.f', 'research.citations.trust.f'
+  ];
+
+  var worksRows = [
+    { n: { en: 'needs_web routing', de: 'needs_web-Routing' }, s: { en: 'ACTIVE', de: 'AKTIV' }, cls: '' },
+    { n: { en: 'Web search via Brave', de: 'Websuche über Brave' }, s: { en: 'ACTIVE', de: 'AKTIV' }, cls: '' },
+    { n: { en: 'Bounded single-domain reading via the browser layer', de: 'Eng begrenztes Einzeldomain-Lesen über die Browser-Ebene' }, s: { en: 'ACTIVE (narrow)', de: 'AKTIV (eng begrenzt)' }, cls: 'secondary' },
+    { n: { en: 'Local answer synthesis with structured fallback', de: 'Lokale Antwortsynthese mit strukturiertem Fallback' }, s: { en: 'ACTIVE', de: 'AKTIV' }, cls: '' },
+    { n: { en: 'Sources returned with title, URL, domain, snippet', de: 'Quellen mit Titel, URL, Domain, Ausschnitt' }, s: { en: 'ACTIVE', de: 'AKTIV' }, cls: '' },
+    { n: { en: 'Specialized research → document agent path', de: 'Spezialisierter Recherche → Dokument-Agentenpfad' }, s: { en: 'ACTIVE (narrow)', de: 'AKTIV (eng begrenzt)' }, cls: 'secondary' }
+  ];
+
+  var errorsParagraphs = {
+    en: [
+      "Research can fail in real, specific ways — this page can be honest about that instead of implying it always works."
+    ],
+    de: [
+      "Recherche kann auf reale, konkrete Arten fehlschlagen – diese Seite darf ehrlich damit umgehen, statt zu unterstellen, dass es immer funktioniert."
+    ]
+  };
+  var errorsItems = {
+    en: [
+      "Missing or wrong search configuration — the request fails clearly instead of guessing.",
+      "Timeouts, when a provider or a page takes too long to answer.",
+      "Provider errors, including authentication problems or a provider being temporarily unavailable.",
+      "Empty search results, when nothing relevant comes back.",
+      "Content that's too large, cut off by a real size limit rather than read in full.",
+      "Pages that redirect in a way that isn't allowed, or a URL that gets blocked as unsafe before it's even fetched."
+    ],
+    de: [
+      "Fehlende oder falsche Suchkonfiguration – die Anfrage scheitert klar, statt zu raten.",
+      "Timeouts, wenn ein Provider oder eine Seite zu lange für eine Antwort braucht.",
+      "Provider-Fehler, einschließlich Authentifizierungsproblemen oder einem vorübergehend nicht erreichbaren Provider.",
+      "Leere Suchergebnisse, wenn nichts Relevantes zurückkommt.",
+      "Zu große Inhalte, durch ein reales Größenlimit abgeschnitten statt vollständig gelesen.",
+      "Seiten, die auf eine nicht erlaubte Weise weiterleiten, oder eine URL, die bereits vor dem Abruf als unsicher blockiert wird."
+    ]
+  };
+
+  var inactiveRows = [
+    { n: { en: 'General autonomous deep research', de: 'Allgemeines autonomes Deep Research' }, s: { en: 'NOT ACTIVE', de: 'NICHT AKTIV' }, cls: 'inactive' },
+    { n: { en: 'Second/fallback search provider', de: 'Zweiter Such-/Fallback-Provider' }, s: { en: 'NOT PRESENT', de: 'NICHT VORHANDEN' }, cls: 'inactive' },
+    { n: { en: 'Unlimited or arbitrarily parallel research agents', de: 'Unbegrenzte oder beliebig parallele Recherche-Agenten' }, s: { en: 'NOT ACTIVE', de: 'NICHT AKTIV' }, cls: 'inactive' },
+    { n: { en: 'Automatic fact-checking of sources', de: 'Automatische Faktenprüfung von Quellen' }, s: { en: 'NOT ACTIVE', de: 'NICHT AKTIV' }, cls: 'inactive' },
+    { n: { en: 'General browser access to reading any website in full', de: 'Allgemeiner Browserzugriff zum vollständigen Lesen jeder Website' }, s: { en: 'NOT ACTIVE', de: 'NICHT AKTIV' }, cls: 'inactive' }
+  ];
+
+  var limitsItems = {
+    en: [
+      "A search can fail to find a good source at all.",
+      "A source can be technically unreadable, blocked, or fail to load.",
+      "A source can simply be wrong.",
+      "Content can be too large and get cut off before it's fully considered.",
+      "The model can misjudge or misread information, even from a correct source.",
+      "Current facts can have already changed since a source was published."
+    ],
+    de: [
+      "Eine Suche kann keine gute Quelle finden.",
+      "Eine Quelle kann technisch nicht lesbar, blockiert sein oder nicht laden.",
+      "Eine Quelle kann schlicht falsch sein.",
+      "Inhalte können zu groß sein und abgeschnitten werden, bevor sie vollständig berücksichtigt wurden.",
+      "Das Modell kann Informationen falsch einordnen oder falsch lesen, selbst bei einer korrekten Quelle.",
+      "Aktuelle Fakten können sich bereits geändert haben, seit eine Quelle veröffentlicht wurde."
+    ]
+  };
+  var limitsNote = {
+    en: "A source makes an answer more traceable. It doesn't automatically make it right.",
+    de: "Eine Quelle macht eine Antwort nachvollziehbarer. Sie macht sie nicht automatisch richtig."
+  };
+
+  function renderResearch() {
+    var lang = SiteChrome.getLang();
+
+    SiteChrome.renderParagraphs(document.getElementById('research-intro-body'), introParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('research-notsearch-body'), notsearchParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('research-when-body'), whenParagraphs);
+
+    SiteChrome.renderParagraphs(document.getElementById('research-path-body'), pathParagraphs);
+    SiteChrome.renderNodeFlow(document.getElementById('research-flow-plain'), flowPlain);
+    SiteChrome.renderNodeFlow(document.getElementById('research-flow-tech'), flowTech);
+    SiteChrome.renderParagraphs(document.getElementById('research-path-body-2'), pathParagraphs2);
+
+    SiteChrome.renderParagraphs(document.getElementById('research-sources-body'), sourcesParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('research-reading-body'), readingParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('research-synthesis-body'), synthesisParagraphs);
+
+    SiteChrome.renderParagraphs(document.getElementById('research-engine-body'), engineParagraphs);
+    var engineList = document.getElementById('research-engine-list');
+    if (engineList) {
+      engineList.innerHTML = '';
+      engineItems.forEach(function (item) {
+        var li = document.createElement('div');
+        var term = document.createElement('span');
+        term.className = 'term';
+        term.style.display = 'block';
+        term.style.fontFamily = 'ui-monospace, monospace';
+        term.style.fontSize = '0.76rem';
+        term.style.letterSpacing = '0.08em';
+        term.style.color = 'var(--cyan-dim)';
+        term.style.marginBottom = '0.35rem';
+        term.textContent = SiteChrome.t(item.term);
+        var desc = document.createElement('span');
+        desc.style.color = 'var(--muted)';
+        desc.style.fontSize = '0.94rem';
+        desc.style.lineHeight = '1.6';
+        desc.textContent = SiteChrome.t(item.desc);
+        li.style.padding = '0.9rem 0';
+        li.style.borderBottom = '1px solid var(--line)';
+        li.appendChild(term);
+        li.appendChild(desc);
+        engineList.appendChild(li);
+      });
+    }
+
+    SiteChrome.renderParagraphs(document.getElementById('research-agents-body'), agentsParagraphs);
+
+    SiteChrome.renderParagraphs(document.getElementById('research-citations-body'), citationsParagraphs);
+    var fieldsList = document.getElementById('research-citations-fields');
+    if (fieldsList) {
+      fieldsList.innerHTML = '';
+      citationFields.forEach(function (key) {
+        var div = document.createElement('div');
+        div.className = 'source-field';
+        div.textContent = SiteChrome.t(key);
+        fieldsList.appendChild(div);
+      });
+    }
+
+    var worksList = document.getElementById('research-works-list');
+    if (worksList) {
+      worksList.innerHTML = '';
+      worksRows.forEach(function (row) {
+        var div = document.createElement('div');
+        div.className = 'row';
+        var name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = row.n[lang];
+        var tag = document.createElement('span');
+        tag.className = 'tag' + (row.cls ? ' ' + row.cls : '');
+        tag.textContent = row.s[lang];
+        div.appendChild(name);
+        div.appendChild(tag);
+        worksList.appendChild(div);
+      });
+    }
+
+    SiteChrome.renderParagraphs(document.getElementById('research-errors-body'), errorsParagraphs);
+    var errorsList = document.getElementById('research-errors-list');
+    if (errorsList) {
+      errorsList.innerHTML = '';
+      errorsItems[lang].forEach(function (text) {
+        var li = document.createElement('li');
+        li.textContent = text;
+        errorsList.appendChild(li);
+      });
+    }
+
+    var inactiveList = document.getElementById('research-inactive-list');
+    if (inactiveList) {
+      inactiveList.innerHTML = '';
+      inactiveRows.forEach(function (row) {
+        var div = document.createElement('div');
+        div.className = 'row';
+        var name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = row.n[lang];
+        var tag = document.createElement('span');
+        tag.className = 'tag' + (row.cls ? ' ' + row.cls : '');
+        tag.textContent = row.s[lang];
+        div.appendChild(name);
+        div.appendChild(tag);
+        inactiveList.appendChild(div);
+      });
+    }
+
+    var limitsList = document.getElementById('research-limits-list');
+    if (limitsList) {
+      limitsList.innerHTML = '';
+      limitsItems[lang].forEach(function (text) {
+        var li = document.createElement('li');
+        li.textContent = text;
+        limitsList.appendChild(li);
+      });
+    }
+    var limitsNoteEl = document.getElementById('research-limits-note');
+    if (limitsNoteEl) { limitsNoteEl.textContent = limitsNote[lang]; }
+  }
+
+  SiteChrome.applyStaticStrings();
+  renderResearch();
+  SiteChrome.onLanguageChange(renderResearch);
+
+  SiteChrome.initMobileNav();
+  SiteChrome.initProjectNav('research', '../');
+  SiteChrome.initAuthAndAsk();
+</script>
+</body>
+</html>

@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Story of J.A.R.V.I.S. — J.A.R.V.I.S. Project</title>
+<link rel="stylesheet" href="../../foundation.css" />
+<link rel="stylesheet" href="../../site-chrome.css" />
+<style>
+  /* GESCHICHTE-page-only styles. Shared chrome (nav, breadcrumb,
+     grouped project navigation, login panel, Ask JARVIS panel, footer, section
+     shells, node-flow primitive, focus-visible) comes from
+     ../../site-chrome.css - see WEBSITE_ARCHITECTURE_V1.md, Abschnitt
+     14/Redesign-Schritt 4B. This page is deliberately a bit warmer and
+     more editorial than the PROJECT overview (Abschnitt 19 of the
+     4B-Auftrag), but stays within the same JARVIS visual family - no
+     new colors, no card wall, no neon timeline.
+
+     A quiet touch of warmth is achieved purely with existing tokens -
+     a very soft --deep-blue glow behind the hero, nothing new. */
+
+  .story-hero { padding: 1.6rem 0 clamp(2.6rem, 5vw, 4rem); }
+  .story-hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    letter-spacing: 0.01em;
+    max-width: 20ch;
+    margin-top: 0.6rem;
+  }
+  .story-lede {
+    margin-top: 1.1rem;
+    font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+    color: var(--ice);
+    font-weight: 500;
+    max-width: 34ch;
+  }
+  .story-hero .body-copy { margin-top: 1.4rem; }
+
+  .body-copy { max-width: 62ch; }
+  .body-copy p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+  .body-copy p:last-child { margin-bottom: 0; }
+
+  /* Chapters: one continuous read, not a card wall (Abschnitt 4/19 of
+     the Auftrag). The left border is the "dezente Timeline" - purely
+     decorative, chapter order is already conveyed by heading text and
+     the visible chapter number, so it stays meaningful with the line
+     removed (Abschnitt 24, accessibility). */
+  .chapter .wrap { max-width: 780px; }
+  .chapter-inner {
+    border-left: 2px solid var(--line);
+    padding-left: clamp(1rem, 3vw, 1.6rem);
+  }
+  .chapter-num {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    color: var(--cyan-dim);
+    margin-bottom: 0.7rem;
+  }
+  .chapter h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    max-width: 26ch;
+    margin-bottom: 1.2rem;
+  }
+  .chapter .body-copy { margin-top: 0; }
+
+  .pullquote {
+    margin: 1.8rem 0 0.4rem;
+    padding-left: 1.1rem;
+    border-left: 3px solid var(--cyan-dim);
+    font-size: clamp(1.1rem, 2.2vw, 1.3rem);
+    line-height: 1.55;
+    color: var(--ice);
+    font-style: normal;
+    max-width: 56ch;
+  }
+
+  /* Concept-flow (Kapitel 8) reuses the shared .arch-node/.arch-arrow
+     primitive from site-chrome.css, wrapped as a plain flex row so it
+     never forces horizontal scroll on narrow viewports (Abschnitt 25). */
+  .story-concept-flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0;
+    margin-top: 1.6rem;
+  }
+  .story-concept-flow .arch-arrow { transform: rotate(90deg) translateY(0); }
+  @media (min-width: 560px) {
+    .story-concept-flow { flex-direction: row; align-items: center; }
+    .story-concept-flow .arch-arrow { transform: none; }
+  }
+  .story-concept-flow { flex-direction: column; align-items: flex-start; }
+
+  /* "Versuch/Problem/Ursache/Lösung/Status" case elements - the
+     redaktionelle "was wirklich passiert ist"-Momente (Abschnitt 15).
+     Deliberately plain key/value rows, not another card grid. */
+  .case-card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: linear-gradient(160deg, rgba(73,211,224,0.04), var(--panel) 65%);
+    padding: clamp(1.4rem, 3vw, 2rem);
+    max-width: 620px;
+  }
+  .case-row {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 0.4rem 1rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .case-row:last-of-type { border-bottom: none; }
+  .case-row .k {
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    color: var(--cyan-dim);
+    padding-top: 0.15rem;
+  }
+  .case-row .v { color: var(--white); font-size: 0.92rem; line-height: 1.5; }
+  .case-note {
+    margin: 1rem 0 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+    font-style: italic;
+  }
+  @media (max-width: 480px) {
+    .case-row { grid-template-columns: 1fr; gap: 0.15rem; }
+  }
+
+  .story-close {
+    margin-top: 1.6rem;
+    font-size: 1.05rem;
+    color: var(--ice);
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="../../" data-i18n="nav.home">HOME</a>
+      <a href="../" class="current" data-i18n="nav.project">PROJECT</a>
+      <a href="../../signal/" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="../../lab/" data-i18n="nav.lab">LAB</a>
+      <a href="../../discuss/" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="../../ask/" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap breadcrumb">
+    <a href="../../" data-i18n="nav.home">HOME</a><span class="sep">/</span><a href="../" data-i18n="nav.project">PROJECT</a><span class="sep">/</span><span class="current" data-i18n="story.breadcrumb">STORY</span>
+  </div>
+
+  <section class="block story-hero">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="project.eyebrow">J.A.R.V.I.S. PROJECT</span>
+      <h1 data-i18n="story.h1">The story of J.A.R.V.I.S.</h1>
+      <p class="story-lede" data-i18n="story.lede">It was only supposed to be an assistant.</p>
+      <div class="body-copy" id="story-intro-body"></div>
+      <nav class="pnav" id="project-nav" aria-label="Project-Navigation"></nav>
+    </div>
+  </section>
+
+  <section class="block chapter" id="ch-1">
+    <div class="wrap"><div class="chapter-inner">
+      <div class="chapter-num">01</div>
+      <h2 data-i18n="story.ch1.title">It was only supposed to be an assistant.</h2>
+      <div class="body-copy" id="ch1-body"></div>
+    </div></div>
+  </section>
+
+  <section class="block chapter" id="ch-2">
+    <div class="wrap"><div class="chapter-inner">
+      <div class="chapter-num">02</div>
+      <h2 data-i18n="story.ch2.title">Talking isn't enough.</h2>
+      <div class="body-copy" id="ch2-body"></div>
+      <blockquote class="pullquote" data-i18n="story.quote.buttons">A visible button can come together in a few minutes. The question of who's allowed to press it, what's allowed to happen afterward, what must never happen, and how I can prove that's actually being enforced — that can take considerably longer.</blockquote>
+    </div></div>
+  </section>
+
+  <section class="block chapter" id="ch-3">
+    <div class="wrap"><div class="chapter-inner">
+      <div class="chapter-num">03</div>
+      <h2 data-i18n="story.ch3.title">Then J.A.R.V.I.S. got eyes and a browser.</h2>
+      <div class="body-copy" id="ch3-body"></div>
+    </div></div>
+  </section>
+
+  <section class="block chapter" id="ch-4">
+    <div class="wrap"><div class="chapter-inner">
+      <div class="chapter-num">04</div>
+      <h2 data-i18n="story.ch4.title">Local is fascinating. Local is also local.</h2>
+      <div class="body-copy" id="ch4-body"></div>
+    </div></div>
+  </section>
+
+  <section class="block chapter" id="ch-5">
+    <div class="wrap"><div class="chapter-inner">
+      <div class="chapter-num">05</div>
+      <h2 data-i18n="story.ch5.title">J.A.R.V.I.S. learns to research.</h2>
+      <div class="body-copy" id="ch5-body"></div>
+    </div></div>
+  </section>
+
+  <section class="block case-block" id="case-provider">
+    <div class="wrap">
+      <div class="case-card">
+        <div class="case-row"><span class="k" data-i18n="story.case.attempt">ATTEMPT</span><span class="v" data-i18n="story.case2.attempt">Web research through an external search provider</span></div>
+        <div class="case-row"><span class="k" data-i18n="story.case.problem">PROBLEM</span><span class="v" data-i18n="story.case2.problem">Provider technically reachable — but the results were barely usable for the actual question</span></div>
+        <div class="case-row"><span class="k" data-i18n="story.case.cause">CAUSE</span><span class="v" data-i18n="story.case2.cause">A general web search alone isn't enough when a specific source needs checking</span></div>
+        <div class="case-row"><span class="k" data-i18n="story.case.fix">FIX</span><span class="v" data-i18n="story.case2.fix">A small, deliberately bounded domain-research loop now complements the general search</span></div>
+        <div class="case-row"><span class="k" data-i18n="story.case.status">STATUS</span><span class="v" data-i18n="story.case2.status">In production — confirmed with a real end-to-end research run</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block chapter" id="ch-6">
+    <div class="wrap"><div class="chapter-inner">
+      <div class="chapter-num">06</div>
+      <h2 data-i18n="story.ch6.title">From an assistant to agents.</h2>
+      <div class="body-copy" id="ch6-body"></div>
+    </div></div>
+  </section>
+
+  <section class="block chapter" id="ch-7">
+    <div class="wrap"><div class="chapter-inner">
+      <div class="chapter-num">07</div>
+      <h2 data-i18n="story.ch7.title">Then came the Network.</h2>
+      <div class="body-copy" id="ch7-body"></div>
+    </div></div>
+  </section>
+
+  <section class="block case-block" id="case-network">
+    <div class="wrap">
+      <div class="case-card">
+        <div class="case-row"><span class="k" data-i18n="story.case.attempt">ATTEMPT</span><span class="v" data-i18n="story.case1.attempt">A Network conversation with the local J.A.R.V.I.S.</span></div>
+        <div class="case-row"><span class="k" data-i18n="story.case.problem">PROBLEM</span><span class="v" data-i18n="story.case1.problem">A question about AI agents suddenly got an answer about daylight saving time.</span></div>
+        <div class="case-row"><span class="k" data-i18n="story.case.cause">CAUSE</span><span class="v" data-i18n="story.case1.cause">Conversation context was being shared between Network and local dialogs.</span></div>
+        <div class="case-row"><span class="k" data-i18n="story.case.fix">FIX</span><span class="v" data-i18n="story.case1.fix">Network turns were fully isolated from each other.</span></div>
+        <div class="case-row"><span class="k" data-i18n="story.case.status">STATUS</span><span class="v" data-i18n="story.case1.status">Fixed.</span></div>
+        <p class="case-note" data-i18n="story.case1.note">The local model can still say nonsense, though. That's a different problem.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block chapter" id="ch-8">
+    <div class="wrap"><div class="chapter-inner">
+      <div class="chapter-num">08</div>
+      <h2 data-i18n="story.ch8.title">From experiment to knowledge.</h2>
+      <div class="body-copy" id="ch8-body"></div>
+      <div class="story-concept-flow" id="ch8-flow" aria-hidden="true"></div>
+      <div class="body-copy" id="ch8-body-2" style="margin-top:1.6rem;"></div>
+    </div></div>
+  </section>
+
+  <section class="block chapter" id="ch-9">
+    <div class="wrap"><div class="chapter-inner">
+      <div class="chapter-num">09</div>
+      <h2 data-i18n="story.ch9.title">Where J.A.R.V.I.S. stands today.</h2>
+      <div class="body-copy" id="ch9-body"></div>
+    </div></div>
+  </section>
+
+  <section class="block chapter" id="ch-10" style="border-bottom:none;">
+    <div class="wrap"><div class="chapter-inner">
+      <div class="chapter-num">10</div>
+      <h2 data-i18n="story.ch10.title">What comes next.</h2>
+      <div class="body-copy" id="ch10-body"></div>
+      <p class="story-close" data-i18n="story.close">And if you feel like it: you're welcome to come along for the ride.</p>
+    </div></div>
+  </section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="../" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="../../signal/" data-i18n="footer.news">AI Signal</a>
+        <a href="../../lab/" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="../../discuss/" data-i18n="footer.discussions">Discussions</a>
+        <a href="../../discuss/" data-i18n="footer.models">Models</a>
+        <a href="../../discuss/" data-i18n="footer.ideas">Ideas</a>
+        <a href="../../discuss/" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="../../#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../../#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../../#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+  </div>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+    </div>
+  </div>
+
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+</div>
+
+<script src="../../site-chrome.js"></script>
+<script src="../../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // GESCHICHTE-page-only content: strings and the small renderStory()
+  // function. Everything global (i18n engine, mobile nav, login/logout,
+  // Ask JARVIS wiring, Supabase config/REST helpers) comes from
+  // ../../site-chrome.js - see Redesign-Schritt 4B. This page loads no
+  // Observation/Reaction code and no HOME-rendering code - it never
+  // needed either.
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "project.eyebrow": { en: "J.A.R.V.I.S. PROJECT", de: "J.A.R.V.I.S. PROJECT" },
+    "project.nav.overview": { en: "OVERVIEW", de: "ÜBERSICHT" },
+    "project.nav.story": { en: "STORY", de: "GESCHICHTE" },
+    "project.nav.core": { en: "CORE", de: "KERN" },
+    "project.nav.memory": { en: "MEMORY", de: "GEDÄCHTNIS" },
+    "project.nav.planning": { en: "PLANNING", de: "PLANUNG" },
+    "project.nav.hardware": { en: "HARDWARE", de: "HARDWARE" },
+    "story.breadcrumb": { en: "STORY", de: "GESCHICHTE" },
+    "story.h1": { en: "The story of J.A.R.V.I.S.", de: "Die Geschichte von J.A.R.V.I.S." },
+    "story.lede": { en: "It was only supposed to be an assistant.", de: "Eigentlich sollte es nur ein Assistent werden." },
+
+    "story.ch1.title": { en: "It was only supposed to be an assistant.", de: "Eigentlich sollte es nur ein Assistent werden." },
+    "story.ch2.title": { en: "Talking isn't enough.", de: "Reden reicht nicht." },
+    "story.ch3.title": { en: "Then J.A.R.V.I.S. got eyes and a browser.", de: "Dann bekam J.A.R.V.I.S. Augen und einen Browser." },
+    "story.ch4.title": { en: "Local is fascinating. Local is also local.", de: "Lokal ist faszinierend. Lokal ist aber auch lokal." },
+    "story.ch5.title": { en: "J.A.R.V.I.S. learns to research.", de: "J.A.R.V.I.S. lernt zu recherchieren." },
+    "story.ch6.title": { en: "From an assistant to agents.", de: "Aus einem Assistenten werden Agenten." },
+    "story.ch7.title": { en: "Then came the Network.", de: "Dann kam das Network." },
+    "story.ch8.title": { en: "From experiment to knowledge.", de: "Vom Experiment zum Wissen." },
+    "story.ch9.title": { en: "Where J.A.R.V.I.S. stands today.", de: "Wo J.A.R.V.I.S. heute steht." },
+    "story.ch10.title": { en: "What comes next.", de: "Was als Nächstes kommt." },
+
+    "story.quote.buttons": {
+      en: "A visible button can come together in a few minutes. The question of who's allowed to press it, what's allowed to happen afterward, what must never happen, and how I can prove that's actually being enforced — that can take considerably longer.",
+      de: "Ein sichtbarer Button kann in wenigen Minuten entstehen. Die Frage, wer ihn drücken darf, was danach passieren darf, was niemals passieren darf und wie ich beweisen kann, dass genau das eingehalten wird, kann erheblich länger dauern."
+    },
+
+    "story.case.attempt": { en: "ATTEMPT", de: "VERSUCH" },
+    "story.case.problem": { en: "PROBLEM", de: "PROBLEM" },
+    "story.case.cause": { en: "CAUSE", de: "URSACHE" },
+    "story.case.fix": { en: "FIX", de: "LÖSUNG" },
+    "story.case.status": { en: "STATUS", de: "STATUS" },
+
+    "story.case1.attempt": { en: "A Network conversation with the local J.A.R.V.I.S.", de: "Network-Dialog mit lokalem J.A.R.V.I.S." },
+    "story.case1.problem": { en: "A question about AI agents suddenly got an answer about daylight saving time.", de: "Eine Frage über KI-Agenten bekam plötzlich eine Antwort über Sommerzeit." },
+    "story.case1.cause": { en: "Conversation context was being shared between Network and local dialogs.", de: "Gesprächskontext wurde zwischen Network- und lokalen Dialogen geteilt." },
+    "story.case1.fix": { en: "Network turns were fully isolated from each other.", de: "Network-Turns wurden vollständig voneinander isoliert." },
+    "story.case1.status": { en: "Fixed.", de: "Fehler behoben." },
+    "story.case1.note": { en: "The local model can still say nonsense, though. That's a different problem.", de: "Das lokale Modell kann trotzdem noch Unsinn erzählen. Das ist ein anderes Problem." },
+
+    "story.case2.attempt": { en: "Web research through an external search provider", de: "Web-Recherche über einen externen Such-Provider" },
+    "story.case2.problem": { en: "Provider technically reachable — but the results were barely usable for the actual question", de: "Provider technisch erreichbar – aber die Ergebnisse für die eigentliche Frage kaum brauchbar" },
+    "story.case2.cause": { en: "A general web search alone isn't enough when a specific source needs checking", de: "Eine allgemeine Websuche allein reicht nicht, wenn eine konkrete Quelle geprüft werden muss" },
+    "story.case2.fix": { en: "A small, deliberately bounded domain-research loop now complements the general search", de: "Eine eigene, bewusst begrenzte Domain-Recherche ergänzt seither die allgemeine Suche" },
+    "story.case2.status": { en: "In production — confirmed with a real end-to-end research run", de: "In Betrieb – echte Ende-zu-Ende-Recherche bestätigt" },
+
+    "story.close": { en: "And if you feel like it: you're welcome to come along for the ride.", de: "Und wenn ihr Lust habt: könnt ihr mich auf diesem Weg begleiten." }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "The Story of J.A.R.V.I.S. — J.A.R.V.I.S. Project",
+    de: "Die Geschichte von J.A.R.V.I.S. — J.A.R.V.I.S. Project"
+  });
+
+  var storyIntroParagraphs = {
+    en: [
+      "At least, that was the plan.",
+      "I wanted to build a personal AI assistant that doesn't just answer, but actually gets things done.",
+      "Over time, that idea grew into memory, tools, a browser, research, agents, and eventually a whole Network.",
+      "In between: experiments, wrong decisions, surprising successes, and a few problems whose final solution turned out to be a lot simpler than the road that led there."
+    ],
+    de: [
+      "Zumindest war das der Plan.",
+      "Ich wollte einen persönlichen KI-Assistenten bauen, der nicht nur antwortet, sondern tatsächlich etwas kann.",
+      "Aus dieser Idee wurden mit der Zeit Gedächtnis, Werkzeuge, Browser, Recherche, Agenten und schließlich ein ganzes Network.",
+      "Dazwischen liegen Experimente, Fehlentscheidungen, überraschende Erfolge und einige Probleme, bei denen die Lösung am Ende deutlich einfacher war als der Weg dorthin."
+    ]
+  };
+
+  var ch1Paragraphs = {
+    en: [
+      "The original idea was fairly small.",
+      "At least, that's what I thought.",
+      "I wanted a personal AI assistant.",
+      "Not just a chat window.",
+      "A system that understands, remembers, uses tools, and actually gets things done.",
+      "So basically: J.A.R.V.I.S.",
+      "Sounded doable.",
+      "It wasn't."
+    ],
+    de: [
+      "Die ursprüngliche Idee war überschaubar.",
+      "Zumindest dachte ich das.",
+      "Ich wollte einen persönlichen KI-Assistenten.",
+      "Nicht einfach ein Chatfenster.",
+      "Ein System, das versteht, sich erinnert, Werkzeuge benutzt und tatsächlich etwas erledigen kann.",
+      "Also im Grunde: J.A.R.V.I.S.",
+      "Klang machbar.",
+      "War es nicht."
+    ]
+  };
+
+  var ch2Paragraphs = {
+    en: [
+      "It became clear very quickly: a language model alone is not yet J.A.R.V.I.S.",
+      "A real system needs memory.",
+      "It has to understand state. Make decisions. Choose tools. Recognize mistakes.",
+      "And just as important: it has to know when it's better to do nothing at all.",
+      "So, one by one, the core system, memory, planning and tools were added.",
+      "With every new piece, J.A.R.V.I.S. could do more.",
+      "Unfortunately, that also gave him more ways to get things wrong.",
+      "That ratio has stayed remarkably constant."
+    ],
+    de: [
+      "Sehr schnell wurde klar: Ein Sprachmodell allein ist noch kein J.A.R.V.I.S.",
+      "Ein echtes System braucht Gedächtnis.",
+      "Es muss Zustände verstehen. Entscheidungen treffen. Werkzeuge auswählen. Fehler erkennen.",
+      "Und mindestens genauso wichtig: Es muss wissen, wann es besser ist, nichts zu tun.",
+      "Also kamen nach und nach Kernsystem, Gedächtnis, Planung und Werkzeuge hinzu.",
+      "Mit jedem neuen Baustein konnte J.A.R.V.I.S. mehr.",
+      "Leider bekam er damit gleichzeitig auch mehr Möglichkeiten, etwas falsch zu machen.",
+      "Das Verhältnis ist erstaunlich konstant."
+    ]
+  };
+
+  var ch3Paragraphs = {
+    en: [
+      "At some point, it wasn't enough for J.A.R.V.I.S. to work only with what a language model already knew.",
+      "If he didn't know something, he should be able to look it up.",
+      "Open web pages. Read content. Follow links. Compare information. Research.",
+      "That's where browser automation, the Gecko Browser, and later the Research Engine came from.",
+      "The first genuinely successful web-research run was a lot less spectacular than science fiction would suggest.",
+      "There was no dramatic moment with music.",
+      "There was a lot of debugging.",
+      "And at some point: a correct answer with a real source.",
+      "For someone using the site, that's maybe just one sentence.",
+      "For me, it was a pretty big moment."
+    ],
+    de: [
+      "Irgendwann reichte es mir nicht mehr, dass J.A.R.V.I.S. nur mit dem Wissen eines Sprachmodells arbeitet.",
+      "Wenn er etwas nicht weiß, sollte er nachsehen können.",
+      "Webseiten öffnen. Inhalte lesen. Links verstehen. Informationen vergleichen. Recherchieren.",
+      "Daraus entstanden Browser-Automatisierung, der Gecko Browser und später die Research Engine.",
+      "Der erste echte erfolgreiche Web-Research-Lauf war wesentlich weniger spektakulär, als Science-Fiction vermuten lässt.",
+      "Es gab keinen dramatischen Moment mit Musik.",
+      "Es gab sehr viel Debugging.",
+      "Und irgendwann: eine korrekte Antwort mit einer echten Quelle.",
+      "Für jemanden, der die Seite benutzt, ist das vielleicht nur ein Satz.",
+      "Für mich war es ein ziemlich großer Moment."
+    ]
+  };
+
+  var ch4Paragraphs = {
+    en: [
+      "A large part of this experiment revolves around local AI.",
+      "I like the idea: a system on my own hardware. More independent. More private. More controllable.",
+      "But local models have limits.",
+      "And sometimes they demonstrate those limits with impressive confidence.",
+      "A model can solve a genuinely hard task surprisingly well — and shortly afterward answer a simple question in a way that makes me wonder if I'm accidentally talking to my toaster.",
+      "That's why I'm exploring different paths: local AI, hybrid systems, external research, and combinations of all three.",
+      "Not because I want to prove that one of these is fundamentally better.",
+      "But because I want to find out: which task actually belongs where?"
+    ],
+    de: [
+      "Ein großer Teil dieses Experiments dreht sich um lokale KI.",
+      "Der Gedanke gefällt mir: Ein System auf eigener Hardware. Unabhängiger. Privater. Kontrollierbarer.",
+      "Aber lokale Modelle haben Grenzen.",
+      "Und manchmal demonstrieren sie diese Grenzen mit beeindruckendem Selbstbewusstsein.",
+      "Ein Modell kann eine schwierige Aufgabe überraschend gut lösen – und kurze Zeit später bei einer einfachen Frage so antworten, dass ich mich frage, ob ich möglicherweise versehentlich mit meinem Toaster spreche.",
+      "Deshalb untersuche ich verschiedene Wege: lokale KI, hybride Systeme, externe Recherche und die Kombination daraus.",
+      "Nicht weil ich beweisen möchte, dass eine dieser Varianten grundsätzlich besser ist.",
+      "Sondern weil ich herausfinden möchte: Welche Aufgabe gehört eigentlich wohin?"
+    ]
+  };
+
+  var ch5Paragraphs = {
+    en: [
+      "Finding information is easy.",
+      "Finding good information is harder.",
+      "Harder still is checking sources, comparing different pieces of information against each other, and turning that into a reasonable answer.",
+      "A search provider was technically reachable and still didn't return a usable answer to the actual question. A general web search alone wasn't enough when a specific source needed to be checked — “technically reachable” simply isn't the same as “research that actually works.”",
+      "And even when an answer did come back: a login that worked and a request that went through were still no guarantee that something readable ended up on the screen. Raw research text isn't an answer yet — that took its own small building block to turn it into a clean, cited answer."
+    ],
+    de: [
+      "Information zu finden ist einfach.",
+      "Gute Information zu finden ist schwieriger.",
+      "Noch schwieriger ist es, Quellen zu prüfen, verschiedene Informationen miteinander zu vergleichen und daraus eine vernünftige Antwort zu erzeugen.",
+      "Ein Suchanbieter war technisch erreichbar und lieferte trotzdem keine brauchbare Antwort auf die eigentliche Frage. Eine allgemeine Websuche allein reichte nicht, wenn eine konkrete Quelle geprüft werden musste – „technisch erreichbar\" ist eben nicht dasselbe wie „inhaltlich funktionierende Recherche\".",
+      "Und selbst wenn eine Antwort zurückkam: Eine Anmeldung, die funktioniert hat, und eine Anfrage, die durchkam, waren noch keine Garantie dafür, dass am Ende auch etwas Lesbares auf dem Bildschirm stand. Ein Rohtext aus der Recherche ist noch keine Antwort – dafür brauchte es einen eigenen kleinen Baustein, der daraus eine saubere, zitierte Antwort macht."
+    ]
+  };
+
+  var ch6Paragraphs = {
+    en: [
+      "An assistant reacts.",
+      "An agent gets a task.",
+      "That sounds like a small difference.",
+      "Technically, it's a pretty big one.",
+      "Behind it are planning, specialized sub-tasks, tools, control, clear stop conditions, and permissions — an agent isn't allowed to just do everything simply because it technically could.",
+      "What is an agent allowed to do? What isn't it allowed to do? Who controls it? When does it have to stop? And what happens when it develops a remarkably creative idea of what its task actually was?"
+    ],
+    de: [
+      "Ein Assistent reagiert.",
+      "Ein Agent bekommt eine Aufgabe.",
+      "Das klingt nach einem kleinen Unterschied.",
+      "Technisch ist es ein ziemlich großer.",
+      "Dahinter stecken Planung, spezialisierte Teilaufgaben, Werkzeuge, Kontrolle, klare Stop-Bedingungen und Berechtigungen – ein Agent darf eben nicht einfach alles tun, nur weil er es technisch könnte.",
+      "Was darf ein Agent? Was darf er nicht? Wer kontrolliert ihn? Wann muss er stoppen? Und was passiert, wenn er eine ausgesprochen kreative Vorstellung davon entwickelt, was seine Aufgabe eigentlich war?"
+    ]
+  };
+
+  var ch7Paragraphs = {
+    en: [
+      "As J.A.R.V.I.S. kept growing, a different question came up for me:",
+      "What actually happens to all the knowledge that builds up while building it?",
+      "Working solutions. Failed attempts. Model problems. Experiments. Wrong assumptions. The things I only figured out after hours of digging.",
+      "If all of that eventually just disappears into logs, old dev notes, or my own head, a large part of its value is lost.",
+      "That's where the idea for J.A.R.V.I.S. NETWORK came from.",
+      "Not simply as a website about J.A.R.V.I.S.",
+      "But as a place where individual experience can eventually turn into shared, verifiable knowledge."
+    ],
+    de: [
+      "Während J.A.R.V.I.S. immer größer wurde, entstand für mich eine andere Frage:",
+      "Was passiert eigentlich mit all dem Wissen, das beim Bauen entsteht?",
+      "Mit funktionierenden Lösungen. Mit Fehlversuchen. Mit Modellproblemen. Mit Experimenten. Mit falschen Annahmen. Mit den Dingen, die ich erst nach Stunden herausgefunden habe.",
+      "Wenn all das irgendwann nur in Logs, alten Entwicklungsnotizen oder meinem Kopf verschwindet, geht ein großer Teil seines Wertes verloren.",
+      "Daraus entstand die Idee für: J.A.R.V.I.S. NETWORK",
+      "Nicht einfach als Website über J.A.R.V.I.S.",
+      "Sondern als Ort, an dem aus Erfahrungen irgendwann gemeinsames und nachvollziehbares Wissen entstehen kann."
+    ]
+  };
+
+  var ch8Paragraphs = {
+    en: [
+      "An observation is not yet a truth.",
+      "An opinion is not yet knowledge.",
+      "And five people believing the same thing still doesn't automatically make it correct."
+    ],
+    de: [
+      "Eine Beobachtung ist noch keine Wahrheit.",
+      "Eine Meinung ist noch kein Wissen.",
+      "Und fünf Menschen, die dasselbe glauben, machen eine Sache noch nicht automatisch richtig."
+    ]
+  };
+  var ch8Flow = [
+    { en: "OBSERVATION", de: "BEOBACHTUNG" },
+    { en: "OTHER EXPERIENCES", de: "ANDERE ERFAHRUNGEN" },
+    { en: "CONFIRMATION / CONTRADICTION", de: "BESTÄTIGUNG / WIDERSPRUCH" },
+    { en: "EXPERIMENTS", de: "EXPERIMENTE" },
+    { en: "SOURCES", de: "QUELLEN" },
+    { en: "CONNECTIONS", de: "ZUSAMMENHÄNGE" },
+    { en: "INSIGHT", de: "ERKENNTNIS" }
+  ];
+  var ch8Paragraphs2 = {
+    en: [
+      "That's not going to happen overnight.",
+      "But that's exactly where I see one of the most interesting parts of this project, long-term."
+    ],
+    de: [
+      "Das wird nicht von heute auf morgen entstehen.",
+      "Aber genau darin sehe ich langfristig einen der interessantesten Teile des Projekts."
+    ]
+  };
+
+  var ch9Paragraphs = {
+    en: [
+      "A local J.A.R.V.I.S. core exists and runs.",
+      "The Network can reach that local J.A.R.V.I.S. path.",
+      "A real web-research run has gone through end-to-end — not just simulated.",
+      "A browser/research system exists and is in use.",
+      "An agent/planning/tools architecture exists.",
+      "The Network is currently being expanded structurally.",
+      "Collective Knowledge is being built up — the first layer, observations, already exists.",
+      "Some things already work surprisingly well today.",
+      "Others regularly remind me how much is still ahead of me.",
+      "And that's exactly the development I want to share with you."
+    ],
+    de: [
+      "Ein lokaler J.A.R.V.I.S.-Kern existiert und läuft.",
+      "Das Network kann diesen lokalen J.A.R.V.I.S.-Pfad erreichen.",
+      "Eine echte Web-Recherche wurde Ende-zu-Ende ausgeführt – nicht nur simuliert.",
+      "Ein Browser-/Research-System existiert und wird eingesetzt.",
+      "Eine Agenten-/Planungs-/Werkzeugarchitektur existiert.",
+      "Das Network wird gerade strukturell weiter ausgebaut.",
+      "Collective Knowledge befindet sich im Aufbau – die erste Ebene, Beobachtungen, existiert bereits.",
+      "Einige Dinge funktionieren heute bereits erstaunlich gut.",
+      "Andere erinnern mich regelmäßig daran, wie viel noch vor mir liegt.",
+      "Und genau diese Entwicklung möchte ich mit euch teilen."
+    ]
+  };
+
+  var ch10Paragraphs = {
+    en: [
+      "I don't have an artificial end date for this.",
+      "And no progress bar saying: J.A.R.V.I.S. — 83% done.",
+      "Because I don't know where this experiment ends up.",
+      "Maybe it turns into a genuinely capable personal AI assistant.",
+      "Maybe the most interesting part eventually won't be J.A.R.V.I.S. himself, but the knowledge that grew out of building him.",
+      "Maybe something else entirely.",
+      "That's exactly why I find this project exciting.",
+      "I don't know today what comes out of it in the end.",
+      "I want to find out."
+    ],
+    de: [
+      "Ich habe dafür kein künstliches Enddatum.",
+      "Und auch keinen Fortschrittsbalken mit: J.A.R.V.I.S. – 83 % fertig.",
+      "Denn ich weiß nicht, wo dieses Experiment am Ende landet.",
+      "Vielleicht entsteht daraus ein sehr leistungsfähiger persönlicher KI-Assistent.",
+      "Vielleicht wird das Interessanteste irgendwann gar nicht J.A.R.V.I.S. selbst sein, sondern das Wissen, das während seiner Entwicklung entstanden ist.",
+      "Vielleicht etwas völlig anderes.",
+      "Genau deshalb finde ich das Projekt spannend.",
+      "Ich weiß nicht schon heute, was am Ende herauskommt.",
+      "Ich möchte es herausfinden."
+    ]
+  };
+
+  function renderStory() {
+    SiteChrome.renderParagraphs(document.getElementById('story-intro-body'), storyIntroParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('ch1-body'), ch1Paragraphs);
+    SiteChrome.renderParagraphs(document.getElementById('ch2-body'), ch2Paragraphs);
+    SiteChrome.renderParagraphs(document.getElementById('ch3-body'), ch3Paragraphs);
+    SiteChrome.renderParagraphs(document.getElementById('ch4-body'), ch4Paragraphs);
+    SiteChrome.renderParagraphs(document.getElementById('ch5-body'), ch5Paragraphs);
+    SiteChrome.renderParagraphs(document.getElementById('ch6-body'), ch6Paragraphs);
+    SiteChrome.renderParagraphs(document.getElementById('ch7-body'), ch7Paragraphs);
+    SiteChrome.renderParagraphs(document.getElementById('ch8-body'), ch8Paragraphs);
+    SiteChrome.renderNodeFlow(document.getElementById('ch8-flow'), ch8Flow);
+    SiteChrome.renderParagraphs(document.getElementById('ch8-body-2'), ch8Paragraphs2);
+    SiteChrome.renderParagraphs(document.getElementById('ch9-body'), ch9Paragraphs);
+    SiteChrome.renderParagraphs(document.getElementById('ch10-body'), ch10Paragraphs);
+  }
+
+  SiteChrome.applyStaticStrings();
+  renderStory();
+  SiteChrome.onLanguageChange(renderStory);
+
+  SiteChrome.initMobileNav();
+  SiteChrome.initProjectNav('story', '../');
+  SiteChrome.initAuthAndAsk();
+</script>
+</body>
+</html>

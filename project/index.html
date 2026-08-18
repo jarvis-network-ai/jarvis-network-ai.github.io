@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>J.A.R.V.I.S. Project — How J.A.R.V.I.S. is really built</title>
+<link rel="stylesheet" href="../foundation.css" />
+<link rel="stylesheet" href="../site-chrome.css" />
+<style>
+  /* PROJECT-page-only styles. Shared chrome (nav, login panel, Ask
+     JARVIS panel, footer, section shells, node-flow primitive,
+     focus-visible) comes from ../site-chrome.css - see
+     WEBSITE_ARCHITECTURE_V1.md, Abschnitt 14. */
+
+  /* MASTER STYLE 1:1 (Redesign-Schritt 10, design-reference/02_PROJECT.png):
+     Helle Basis geerbt, PROJECT-lokal nur Layout/Komposition angepasst. */
+  .breadcrumb + .wrap > .pnav { margin-top: 1rem; padding-bottom: 1.4rem; border-bottom: 1px solid var(--line); }
+  .project-hero { padding: 1.6rem 0 clamp(3rem, 6vw, 4.5rem); }
+  .project-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: stretch;
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+  .project-hero-copy { max-width: 620px; align-self: center; }
+  .project-hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    letter-spacing: 0.01em;
+    max-width: 18ch;
+    margin-top: 0.6rem;
+  }
+  .project-hero .body-copy { margin-top: 1.4rem; max-width: 62ch; }
+  .project-hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.8rem; }
+
+  /* -------- right column: Brain/Core-Motiv + reale Status-Panels -------- */
+  .project-visual {
+    position: relative;
+    min-height: clamp(340px, 34vw, 480px);
+  }
+  .project-visual-art { position: absolute; inset: 0; }
+  .project-visual-art img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .status-row-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+  .status-row-item {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    padding: 1.1rem 1.3rem;
+  }
+  .status-row-item .k {
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    color: var(--cyan-dim);
+  }
+  .status-row-item .v { margin-top: 0.5rem; font-size: 0.98rem; color: var(--white); }
+
+  /* Gleiche schwebende Panel-Optik wie HOME (site-chrome.css .hero-panel) -
+     hier lokal dupliziert, da PROJECT sein eigenes visuelles Motiv hat. */
+  .project-status-panel {
+    position: absolute;
+    width: 210px;
+    background: color-mix(in srgb, var(--panel) 90%, transparent);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    box-shadow: var(--shadow-soft);
+  }
+  .project-status-panel .k {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .project-status-panel .v { font-size: 0.85rem; color: var(--white); line-height: 1.45; }
+  .project-status-panel.p1 { top: 0; right: -2%; }
+  .project-status-panel.p2 { top: 26%; left: -4%; transform: translateY(-50%); }
+  .project-status-panel.p3 { bottom: 0; right: -2%; }
+
+  .project-fact-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.4rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--line);
+  }
+  .project-fact dt {
+    font-family: ui-monospace, monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+  .project-fact dd { margin: 0; font-weight: 600; font-size: 0.9rem; color: var(--white); }
+
+  @media (max-width: 900px) {
+    .project-hero-grid { grid-template-columns: 1fr; }
+    .project-hero-copy { max-width: 100%; }
+    .project-visual { min-height: 0; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.8rem; }
+    .project-visual-art { position: static; height: 240px; }
+    .project-visual-art img { position: static; width: 100%; height: 100%; }
+    .project-status-panel { position: static; width: 100%; }
+    .project-fact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  .story-entry-panel {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: linear-gradient(160deg, rgba(20,163,199,0.05), var(--panel) 60%);
+    box-shadow: var(--shadow-soft);
+    padding: clamp(1.8rem, 4vw, 3rem);
+  }
+  .story-entry-panel h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+    max-width: 26ch;
+  }
+  .story-entry-panel .body-copy { margin-top: 1.1rem; max-width: 60ch; }
+  .story-entry-panel .story-timeline { margin-top: 1.6rem; }
+  .story-cta {
+    display: inline-block;
+    margin-top: 1.3rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.82rem;
+    color: var(--cyan);
+    text-decoration: none;
+  }
+  .story-cta:hover { text-decoration: underline; }
+
+  /* .story-timeline layout is intentionally NOT reused from
+     ../index.html's private HOME styles (it lives there as a narrow
+     sidebar rule, not in the shared site-chrome.css) - defined fresh
+     here as a plain wrapping row, matching this page's wide panel. */
+  .story-entry-panel .story-timeline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0;
+  }
+  .story-entry-panel .story-timeline .arch-arrow { transform: none; }
+
+  .module-group { margin-bottom: 2.2rem; }
+  .module-group:last-child { margin-bottom: 0; }
+  .module-group-title {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--cyan-dim);
+    margin-bottom: 0.9rem;
+  }
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.9rem;
+  }
+  .module-tile {
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    padding: 1rem 1.15rem;
+  }
+  .module-tile .t {
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    color: var(--white);
+  }
+  .module-tile .q { margin-top: 0.45rem; color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+  /* Only HARDWARE has a real subpage so far - it is the one module tile
+     that is an actual <a>, with a visible hover state and its own CTA
+     line, so it reads as genuinely clickable without making the other,
+     still-inert module tiles look like broken links (Abschnitt 20). */
+  a.module-tile-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  a.module-tile-link:hover { border-color: var(--cyan-dim); transform: translateY(-2px); }
+  .module-tile-cta {
+    display: block;
+    margin-top: 0.7rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.74rem;
+    color: var(--cyan);
+  }
+
+  .dev-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .dev-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    padding: 1.2rem 1.3rem;
+  }
+  .dev-card h3 { font-size: 0.98rem; font-weight: 600; }
+  .dev-card p { margin: 0.6rem 0 0; color: var(--muted); font-size: 0.88rem; line-height: 1.55; }
+
+  .misfire-panel {
+    max-width: 66ch;
+  }
+
+  .network-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.9rem;
+  }
+  .network-link {
+    display: block;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    padding: 1rem 1.2rem;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .network-link:hover { border-color: var(--cyan-dim); transform: translateY(-2px); }
+  .network-link .t { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--cyan); }
+  .network-link .q { margin-top: 0.4rem; color: var(--white); font-size: 0.92rem; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="../" data-i18n="nav.home">HOME</a>
+      <a href="./" class="current" data-i18n="nav.project">PROJECT</a>
+      <a href="../signal/" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="../lab/" data-i18n="nav.lab">LAB</a>
+      <a href="../discuss/" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="../ask/" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap breadcrumb">
+    <a href="../" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="nav.project">PROJECT</span>
+  </div>
+
+  <div class="wrap">
+    <nav class="pnav" id="project-nav" aria-label="Project-Navigation"></nav>
+  </div>
+
+  <section class="block project-hero">
+    <div class="wrap project-hero-grid">
+      <div class="project-hero-copy">
+        <span class="eyebrow" data-i18n="project.eyebrow">J.A.R.V.I.S. PROJECT</span>
+        <h1 data-i18n="project.h1">How J.A.R.V.I.S. is really built.</h1>
+        <div class="body-copy" id="project-intro-body"></div>
+        <div class="project-hero-ctas">
+          <a href="#project-modules" class="cta primary" data-i18n="project.cta1">SEE THE MODULES</a>
+          <a href="#project-dev" class="cta ghost" data-i18n="project.cta2">FOLLOW DEVELOPMENT</a>
+        </div>
+
+        <!-- Reale Fakten statt Mockup-Zahlen (12+/250+/1.2K+/99.7%) -
+             alle vier Werte sind strukturell echt zählbar/belegt. -->
+        <dl class="project-fact-strip">
+          <div class="project-fact">
+            <dt data-i18n="project.fact1Label">MODULES</dt>
+            <dd data-i18n="project.fact1Value">11 documented</dd>
+          </div>
+          <div class="project-fact">
+            <dt data-i18n="project.fact2Label">GROUPS</dt>
+            <dd data-i18n="project.fact2Value">4 areas</dd>
+          </div>
+          <div class="project-fact">
+            <dt data-i18n="project.fact3Label">IN PROGRESS</dt>
+            <dd data-i18n="project.fact3Value">3 threads</dd>
+          </div>
+          <div class="project-fact">
+            <dt data-i18n="project.fact4Label">STATUS</dt>
+            <dd data-i18n="project.status.v1">Active development</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="project-visual">
+        <div class="project-visual-art">
+          <img src="../assets/img/project-brain-core.png" alt="" aria-hidden="true" width="1536" height="1024" />
+        </div>
+        <div class="project-status-panel p1">
+          <span class="k" data-i18n="project.status.k1">STATUS</span>
+          <span class="v" data-i18n="project.status.v1">Active development</span>
+        </div>
+        <div class="project-status-panel p2">
+          <span class="k" data-i18n="project.status.k2">CURRENT FOCUS</span>
+          <span class="v" data-i18n="project.status.v2">Network structure / Collective Knowledge</span>
+        </div>
+        <div class="project-status-panel p3">
+          <span class="k" data-i18n="project.status.k3">LATEST MAJOR DEVELOPMENT</span>
+          <span class="v" data-i18n="project.status.v3">Network endpoint connected / research path working</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="project-story">
+    <div class="wrap">
+      <div class="story-entry-panel">
+        <span class="eyebrow" data-i18n="project.story.eyebrow">THE STORY</span>
+        <h2 data-i18n="project.story.title">It was only supposed to be an assistant.</h2>
+        <div class="body-copy" id="project-story-body"></div>
+        <div class="story-timeline" id="project-story-timeline" aria-hidden="true"></div>
+        <a href="geschichte/" class="story-cta" id="project-story-cta" data-i18n="project.story.cta">Read the full story →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="project-modules">
+    <div class="wrap">
+      <div class="block-head">
+        <div>
+          <span class="eyebrow" data-i18n="project.modules.eyebrow">ARCHITECTURE</span>
+          <h2 data-i18n="project.modules.title">What is J.A.R.V.I.S. made of?</h2>
+        </div>
+      </div>
+
+      <div class="module-group">
+        <div class="module-group-title" data-i18n="project.group.think">THINKING & REMEMBERING</div>
+        <div class="module-grid">
+          <a class="module-tile module-tile-link" href="kern/"><div class="t" data-i18n="project.mod.core.t">CORE</div><div class="q" data-i18n="project.mod.core.q">Where everything comes together.</div><span class="module-tile-cta" data-i18n="project.mod.core.cta">See the core →</span></a>
+          <a class="module-tile module-tile-link" href="gedaechtnis/"><div class="t" data-i18n="project.mod.memory.t">MEMORY</div><div class="q" data-i18n="project.mod.memory.q">So a conversation doesn't start from zero every time.</div><span class="module-tile-cta" data-i18n="project.mod.memory.cta">See the memory →</span></a>
+          <a class="module-tile module-tile-link" href="planung/"><div class="t" data-i18n="project.mod.planning.t">PLANNING</div><div class="q" data-i18n="project.mod.planning.q">An intent becomes steps.</div><span class="module-tile-cta" data-i18n="project.mod.planning.cta">See the planning →</span></a>
+        </div>
+      </div>
+
+      <div class="module-group">
+        <div class="module-group-title" data-i18n="project.group.perceive">PERCEIVING & COMMUNICATING</div>
+        <div class="module-grid">
+          <a class="module-tile module-tile-link" href="sprache/"><div class="t" data-i18n="project.mod.voice.t">VOICE</div><div class="q" data-i18n="project.mod.voice.q">J.A.R.V.I.S. shouldn't just be able to type.</div><span class="module-tile-cta" data-i18n="project.mod.voice.cta">See voice →</span></a>
+          <a class="module-tile module-tile-link" href="vision/"><div class="t" data-i18n="project.mod.vision.t">VISION</div><div class="q" data-i18n="project.mod.vision.q">Seeing is easier said than understood.</div><span class="module-tile-cta" data-i18n="project.mod.vision.cta">See vision →</span></a>
+        </div>
+      </div>
+
+      <div class="module-group">
+        <div class="module-group-title" data-i18n="project.group.act">ACTING & RESEARCHING</div>
+        <div class="module-grid">
+          <a class="module-tile module-tile-link" href="agenten/"><div class="t" data-i18n="project.mod.agents.t">AGENTS</div><div class="q" data-i18n="project.mod.agents.q">When answers alone aren't enough anymore.</div><span class="module-tile-cta" data-i18n="project.mod.agents.cta">See the agents →</span></a>
+          <a class="module-tile module-tile-link" href="recherche/"><div class="t" data-i18n="project.mod.research.t">RESEARCH</div><div class="q" data-i18n="project.mod.research.q">When J.A.R.V.I.S. doesn't know something, he should be able to look it up.</div><span class="module-tile-cta" data-i18n="project.mod.research.cta">See the research →</span></a>
+          <a class="module-tile module-tile-link" href="browser/"><div class="t" data-i18n="project.mod.browser.t">BROWSER</div><div class="q" data-i18n="project.mod.browser.q">Using the web itself.</div><span class="module-tile-cta" data-i18n="project.mod.browser.cta">See the browser →</span></a>
+          <a class="module-tile module-tile-link" href="werkzeuge/"><div class="t" data-i18n="project.mod.tools.t">TOOLS</div><div class="q" data-i18n="project.mod.tools.q">The connection between thinking and doing.</div><span class="module-tile-cta" data-i18n="project.mod.tools.cta">See the tools →</span></a>
+          <a class="module-tile module-tile-link" href="automatisierung/"><div class="t" data-i18n="project.mod.automation.t">AUTOMATION</div><div class="q" data-i18n="project.mod.automation.q">Not doing a task just once.</div><span class="module-tile-cta" data-i18n="project.mod.automation.cta">See the automation →</span></a>
+        </div>
+      </div>
+
+      <div class="module-group">
+        <div class="module-group-title" data-i18n="project.group.infra">INFRASTRUCTURE</div>
+        <div class="module-grid">
+          <a class="module-tile module-tile-link" href="hardware/"><div class="t" data-i18n="project.mod.hardware.t">HARDWARE</div><div class="q" data-i18n="project.mod.hardware.q">All that intelligence has to get warm somewhere.</div><span class="module-tile-cta" data-i18n="project.mod.hardware.cta">See the hardware →</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="project-dev">
+    <div class="wrap">
+      <div class="block-head">
+        <div>
+          <span class="eyebrow" data-i18n="project.dev.eyebrow">IN PROGRESS</span>
+          <h2 data-i18n="project.dev.title">Currently in development</h2>
+        </div>
+      </div>
+      <div class="dev-grid">
+        <div class="dev-card">
+          <h3 data-i18n="project.dev.c1.t">J.A.R.V.I.S. NETWORK</h3>
+          <p data-i18n="project.dev.c1.p">The local J.A.R.V.I.S. can be reached through the Network path. The current focus is on the Network's structure.</p>
+        </div>
+        <div class="dev-card">
+          <h3 data-i18n="project.dev.c2.t">COLLECTIVE KNOWLEDGE</h3>
+          <p data-i18n="project.dev.c2.p">Observations, experiments and discussions are getting fixed, real subject-matter connections.</p>
+        </div>
+        <div class="dev-card">
+          <h3 data-i18n="project.dev.c3.t">LOCAL AI</h3>
+          <p data-i18n="project.dev.c3.p">Model quality and its limits remain an ongoing experiment.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="project-misfires">
+    <div class="wrap">
+      <div class="block-head">
+        <div>
+          <span class="eyebrow" data-i18n="project.misfires.eyebrow">HONEST HISTORY</span>
+          <h2 data-i18n="project.misfires.title">Not every attempt becomes a feature.</h2>
+        </div>
+      </div>
+      <div class="body-copy misfire-panel" id="project-misfires-body"></div>
+    </div>
+  </section>
+
+  <section class="block" id="project-network" style="border-bottom:none;">
+    <div class="wrap">
+      <div class="block-head">
+        <div>
+          <span class="eyebrow" data-i18n="project.network.eyebrow">CONNECTED TO</span>
+          <h2 data-i18n="project.network.title">Connection to the Network</h2>
+        </div>
+      </div>
+      <div class="network-links">
+        <a class="network-link" href="../lab/">
+          <div class="t mono" data-i18n="nav.lab">LAB</div>
+          <div class="q" data-i18n="project.network.lab">What has actually been tested?</div>
+        </a>
+        <a class="network-link" href="../discuss/">
+          <div class="t mono" data-i18n="nav.discuss">DISCUSS</div>
+          <div class="q" data-i18n="project.network.discuss">What do others think about it?</div>
+        </a>
+        <a class="network-link" href="../knowledge/">
+          <div class="t mono" data-i18n="nav.knowledge">KNOWLEDGE</div>
+          <div class="q" data-i18n="project.network.knowledge">What insight grew out of it?</div>
+        </a>
+        <a class="network-link" href="../signal/">
+          <div class="t mono" data-i18n="nav.signal">SIGNAL</div>
+          <div class="q" data-i18n="project.network.signal">Which outside developments could influence J.A.R.V.I.S.?</div>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="./" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="../signal/" data-i18n="footer.news">AI Signal</a>
+        <a href="../lab/" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="../discuss/" data-i18n="footer.discussions">Discussions</a>
+        <a href="../discuss/" data-i18n="footer.models">Models</a>
+        <a href="../discuss/" data-i18n="footer.ideas">Ideas</a>
+        <a href="../discuss/" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="../#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+  </div>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+    </div>
+  </div>
+
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+</div>
+
+<script src="../site-chrome.js"></script>
+<script src="../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // PROJECT-page-only content: strings, paragraph data, and the small
+  // renderProject() function. Everything global (i18n engine, mobile
+  // nav, login/logout, Ask JARVIS wiring, Supabase config/REST helpers)
+  // comes from ../site-chrome.js - see Redesign-Schritt 4A.1
+  // (WEBSITE_ARCHITECTURE_V1.md) and the accompanying report for the
+  // full classification of what is shared vs. page-specific. PROJECT
+  // deliberately does not load any Observation/Reaction code - it
+  // never needed it, and it must not become global chrome just because
+  // it used to sit in the same copied block.
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "project.eyebrow": { en: "J.A.R.V.I.S. PROJECT", de: "J.A.R.V.I.S. PROJECT" },
+    "project.h1": { en: "How J.A.R.V.I.S. is really built.", de: "Wie J.A.R.V.I.S. wirklich gebaut wird." },
+    "project.cta1": { en: "SEE THE MODULES", de: "MODULE ANSEHEN" },
+    "project.cta2": { en: "FOLLOW DEVELOPMENT", de: "ENTWICKLUNG VERFOLGEN" },
+    "project.fact1Label": { en: "MODULES", de: "MODULE" },
+    "project.fact1Value": { en: "11 documented", de: "11 dokumentiert" },
+    "project.fact2Label": { en: "GROUPS", de: "BEREICHE" },
+    "project.fact2Value": { en: "4 areas", de: "4 Bereiche" },
+    "project.fact3Label": { en: "IN PROGRESS", de: "IN ARBEIT" },
+    "project.fact3Value": { en: "3 threads", de: "3 Stränge" },
+    "project.fact4Label": { en: "STATUS", de: "STATUS" },
+    "project.nav.overview": { en: "OVERVIEW", de: "ÜBERSICHT" },
+    "project.nav.story": { en: "STORY", de: "GESCHICHTE" },
+    "project.nav.core": { en: "CORE", de: "KERN" },
+    "project.nav.memory": { en: "MEMORY", de: "GEDÄCHTNIS" },
+    "project.nav.planning": { en: "PLANNING", de: "PLANUNG" },
+    "project.nav.hardware": { en: "HARDWARE", de: "HARDWARE" },
+    "project.status.eyebrow": { en: "STATUS", de: "STATUS" },
+    "project.status.k1": { en: "STATUS", de: "STATUS" },
+    "project.status.v1": { en: "Active development", de: "Aktive Entwicklung" },
+    "project.status.k2": { en: "CURRENT FOCUS", de: "AKTUELLER FOKUS" },
+    "project.status.v2": { en: "Network structure / Collective Knowledge", de: "Network-Struktur / Collective Knowledge" },
+    "project.status.k3": { en: "LATEST MAJOR DEVELOPMENT", de: "LETZTE GRÖSSERE ENTWICKLUNG" },
+    "project.status.v3": { en: "Network endpoint connected / research path working", de: "Network-Endpunkt verbunden / Research-Pfad funktionsfähig" },
+    "project.story.eyebrow": { en: "THE STORY", de: "DIE GESCHICHTE" },
+    "project.story.title": { en: "It was only supposed to be an assistant.", de: "Eigentlich sollte es nur ein Assistent werden." },
+    "project.story.cta": { en: "Read the full story →", de: "Die ganze Geschichte lesen →" },
+    "project.modules.eyebrow": { en: "ARCHITECTURE", de: "ARCHITEKTUR" },
+    "project.modules.title": { en: "What is J.A.R.V.I.S. made of?", de: "Woraus besteht J.A.R.V.I.S.?" },
+    "project.group.think": { en: "THINKING & REMEMBERING", de: "DENKEN & ERINNERN" },
+    "project.group.perceive": { en: "PERCEIVING & COMMUNICATING", de: "WAHRNEHMEN & KOMMUNIZIEREN" },
+    "project.group.act": { en: "ACTING & RESEARCHING", de: "HANDELN & RECHERCHIEREN" },
+    "project.group.infra": { en: "INFRASTRUCTURE", de: "INFRASTRUKTUR" },
+    "project.mod.core.t": { en: "CORE", de: "KERN" },
+    "project.mod.core.q": { en: "Where everything comes together.", de: "Wo alles zusammenläuft." },
+    "project.mod.core.cta": { en: "See the core →", de: "Zum Kern →" },
+    "project.mod.memory.t": { en: "MEMORY", de: "GEDÄCHTNIS" },
+    "project.mod.memory.q": { en: "So a conversation doesn't start from zero every time.", de: "Damit ein Gespräch nicht jedes Mal bei Null beginnt." },
+    "project.mod.memory.cta": { en: "See the memory →", de: "Zum Gedächtnis →" },
+    "project.mod.planning.t": { en: "PLANNING", de: "PLANUNG" },
+    "project.mod.planning.q": { en: "An intent becomes steps.", de: "Aus einer Absicht werden Schritte." },
+    "project.mod.planning.cta": { en: "See the planning →", de: "Zur Planung →" },
+    "project.mod.voice.t": { en: "VOICE", de: "SPRACHE" },
+    "project.mod.voice.q": { en: "J.A.R.V.I.S. shouldn't just be able to type.", de: "J.A.R.V.I.S. soll nicht nur tippen können." },
+    "project.mod.voice.cta": { en: "See voice →", de: "Zur Sprache →" },
+    "project.mod.vision.t": { en: "VISION", de: "VISION" },
+    "project.mod.vision.q": { en: "Seeing is easier said than understood.", de: "Sehen ist einfacher gesagt als verstanden." },
+    "project.mod.vision.cta": { en: "See vision →", de: "Zur Vision →" },
+    "project.mod.agents.t": { en: "AGENTS", de: "AGENTEN" },
+    "project.mod.agents.q": { en: "When answers alone aren't enough anymore.", de: "Wenn Antworten allein nicht mehr reichen." },
+    "project.mod.agents.cta": { en: "See the agents →", de: "Zu den Agenten →" },
+    "project.mod.research.t": { en: "RESEARCH", de: "RECHERCHE" },
+    "project.mod.research.q": { en: "When J.A.R.V.I.S. doesn't know something, he should be able to look it up.", de: "Wenn J.A.R.V.I.S. etwas nicht weiß, soll er nachsehen können." },
+    "project.mod.research.cta": { en: "See the research →", de: "Zur Recherche →" },
+    "project.mod.browser.t": { en: "BROWSER", de: "BROWSER" },
+    "project.mod.browser.q": { en: "Using the web itself.", de: "Das Web selbst benutzen." },
+    "project.mod.browser.cta": { en: "See the browser →", de: "Zum Browser →" },
+    "project.mod.tools.t": { en: "TOOLS", de: "WERKZEUGE" },
+    "project.mod.tools.q": { en: "The connection between thinking and doing.", de: "Die Verbindung zwischen Denken und Tun." },
+    "project.mod.tools.cta": { en: "See the tools →", de: "Zu den Werkzeugen →" },
+    "project.mod.automation.t": { en: "AUTOMATION", de: "AUTOMATISIERUNG" },
+    "project.mod.automation.q": { en: "Not doing a task just once.", de: "Aufgaben nicht nur einmal erledigen." },
+    "project.mod.automation.cta": { en: "See the automation →", de: "Zur Automatisierung →" },
+    "project.mod.hardware.t": { en: "HARDWARE", de: "HARDWARE" },
+    "project.mod.hardware.q": { en: "All that intelligence has to get warm somewhere.", de: "Irgendwo muss die ganze Intelligenz schließlich warm werden." },
+    "project.mod.hardware.cta": { en: "See the hardware →", de: "Zur Hardware →" },
+    "project.dev.eyebrow": { en: "IN PROGRESS", de: "IN ENTWICKLUNG" },
+    "project.dev.title": { en: "Currently in development", de: "Aktuell in Entwicklung" },
+    "project.dev.c1.t": { en: "J.A.R.V.I.S. NETWORK", de: "J.A.R.V.I.S. NETWORK" },
+    "project.dev.c1.p": { en: "The local J.A.R.V.I.S. can be reached through the Network path. The current focus is on the Network's structure.", de: "Der lokale J.A.R.V.I.S. ist über den Network-Pfad erreichbar. Der aktuelle Schwerpunkt liegt auf der Struktur des Networks." },
+    "project.dev.c2.t": { en: "COLLECTIVE KNOWLEDGE", de: "COLLECTIVE KNOWLEDGE" },
+    "project.dev.c2.p": { en: "Observations, experiments and discussions are getting fixed, real subject-matter connections.", de: "Beobachtungen, Experimente und Diskussionen bekommen feste fachliche Zusammenhänge." },
+    "project.dev.c3.t": { en: "LOCAL AI", de: "LOKALE KI" },
+    "project.dev.c3.p": { en: "Model quality and its limits remain an ongoing experiment.", de: "Modellqualität und Einsatzgrenzen bleiben ein laufendes Experiment." },
+    "project.misfires.eyebrow": { en: "HONEST HISTORY", de: "EHRLICHE BILANZ" },
+    "project.misfires.title": { en: "Not every attempt becomes a feature.", de: "Nicht jeder Versuch wird ein Feature." },
+    "project.network.eyebrow": { en: "CONNECTED TO", de: "VERBUNDEN MIT" },
+    "project.network.title": { en: "Connection to the Network", de: "Verbindung zum Network" },
+    "project.network.lab": { en: "What has actually been tested?", de: "Was wurde tatsächlich getestet?" },
+    "project.network.discuss": { en: "What do others think about it?", de: "Was denken andere darüber?" },
+    "project.network.knowledge": { en: "What insight grew out of it?", de: "Was hat sich daraus als Erkenntnis entwickelt?" },
+    "project.network.signal": { en: "Which outside developments could influence J.A.R.V.I.S.?", de: "Welche externen Entwicklungen könnten J.A.R.V.I.S. beeinflussen?" }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "J.A.R.V.I.S. Project — How J.A.R.V.I.S. is really built",
+    de: "J.A.R.V.I.S. Project — Wie J.A.R.V.I.S. wirklich gebaut wird"
+  });
+
+  var projectIntroParagraphs = {
+    en: [
+      "J.A.R.V.I.S. began as a personal AI assistant. Over time it has grown into a system of memory, planning, tools, voice, research, browser, agents and its own infrastructure.",
+      "These pages document how the system is built, what already works, what I'm currently working on, and where J.A.R.V.I.S. still runs into its limits.",
+      "It's not only the result that belongs here. The detours do too."
+    ],
+    de: [
+      "J.A.R.V.I.S. begann als persönlicher KI-Assistent. Inzwischen ist daraus ein System aus Gedächtnis, Planung, Werkzeugen, Sprache, Recherche, Browser, Agenten und eigener Infrastruktur geworden.",
+      "Auf diesen Seiten dokumentiere ich, wie das System aufgebaut ist, was bereits funktioniert, woran ich gerade arbeite und wo J.A.R.V.I.S. noch an seine Grenzen stößt.",
+      "Nicht nur das Ergebnis gehört dazu. Auch die Umwege."
+    ]
+  };
+
+  var projectStoryParagraphs = {
+    en: [
+      "At least, that was the plan.",
+      "An idea grew into memory, tools, a browser, research, agents, and eventually a whole Network.",
+      "In between: experiments, mistakes, detours, and a few features that took considerably longer than originally expected."
+    ],
+    de: [
+      "Zumindest war das der Plan.",
+      "Aus einer Idee wurden Gedächtnis, Werkzeuge, Browser, Recherche, Agenten und schließlich ein ganzes Network.",
+      "Dazwischen liegen Experimente, Fehler, Umwege und einige Funktionen, die wesentlich länger gebraucht haben als ursprünglich gedacht."
+    ]
+  };
+
+  var projectStoryTimeline = [
+    { en: "ASSISTANT", de: "ASSISTENT" },
+    { en: "MEMORY", de: "GEDÄCHTNIS" },
+    { en: "TOOLS", de: "WERKZEUGE" },
+    { en: "BROWSER & RESEARCH", de: "BROWSER & RECHERCHE" },
+    { en: "AGENTS", de: "AGENTEN" },
+    { en: "NETWORK", de: "NETWORK" },
+    { en: "COLLECTIVE KNOWLEDGE", de: "COLLECTIVE KNOWLEDGE" }
+  ];
+
+  var projectMisfiresParagraphs = {
+    en: [
+      "Some of the most interesting insights came from things that didn't work at first.",
+      "Providers that were reachable and still didn't deliver usable research. Conversation context that showed up exactly where it definitely didn't belong. And ideas where, during development, it turned out the original solution simply wasn't good enough.",
+      "These things don't disappear from the story."
+    ],
+    de: [
+      "Einige der interessantesten Erkenntnisse sind aus Dingen entstanden, die zunächst nicht funktioniert haben.",
+      "Provider, die erreichbar waren und trotzdem keine brauchbare Recherche lieferten. Gesprächskontext, der dort auftauchte, wo er definitiv nicht hingehörte. Und Ideen, bei denen sich während der Entwicklung herausstellte, dass die ursprüngliche Lösung schlicht nicht gut genug war.",
+      "Diese Dinge verschwinden nicht aus der Geschichte."
+    ]
+  };
+
+  function renderProject() {
+    SiteChrome.renderParagraphs(document.getElementById('project-intro-body'), projectIntroParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('project-story-body'), projectStoryParagraphs);
+    SiteChrome.renderNodeFlow(document.getElementById('project-story-timeline'), projectStoryTimeline);
+    SiteChrome.renderParagraphs(document.getElementById('project-misfires-body'), projectMisfiresParagraphs);
+  }
+
+  SiteChrome.applyStaticStrings();
+  renderProject();
+  SiteChrome.onLanguageChange(renderProject);
+
+  SiteChrome.initMobileNav();
+  SiteChrome.initProjectNav('overview', '');
+  SiteChrome.initAuthAndAsk();
+</script>
+</body>
+</html>

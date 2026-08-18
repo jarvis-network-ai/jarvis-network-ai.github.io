@@ -39,40 +39,60 @@ img, svg, canvas { display: block; max-width: 100%; }
    -------------------------------------------------------------------------- */
 
 :root {
-  /* Basisfarben (identisch zu index.html, dort informeller Ursprung) */
-  --black: #05070a;
-  --anthracite: #0e1319;
-  --panel: #12181f;
-  --panel-raised: #161d26;
-  --deep-blue: #0b1f3c;
-  --line: rgba(191, 227, 240, 0.10);
-  --line-strong: rgba(191, 227, 240, 0.20);
-  --cyan: #49d3e0;
-  --cyan-dim: #2d8f9c;
-  --ice: #bfe3f0;
-  --white: #eef5f8;
-  --muted: #7f93a1;
+  /* Basisfarben — MASTER STYLE 1:1 (Redesign-Schritt 9, 18. August 2026,
+     siehe design-reference/MASTER_STYLE.md + WEBSITE_ARCHITECTURE_V1.md
+     Abschnitt "Master Style"). Ersetzt das gesamte bisherige dunkle
+     Graphit-System (V2–V4) durch die verbindliche helle Premium-Tech-
+     Palette der Referenzbilder: Weiß/Eisgrau als Basis, Navy als
+     Haupttextfarbe, Cyan als einziger Akzent. Token-NAMEN bleiben aus
+     Kompatibilitätsgründen erhalten (jede Seite/Komponente referenziert
+     sie bereits), nur die FarbWERTE wechseln auf Hell — dieselbe
+     Technik wie bei den vorherigen Redesign-Schritten. Textfarblogik ab
+     jetzt strikt zweifarbig: --white (jetzt Navy) für Haupttext,
+     --cyan für Akzent; --muted/--ice sind Navy-Grautöne, keine dritte
+     Buntfarbe. */
+  --black: #eef2f6;
+  --anthracite: #ffffff;
+  --panel: #ffffff;
+  --panel-raised: #e7edf3;
+  --deep-blue: #0b1830;
+  --line: rgba(11, 24, 48, 0.09);
+  --line-strong: rgba(11, 24, 48, 0.18);
+  /* --cyan absichtlich dunkler als die reine Referenzfarbe: die helle
+     Mockup-Akzentfarbe (~#1eb8d8) unterschreitet als Text auf dem
+     hellen Hintergrund WCAG AA (nur ~2.6:1, auch für großen Text unter
+     den geforderten 3:1). #0e7590 hält 4.7:1 gegen den Hintergrund und
+     5.3:1 als weißer Text auf Cyan-Buttons — Auftrag Abschnitt 15
+     (WCAG AA) geht vor pixelgenauer Farbtreue, live gegengeprüft. */
+  --cyan: #0e7590;
+  --cyan-dim: #095870;
+  --ice: #33465e;
+  --white: #0b1830;
+  --muted: #5b6b81;
+  --shadow-soft: 0 20px 45px -22px rgba(15, 35, 65, 0.18);
 
-  /* Domänenspezifische Statusfarben (Bestand aus index.html:
-     Project-/Lab-Statuszeilen — bleiben unverändert für diesen Zweck) */
+  /* Domänenspezifische Statusfarben (Project-/Lab-Statuszeilen) — auf
+     die helle Basis abgestimmt, Warn-/Fehlerzustände bewusst gedämpft
+     (keine Neon-/Signalfarben), kein Violett mehr (Master-Style-Regel:
+     max. zwei Textfarben, Navy + Cyan). */
   --st-active: var(--cyan);
-  --st-testing: var(--ice);
-  --st-dev: #d9a86c;
-  --st-experimental: #b79ce0;
+  --st-testing: var(--cyan-dim);
+  --st-dev: #a97a3a;
+  --st-experimental: var(--muted);
   --st-research: var(--muted);
-  --st-failed: #d97676;
+  --st-failed: #b85454;
 
   /* Generische semantische Zustandsfarben (neu, Phase 02) — bewusst
      dieselben Farbwerte wie oben, aber komponentenunabhängig benannt,
      damit Button/Badge/Status-Indicator sie nutzen können, ohne an die
      Project-/Lab-spezifische Bedeutung gebunden zu sein. */
   --sem-online: var(--cyan);       /* ONLINE / ACTIVE */
-  --sem-warning: #d9a86c;          /* WARNING */
-  --sem-error: #d97676;            /* ERROR */
-  --sem-info: #b79ce0;             /* EXPERIMENTAL / INFO */
+  --sem-warning: #a97a3a;          /* WARNING */
+  --sem-error: #b85454;            /* ERROR */
+  --sem-info: var(--muted);        /* EXPERIMENTAL / INFO */
   --sem-neutral: var(--muted);     /* neutral / inaktiv */
 
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 /* --------------------------------------------------------------------------
@@ -91,7 +111,7 @@ img, svg, canvas { display: block; max-width: 100%; }
 :root {
   --content-max-width: 1180px;
   --gutter: clamp(1.1rem, 4vw, 2.5rem);
-  --section-padding-y: clamp(3.5rem, 8vw, 5.5rem);
+  --section-padding-y: clamp(4rem, 9vw, 6.5rem);
 
   --space-1: 0.4rem;
   --space-2: 0.65rem;
@@ -224,7 +244,7 @@ img, svg, canvas { display: block; max-width: 100%; }
 }
 .surface-interactive:hover {
   border-color: var(--cyan-dim);
-  background: rgba(73, 211, 224, 0.06);
+  background: rgba(20, 163, 199, 0.06);
 }
 .surface-overlay {
   background: rgba(10, 14, 18, 0.92);
@@ -264,11 +284,11 @@ img, svg, canvas { display: block; max-width: 100%; }
   filter: none;
 }
 .btn-primary {
-  background: linear-gradient(180deg, rgba(73, 211, 224, 0.16), rgba(73, 211, 224, 0.05));
-  border-color: rgba(73, 211, 224, 0.4);
+  background: linear-gradient(180deg, rgba(20, 163, 199, 0.16), rgba(20, 163, 199, 0.05));
+  border-color: rgba(20, 163, 199, 0.4);
   color: var(--cyan);
 }
-.btn-primary:hover { border-color: var(--cyan); background: rgba(73, 211, 224, 0.14); }
+.btn-primary:hover { border-color: var(--cyan); background: rgba(20, 163, 199, 0.14); }
 .btn-ghost:hover { border-color: var(--ice); }
 
 /* TEXT LINK */
@@ -304,7 +324,7 @@ img, svg, canvas { display: block; max-width: 100%; }
   transition: color 0.2s ease, border-color 0.2s ease;
 }
 .tag:hover { color: var(--white); border-color: var(--line-strong); }
-.tag-accent { color: var(--cyan); border-color: rgba(73, 211, 224, 0.3); }
+.tag-accent { color: var(--cyan); border-color: rgba(20, 163, 199, 0.3); }
 
 /* BADGE (semantische Varianten) */
 .badge {

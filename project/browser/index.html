@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Browser at J.A.R.V.I.S. — J.A.R.V.I.S. Project</title>
+<link rel="stylesheet" href="../../foundation.css" />
+<link rel="stylesheet" href="../../site-chrome.css" />
+<style>
+  /* BROWSER-page-only styles. Shared chrome comes from ../../site-chrome.css
+     - see WEBSITE_ARCHITECTURE_V1.md, Redesign-Schritt 4L. Third page of
+     "HANDELN & RECHERCHIEREN" - own character: a subtle browser-frame/
+     document motif (Navigation -> Page -> Content), not a Chrome clone,
+     screenshot montage, or HUD (Abschnitt 22 of the 4L-Auftrag). */
+
+  .browser-hero { padding: 1.6rem 0 clamp(2.6rem, 5vw, 4rem); }
+  .browser-hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    letter-spacing: 0.01em;
+    max-width: 20ch;
+    margin-top: 0.6rem;
+  }
+  .browser-lede {
+    margin-top: 0.9rem;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: var(--ice);
+    font-weight: 500;
+  }
+  .browser-hero .body-copy { margin-top: 1.2rem; }
+
+  .body-copy { max-width: 64ch; }
+  .body-copy p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+  .body-copy p:last-child { margin-bottom: 0; }
+
+  .browser-section h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    max-width: 34ch;
+    margin-bottom: 1.2rem;
+  }
+  .browser-section h3 {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan-dim);
+    margin: 0 0 0.9rem;
+  }
+
+  /* Subtle decorative browser-frame motif - three static "chrome" dots
+     and a bar, no animation, purely decorative (Abschnitt 27). */
+  .browser-frame { display: flex; align-items: center; gap: 0.5rem; margin: 1.4rem 0; opacity: 0.55; }
+  .browser-frame .dots { display: flex; gap: 5px; }
+  .browser-frame .dots span { display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--cyan-dim); }
+  .browser-frame .bar { flex: 1; height: 8px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); max-width: 220px; }
+
+  .role-compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+  }
+  .role-item {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    padding: 1.1rem 1.3rem;
+  }
+  .role-item .k {
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-dim);
+  }
+  .role-item .q { margin-top: 0.5rem; color: var(--white); font-size: 0.96rem; line-height: 1.5; }
+
+  .plain-list { margin: 0.8rem 0 0; padding-left: 1.2rem; color: var(--muted); font-size: 0.95rem; line-height: 1.8; max-width: 64ch; }
+  .plain-list li { margin-bottom: 0.3rem; }
+
+  .browser-quote {
+    margin: 1.6rem 0;
+    padding: 1.1rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    color: var(--ice);
+    font-size: 1.02rem;
+    line-height: 1.6;
+    max-width: 52ch;
+  }
+
+  .browser-flows { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2.2rem; margin-top: 1.8rem; }
+  @media (max-width: 900px) { .browser-flows { grid-template-columns: minmax(0, 1fr); } }
+  .browser-flow-panel { border: 1px solid var(--line); border-radius: 12px; padding: clamp(1.4rem, 3vw, 1.8rem); background: var(--panel); }
+  .browser-flow-panel h3 { margin-bottom: 1.1rem; }
+  .browser-flow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+  .browser-flow .arch-node { font-size: 0.8rem; white-space: normal; max-width: 100%; overflow-wrap: break-word; }
+  .browser-flow .arch-arrow { display: block; padding: 0.26rem 0 0.26rem 1.1rem; transform: rotate(90deg); transform-origin: left center; }
+  .browser-flow-note { margin-top: 1rem; font-size: 0.8rem; color: var(--muted); font-style: italic; }
+
+  .status-rows { margin: 1rem 0 0; max-width: 66ch; }
+  .status-rows .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .status-rows .row:last-child { border-bottom: none; }
+  .status-rows .name { color: var(--white); font-size: 0.94rem; }
+  .status-rows .tag {
+    font-family: ui-monospace, monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+    color: var(--cyan);
+    white-space: nowrap;
+    text-align: right;
+  }
+  .status-rows .tag.secondary { color: var(--st-experimental); }
+  .status-rows .tag.inactive { color: var(--muted); }
+  @media (max-width: 480px) {
+    .status-rows .row { flex-wrap: wrap; }
+    .status-rows .tag { text-align: left; }
+  }
+
+  .browser-network-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+  }
+  .browser-network-link {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .browser-network-link:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+  .browser-network-link .t { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--cyan); }
+  .browser-network-link .q { margin-top: 0.4rem; color: var(--white); font-size: 0.9rem; }
+  .browser-network-link.future { opacity: 0.7; cursor: default; }
+  .browser-network-link.future .t { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="../../" data-i18n="nav.home">HOME</a>
+      <a href="../" class="current" data-i18n="nav.project">PROJECT</a>
+      <a href="../../signal/" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="../../lab/" data-i18n="nav.lab">LAB</a>
+      <a href="../../discuss/" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="../../ask/" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap breadcrumb">
+    <a href="../../" data-i18n="nav.home">HOME</a><span class="sep">/</span><a href="../" data-i18n="nav.project">PROJECT</a><span class="sep">/</span><span class="current" data-i18n="browser.breadcrumb">BROWSER</span>
+  </div>
+
+  <section class="block browser-hero">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="project.eyebrow">J.A.R.V.I.S. PROJECT</span>
+      <h1 data-i18n="browser.h1">The browser at J.A.R.V.I.S.</h1>
+      <p class="browser-lede" data-i18n="browser.lede">A search engine finds a page. A browser can open it.</p>
+      <div class="body-copy" id="browser-intro-body"></div>
+      <div class="browser-frame" aria-hidden="true"><span class="dots"><span></span><span></span><span></span></span><span class="bar"></span></div>
+      <nav class="pnav" id="project-nav" aria-label="Project-Navigation"></nav>
+    </div>
+  </section>
+
+  <section class="block browser-section" id="browser-why">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="browser.why.eyebrow">WHY A BROWSER PATH</span>
+      <h2 data-i18n="browser.why.title">Why a browser path at all?</h2>
+      <div class="body-copy" id="browser-why-body"></div>
+    </div>
+  </section>
+
+  <section class="block browser-section" id="browser-compare">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="browser.compare.eyebrow">SEARCH ≠ RESEARCH ≠ BROWSER</span>
+      <h2 data-i18n="browser.compare.title">Search finds. Research decides. Browser opens.</h2>
+      <div class="body-copy" id="browser-compare-body"></div>
+      <div class="role-compare" id="browser-compare-list"></div>
+    </div>
+  </section>
+
+  <section class="block browser-section" id="browser-path">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="browser.path.eyebrow">THE REAL PATH</span>
+      <h2 data-i18n="browser.path.title">The real browser path.</h2>
+      <div class="body-copy" id="browser-path-body"></div>
+      <div class="browser-flows">
+        <div class="browser-flow-panel">
+          <h3 data-i18n="browser.path.plain.title">IN PLAIN TERMS</h3>
+          <div class="browser-flow" id="browser-flow-plain" aria-hidden="true"></div>
+        </div>
+        <div class="browser-flow-panel">
+          <h3 data-i18n="browser.path.tech.title">TECHNICAL VIEW</h3>
+          <div class="browser-flow" id="browser-flow-tech" aria-hidden="true"></div>
+          <p class="browser-flow-note" data-i18n="browser.path.tech.note">Real module names from the current codebase (Skills/browser_skill.py, Skills/gecko_browser_skill.py, Core/skill_manager.py) — a simplified view of the actual call order, not the full source.</p>
+        </div>
+      </div>
+      <div class="body-copy" id="browser-path-body-2" style="margin-top:1rem;"></div>
+    </div>
+  </section>
+
+  <section class="block browser-section" id="browser-reading">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="browser.reading.eyebrow">OPENING AND READING PAGES</span>
+      <h2 data-i18n="browser.reading.title">Opening and reading pages.</h2>
+      <div class="body-copy" id="browser-reading-body"></div>
+    </div>
+  </section>
+
+  <section class="block browser-section" id="browser-interaction">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="browser.interaction.eyebrow">INTERACTING WITH PAGES</span>
+      <h2 data-i18n="browser.interaction.title">Interacting with pages.</h2>
+      <div class="body-copy" id="browser-interaction-body"></div>
+    </div>
+  </section>
+
+  <section class="block browser-section" id="browser-gecko">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="browser.gecko.eyebrow">GECKOBROWSER AT J.A.R.V.I.S.</span>
+      <h2 data-i18n="browser.gecko.title">GeckoBrowser at J.A.R.V.I.S.</h2>
+      <div class="body-copy" id="browser-gecko-body"></div>
+    </div>
+  </section>
+
+  <section class="block browser-section" id="browser-research">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="browser.research.eyebrow">BROWSER + RESEARCH</span>
+      <h2 data-i18n="browser.research.title">Browser and research.</h2>
+      <div class="body-copy" id="browser-research-body"></div>
+    </div>
+  </section>
+
+  <section class="block browser-section" id="browser-vision">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="browser.vision.eyebrow">BROWSER + VISION</span>
+      <h2 data-i18n="browser.vision.title">Browser and vision.</h2>
+      <div class="body-copy" id="browser-vision-body"></div>
+    </div>
+  </section>
+
+  <section class="block browser-section" id="browser-control">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="browser.control.eyebrow">CONTROL &amp; SAFETY</span>
+      <h2 data-i18n="browser.control.title">Control and safety.</h2>
+      <div class="body-copy" id="browser-control-body"></div>
+      <blockquote class="browser-quote" data-i18n="browser.control.quote">A browser can do a lot. That's exactly why, for J.A.R.V.I.S., it matters at least as much which browser action is even allowed in a given context.</blockquote>
+    </div>
+  </section>
+
+  <section class="block browser-section" id="browser-works">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="browser.works.eyebrow">WHAT WORKS TODAY</span>
+      <h2 data-i18n="browser.works.title">What works today.</h2>
+      <div class="status-rows" id="browser-works-list"></div>
+    </div>
+  </section>
+
+  <section class="block browser-section" id="browser-geckoonly">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="browser.geckoonly.eyebrow">GECKOBROWSER-ONLY</span>
+      <h2 data-i18n="browser.geckoonly.title">What only exists in the browser project?</h2>
+      <div class="body-copy" id="browser-geckoonly-body"></div>
+    </div>
+  </section>
+
+  <section class="block browser-section" id="browser-limits">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="browser.limits.eyebrow">KNOWN LIMITS</span>
+      <h2 data-i18n="browser.limits.title">Known limits.</h2>
+      <ul class="plain-list" id="browser-limits-list"></ul>
+      <p class="body-copy" id="browser-limits-note" style="margin-top:1rem;"></p>
+    </div>
+  </section>
+
+  <section class="block browser-section" id="browser-connections" style="border-bottom:none;">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="browser.connections.eyebrow">CONNECTED TO</span>
+      <h2 data-i18n="browser.connections.title">Connection to other PROJECT areas.</h2>
+      <div class="browser-network-links">
+        <a class="browser-network-link" href="../kern/">
+          <div class="t mono" data-i18n="project.nav.core">CORE</div>
+          <div class="q" data-i18n="browser.connections.core">Decides when a browser action is allowed at all.</div>
+        </a>
+        <a class="browser-network-link" href="../gedaechtnis/">
+          <div class="t mono" data-i18n="project.nav.memory">MEMORY</div>
+          <div class="q" data-i18n="browser.connections.memory">Supplies context a browser action can use.</div>
+        </a>
+        <a class="browser-network-link" href="../planung/">
+          <div class="t mono" data-i18n="browser.connections.planning.t">PLANNING</div>
+          <div class="q" data-i18n="browser.connections.planning.q">A browser action can become a step in a plan.</div>
+        </a>
+        <a class="browser-network-link" href="../agenten/">
+          <div class="t mono" data-i18n="browser.connections.agents.t">AGENTS</div>
+          <div class="q" data-i18n="browser.connections.agents.q">Runs through the same controlled path, not a separate one.</div>
+        </a>
+        <a class="browser-network-link" href="../recherche/">
+          <div class="t mono" data-i18n="browser.connections.research.t">RESEARCH</div>
+          <div class="q" data-i18n="browser.connections.research.q">Can call on the browser to read one specific domain.</div>
+        </a>
+        <a class="browser-network-link" href="../sprache/">
+          <div class="t mono" data-i18n="project.nav.voice">VOICE</div>
+          <div class="q" data-i18n="browser.connections.voice">A browser request can start as speech.</div>
+        </a>
+        <a class="browser-network-link" href="../vision/">
+          <div class="t mono" data-i18n="browser.connections.vision.t">VISION</div>
+          <div class="q" data-i18n="browser.connections.vision.q">A separate perception path, not connected to browser screenshots today.</div>
+        </a>
+        <a class="browser-network-link" href="../hardware/">
+          <div class="t mono" data-i18n="project.nav.hardware">HARDWARE</div>
+          <div class="q" data-i18n="browser.connections.hardware">Determines how smoothly a real browser session runs locally.</div>
+        </a>
+        <div class="browser-network-link future">
+          <div class="t mono" data-i18n="browser.connections.tools.t">TOOLS</div>
+          <div class="q" data-i18n="browser.connections.tools.q">Its own page is still to come.</div>
+        </div>
+        <div class="browser-network-link future">
+          <div class="t mono" data-i18n="browser.connections.automation.t">AUTOMATION</div>
+          <div class="q" data-i18n="browser.connections.automation.q">Its own page is still to come.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="../" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="../../signal/" data-i18n="footer.news">AI Signal</a>
+        <a href="../../lab/" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="../../discuss/" data-i18n="footer.discussions">Discussions</a>
+        <a href="../../discuss/" data-i18n="footer.models">Models</a>
+        <a href="../../discuss/" data-i18n="footer.ideas">Ideas</a>
+        <a href="../../discuss/" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="../../#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../../#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../../#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+  </div>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+    </div>
+  </div>
+
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+</div>
+
+<script src="../../site-chrome.js"></script>
+<script src="../../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // BROWSER-page-only content: strings, flow data, and the small
+  // renderBrowser() function. Everything global comes from
+  // ../../site-chrome.js - see Redesign-Schritt 4L.
+  //
+  // Fact-checking note: verified against current Skills/browser_skill.py,
+  // Skills/gecko_browser_skill.py, Core/skill_manager.py,
+  // Core/tool_registry.py, Core/planner_tool_catalog.py,
+  // Core/safe_url_policy.py, Apps/JARVIS-GeckoBrowser (README/HANDOFF/
+  // PRODUCT_ROADMAP.md, read-only), root ROADMAP.md and HANDOFF.md before
+  // writing this page (read-only, no Core/Skills/Gecko file changed).
+  //
+  // Real, wired path: Skills/browser_skill.py::BrowserSkill is a thin
+  // compatibility layer that forwards every method to
+  // Skills/gecko_browser_skill.py::GeckoBrowserSkill, which starts a
+  // local subprocess (Apps/JARVIS-GeckoBrowser/automation/gecko_session.py
+  // serve) and talks to it over local HTTP (/v1/navigate, /v1/tab/new,
+  // /v1/tab/close, /v1/page/refresh, /v1/history/back,
+  // /v1/history/forward, /v1/text/click, /v1/text/write, /v1/enter,
+  // /v1/page/text, /v1/page/links, etc.). This is real, full interaction
+  // (navigate, open tabs, click text, type text, press enter, go back/
+  // forward, read page text and links) - not read-only. Registered
+  // browser.* tools (Core/tool_registry.py, Core/planner_tool_catalog.py)
+  // are reachable through the same router/SkillManager path as any other
+  // tool; "browser"/"gecko_browser" are both GUARDED_UI_SKILLS with
+  // guarded, high-risk actions requiring approval where applicable.
+  // URLs are checked against Core/safe_url_policy.py
+  // (validate_public_web_url) - https-only, rejected otherwise - plus a
+  // separate "trusted domains" mechanism for auto-opened pages.
+  //
+  // Explicitly NOT described as active: no belegte connection between
+  // browser screenshots and Vision/VisionController exists - browser and
+  // vision are described as separate capabilities, not an integrated
+  // pipeline. Network's Question-Only-Gate does NOT include browser.*/
+  // gecko.* tools - Network stays restricted to web.search only, not
+  // described as having any browser access. The standalone
+  // Apps/JARVIS-GeckoBrowser project has its own richer BiDi-level
+  // event/diagnostic capability (network/log/context events) that is
+  // NOT currently exposed as a J.A.R.V.I.S. tool - described as
+  // GeckoBrowser-only, not as a J.A.R.V.I.S. capability. GeckoBrowser's
+  // own completion status is not rewritten here - only the real,
+  // currently-wired J.A.R.V.I.S.-facing subset is described as active.
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "project.eyebrow": { en: "J.A.R.V.I.S. PROJECT", de: "J.A.R.V.I.S. PROJECT" },
+    "project.nav.core": { en: "CORE", de: "KERN" },
+    "project.nav.memory": { en: "MEMORY", de: "GEDÄCHTNIS" },
+    "project.nav.voice": { en: "VOICE", de: "SPRACHE" },
+    "project.nav.hardware": { en: "HARDWARE", de: "HARDWARE" },
+    "browser.breadcrumb": { en: "BROWSER", de: "BROWSER" },
+    "browser.h1": { en: "The browser at J.A.R.V.I.S.", de: "Der Browser von J.A.R.V.I.S." },
+    "browser.lede": { en: "A search engine finds a page. A browser can open it.", de: "Eine Suchmaschine findet eine Seite. Ein Browser kann sie öffnen." },
+
+    "browser.why.eyebrow": { en: "WHY A BROWSER PATH", de: "WARUM EIN BROWSERPFAD" },
+    "browser.why.title": { en: "Why a browser path at all?", de: "Warum überhaupt ein eigener Browserpfad?" },
+
+    "browser.compare.eyebrow": { en: "SEARCH ≠ RESEARCH ≠ BROWSER", de: "SUCHE ≠ RECHERCHE ≠ BROWSER" },
+    "browser.compare.title": { en: "Search finds. Research decides. Browser opens.", de: "Suche findet. Recherche entscheidet. Browser öffnet." },
+    "browser.compare.search.k": { en: "WEB SEARCH", de: "WEBSUCHE" },
+    "browser.compare.search.q": { en: "Finds possible URLs and hints — not a page itself.", de: "Findet mögliche URLs und Hinweise – nicht die Seite selbst." },
+    "browser.compare.research.k": { en: "RESEARCH ENGINE", de: "RESEARCH ENGINE" },
+    "browser.compare.research.q": { en: "Uses sources, weighs relevance, and turns it into an answer.", de: "Nutzt Quellen, bewertet Relevanz und macht daraus eine Antwort." },
+    "browser.compare.browser.k": { en: "BROWSER", de: "BROWSER" },
+    "browser.compare.browser.q": { en: "Actually opens — and can operate — one specific page.", de: "Öffnet – und kann bedienen – eine konkrete Seite." },
+
+    "browser.path.eyebrow": { en: "THE REAL PATH", de: "DER REALE WEG" },
+    "browser.path.title": { en: "The real browser path.", de: "Der reale Browserpfad." },
+    "browser.path.plain.title": { en: "IN PLAIN TERMS", de: "FÜR ALLE VERSTÄNDLICH" },
+    "browser.path.tech.title": { en: "TECHNICAL VIEW", de: "TECHNISCHE SICHT" },
+    "browser.path.tech.note": {
+      en: "Real module names from the current codebase (Skills/browser_skill.py, Skills/gecko_browser_skill.py, Core/skill_manager.py) — a simplified view of the actual call order, not the full source.",
+      de: "Echte Modulnamen aus dem aktuellen Code (Skills/browser_skill.py, Skills/gecko_browser_skill.py, Core/skill_manager.py) – eine vereinfachte Sicht auf die tatsächliche Aufrufreihenfolge, nicht der vollständige Quellcode."
+    },
+
+    "browser.reading.eyebrow": { en: "OPENING AND READING PAGES", de: "SEITEN ÖFFNEN UND LESEN" },
+    "browser.reading.title": { en: "Opening and reading pages.", de: "Seiten öffnen und lesen." },
+
+    "browser.interaction.eyebrow": { en: "INTERACTING WITH PAGES", de: "INTERAKTION MIT WEBSEITEN" },
+    "browser.interaction.title": { en: "Interacting with pages.", de: "Interaktion mit Webseiten." },
+
+    "browser.gecko.eyebrow": { en: "GECKOBROWSER AT J.A.R.V.I.S.", de: "GECKOBROWSER BEI J.A.R.V.I.S." },
+    "browser.gecko.title": { en: "GeckoBrowser at J.A.R.V.I.S.", de: "GeckoBrowser bei J.A.R.V.I.S." },
+
+    "browser.research.eyebrow": { en: "BROWSER + RESEARCH", de: "BROWSER + RECHERCHE" },
+    "browser.research.title": { en: "Browser and research.", de: "Browser und Recherche." },
+
+    "browser.vision.eyebrow": { en: "BROWSER + VISION", de: "BROWSER + VISION" },
+    "browser.vision.title": { en: "Browser and vision.", de: "Browser und Vision." },
+
+    "browser.control.eyebrow": { en: "CONTROL & SAFETY", de: "KONTROLLE & SICHERHEIT" },
+    "browser.control.title": { en: "Control and safety.", de: "Kontrolle und Sicherheit." },
+    "browser.control.quote": {
+      en: "A browser can do a lot. That's exactly why, for J.A.R.V.I.S., it matters at least as much which browser action is even allowed in a given context.",
+      de: "Ein Browser kann viel. Deshalb ist für J.A.R.V.I.S. mindestens genauso wichtig, welche Browseraktion in einem bestimmten Kontext überhaupt erlaubt ist."
+    },
+
+    "browser.works.eyebrow": { en: "WHAT WORKS TODAY", de: "WAS FUNKTIONIERT HEUTE" },
+    "browser.works.title": { en: "What works today.", de: "Was funktioniert heute?" },
+
+    "browser.geckoonly.eyebrow": { en: "GECKOBROWSER-ONLY", de: "NUR IM GECKOBROWSER" },
+    "browser.geckoonly.title": { en: "What only exists in the browser project?", de: "Was existiert nur im Browserprojekt?" },
+
+    "browser.limits.eyebrow": { en: "KNOWN LIMITS", de: "BEKANNTE GRENZEN" },
+    "browser.limits.title": { en: "Known limits.", de: "Bekannte Grenzen." },
+
+    "browser.connections.eyebrow": { en: "CONNECTED TO", de: "VERBUNDEN MIT" },
+    "browser.connections.title": { en: "Connection to other PROJECT areas.", de: "Verbindung zu anderen PROJECT-Bereichen." },
+    "browser.connections.core": { en: "Decides when a browser action is allowed at all.", de: "Entscheidet, ob eine Browseraktion überhaupt erlaubt ist." },
+    "browser.connections.memory": { en: "Supplies context a browser action can use.", de: "Liefert Kontext, den eine Browseraktion nutzen kann." },
+    "browser.connections.planning.t": { en: "PLANNING", de: "PLANUNG" },
+    "browser.connections.planning.q": { en: "A browser action can become a step in a plan.", de: "Eine Browseraktion kann Teil eines Plans werden." },
+    "browser.connections.agents.t": { en: "AGENTS", de: "AGENTEN" },
+    "browser.connections.agents.q": { en: "Runs through the same controlled path, not a separate one.", de: "Läuft über denselben kontrollierten Pfad, nicht über einen eigenen." },
+    "browser.connections.research.t": { en: "RESEARCH", de: "RECHERCHE" },
+    "browser.connections.research.q": { en: "Can call on the browser to read one specific domain.", de: "Kann den Browser nutzen, um eine bestimmte Domain zu lesen." },
+    "browser.connections.voice": { en: "A browser request can start as speech.", de: "Eine Browseranfrage kann als Sprache beginnen." },
+    "browser.connections.vision.t": { en: "VISION", de: "VISION" },
+    "browser.connections.vision.q": { en: "A separate perception path, not connected to browser screenshots today.", de: "Ein eigenständiger Wahrnehmungspfad, heute nicht mit Browser-Screenshots verbunden." },
+    "browser.connections.hardware": { en: "Determines how smoothly a real browser session runs locally.", de: "Bestimmt, wie flüssig eine echte Browser-Sitzung lokal läuft." },
+    "browser.connections.tools.t": { en: "TOOLS", de: "WERKZEUGE" },
+    "browser.connections.tools.q": { en: "Its own page is still to come.", de: "Eigene Seite folgt noch." },
+    "browser.connections.automation.t": { en: "AUTOMATION", de: "AUTOMATISIERUNG" },
+    "browser.connections.automation.q": { en: "Its own page is still to come.", de: "Eigene Seite folgt noch." }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "The Browser at J.A.R.V.I.S. — J.A.R.V.I.S. Project",
+    de: "Der Browser von J.A.R.V.I.S. — J.A.R.V.I.S. Project"
+  });
+
+  var introParagraphs = {
+    en: [
+      "For many questions, a search engine is enough.",
+      "Sometimes, though, J.A.R.V.I.S. actually has to open a web page, read its content, or work with an interface (Navigation, Fetch, Render — a page has to load and be read, not just be found).",
+      "For that, he needs a browser path.",
+      "The browser isn't the intelligence behind J.A.R.V.I.S. It's a capability the existing core can use to interact with the web."
+    ],
+    de: [
+      "Für viele Fragen reicht eine Suchmaschine.",
+      "Manchmal muss J.A.R.V.I.S. aber tatsächlich eine Webseite öffnen, ihren Inhalt lesen oder mit einer Oberfläche arbeiten (Navigation, Fetch, Render – eine Seite muss laden und gelesen werden, nicht nur gefunden werden).",
+      "Dafür braucht er einen Browserpfad.",
+      "Der Browser ist dabei nicht die Intelligenz hinter J.A.R.V.I.S. Er ist eine Fähigkeit, mit der der bestehende Kern mit dem Web interagieren kann."
+    ]
+  };
+
+  var whyParagraphs = {
+    en: [
+      "A search result is a hint about where something might be. It isn't the page itself.",
+      "Some requests need more than a hint: reading a specific page in full, following a link on it, or actually operating something on it — a search engine alone can't do that."
+    ],
+    de: [
+      "Ein Suchtreffer ist ein Hinweis darauf, wo etwas stehen könnte. Er ist nicht die Seite selbst.",
+      "Manche Anfragen brauchen mehr als einen Hinweis: eine konkrete Seite vollständig lesen, einem Link darauf folgen, oder tatsächlich etwas darauf bedienen – das kann eine Suchmaschine allein nicht."
+    ]
+  };
+
+  var compareParagraphs = {
+    en: [
+      "These three are easy to blend into one vague \"J.A.R.V.I.S. uses the internet\" — at J.A.R.V.I.S. they're distinct, real components with different jobs."
+    ],
+    de: [
+      "Diese drei lassen sich leicht zu einem vagen „J.A.R.V.I.S. nutzt das Internet“ verschmelzen – bei J.A.R.V.I.S. sind es unterschiedliche, reale Komponenten mit unterschiedlichen Aufgaben."
+    ]
+  };
+  var compareItems = [
+    { k: 'browser.compare.search.k', q: 'browser.compare.search.q' },
+    { k: 'browser.compare.research.k', q: 'browser.compare.research.q' },
+    { k: 'browser.compare.browser.k', q: 'browser.compare.browser.q' }
+  ];
+
+  var pathParagraphs = {
+    en: [
+      "This is the real, current path — checked against today's code before writing this page, not a historical or planned diagram."
+    ],
+    de: [
+      "Das ist der reale, aktuelle Weg – vor dem Schreiben dieser Seite gegen den heutigen Code geprüft, kein historisches oder geplantes Diagramm."
+    ]
+  };
+  var flowPlain = [
+    { en: "J.A.R.V.I.S. REQUEST", de: "J.A.R.V.I.S.-ANFRAGE" },
+    { en: "ALLOWED BROWSER ACTION?", de: "ERLAUBTE BROWSERAKTION?" },
+    { en: "BROWSER SKILL", de: "BROWSER-SKILL" },
+    { en: "GECKO BROWSER (LOCAL PROCESS)", de: "GECKO-BROWSER (LOKALER PROZESS)" },
+    { en: "WEB PAGE", de: "WEBSEITE" },
+    { en: "CONTENT / RESULT", de: "INHALT / ERGEBNIS" },
+    { en: "EXISTING J.A.R.V.I.S. CORE", de: "BESTEHENDER J.A.R.V.I.S.-KERN" }
+  ];
+  var flowTech = [
+    { en: "router → SkillManager (guarded UI skill)", de: "Router → SkillManager (bewachter UI-Skill)" },
+    { en: "BrowserSkill (thin forwarder)", de: "BrowserSkill (dünner Weiterleiter)" },
+    { en: "GeckoBrowserSkill → local subprocess", de: "GeckoBrowserSkill → lokaler Subprozess" },
+    { en: "local HTTP: /v1/navigate, /v1/page/text, /v1/text/click, …", de: "lokales HTTP: /v1/navigate, /v1/page/text, /v1/text/click, …" },
+    { en: "JarvisResult", de: "JarvisResult" }
+  ];
+  var pathParagraphs2 = {
+    en: [
+      "The browser doesn't create a second J.A.R.V.I.S. Its results go back into the exact same result/context handling as any other tool call."
+    ],
+    de: [
+      "Der Browser erzeugt keinen zweiten J.A.R.V.I.S. Seine Ergebnisse gehen in dieselbe Ergebnis-/Kontextverarbeitung zurück wie jeder andere Tool-Aufruf."
+    ]
+  };
+
+  var readingParagraphs = {
+    en: [
+      "J.A.R.V.I.S. can really open a URL, navigate a page, read its actual text content, and list the links on it — not just receive a snippet, an actual loaded page.",
+      "This is not the same claim as \"J.A.R.V.I.S. can read every web page.\" A page still has to actually load, and a site can technically block or complicate that."
+    ],
+    de: [
+      "J.A.R.V.I.S. kann tatsächlich eine URL öffnen, auf einer Seite navigieren, ihren echten Textinhalt lesen und die darauf enthaltenen Links auflisten – nicht nur einen Ausschnitt erhalten, sondern eine wirklich geladene Seite.",
+      "Das ist nicht dieselbe Aussage wie „J.A.R.V.I.S. kann jede Webseite lesen“. Eine Seite muss trotzdem tatsächlich laden, und eine Website kann das technisch blockieren oder erschweren."
+    ]
+  };
+
+  var interactionParagraphs = {
+    en: [
+      "The active path goes beyond reading: J.A.R.V.I.S. can click on found text, type text into a page, press Enter, open a new tab, close a tab, refresh a page, and go back or forward in browser history.",
+      "That's real interaction, not just retrieval — but it's also not unlimited. Actions like this are treated as higher-risk and are only available where the surrounding control layer allows them."
+    ],
+    de: [
+      "Der aktive Pfad geht über reines Lesen hinaus: J.A.R.V.I.S. kann auf gefundenen Text klicken, Text in eine Seite eingeben, Enter drücken, einen neuen Tab öffnen, einen Tab schließen, eine Seite aktualisieren und im Browserverlauf vor und zurück gehen.",
+      "Das ist echte Interaktion, kein reines Abrufen – aber auch nicht unbegrenzt. Solche Aktionen gelten als risikoreicher und stehen nur dort zur Verfügung, wo die umgebende Kontrollebene das erlaubt."
+    ]
+  };
+
+  var geckoParagraphs = {
+    en: [
+      "JARVIS-GeckoBrowser is a separate project in this repository: its own real browser-automation implementation, built around Firefox and the Marionette/BiDi protocol, with its own architecture and its own test suite.",
+      "J.A.R.V.I.S. doesn't build browser automation itself. When a browser action is needed, a thin layer (Browser Skill) forwards the request to a dedicated local Gecko process, which does the actual work and answers back over a local connection.",
+      "That local process is genuinely separate from J.A.R.V.I.S.'s own process — started on demand, not always running in the background."
+    ],
+    de: [
+      "JARVIS-GeckoBrowser ist ein eigenständiges Projekt in diesem Repository: eine eigene, echte Browser-Automatisierungsimplementierung rund um Firefox und das Marionette-/BiDi-Protokoll, mit eigener Architektur und eigener Testsuite.",
+      "J.A.R.V.I.S. baut Browser-Automatisierung nicht selbst. Wird eine Browseraktion gebraucht, leitet eine dünne Schicht (Browser-Skill) die Anfrage an einen eigenen, lokalen Gecko-Prozess weiter, der die eigentliche Arbeit übernimmt und über eine lokale Verbindung antwortet.",
+      "Dieser lokale Prozess ist wirklich getrennt vom eigenen Prozess von J.A.R.V.I.S. – bei Bedarf gestartet, nicht dauerhaft im Hintergrund aktiv."
+    ]
+  };
+
+  var researchParagraphs = {
+    en: [
+      "The normal search path works from short result snippets first, as described on the Research page — it doesn't open a browser for every search.",
+      "In one narrow case — a request that names exactly one specific domain — research can call on the browser to actually open that domain and read its real page text, following a couple of links one step further.",
+      "Split simply: the browser fetches content. Research decides what happens with it."
+    ],
+    de: [
+      "Der normale Suchpfad arbeitet zunächst mit kurzen Ergebnis-Ausschnitten, wie auf der Recherche-Seite beschrieben – er öffnet nicht für jede Suche einen Browser.",
+      "In einem eng begrenzten Fall – einer Anfrage, die genau eine bestimmte Domain nennt – kann die Recherche den Browser nutzen, um diese Domain tatsächlich zu öffnen und ihren echten Seitentext zu lesen, mit ein paar Links einen Schritt weiter.",
+      "Einfach getrennt: Der Browser beschafft Inhalt. Die Recherche entscheidet, was damit geschieht."
+    ]
+  };
+
+  var visionParagraphs = {
+    en: [
+      "Browser and Vision exist today as separate capabilities. There is no confirmed, general pipeline that takes a browser screenshot and feeds it into Vision's image analysis.",
+      "Vision (see the Vision page) works from screenshots and image files through OCR and template matching — not from anything the browser captures while a page is open."
+    ],
+    de: [
+      "Browser und Vision existieren heute als getrennte Fähigkeiten. Es gibt keine belegte, allgemeine Pipeline, die einen Browser-Screenshot nimmt und in die Bildanalyse von Vision einspeist.",
+      "Vision (siehe die Vision-Seite) arbeitet mit Screenshots und Bilddateien über OCR und Template-Abgleich – nicht mit etwas, das der Browser während einer geöffneten Seite erfasst."
+    ]
+  };
+
+  var controlParagraphs = {
+    en: [
+      "Before an actual URL opens, it's checked against a real URL-safety policy — only the standard secure web scheme is allowed, anything else is rejected. A separate mechanism governs which domains can be opened automatically as trusted.",
+      "Browser actions are treated as a guarded category, the same way vision actions are — some of them count as higher-risk and are gated accordingly, not simply available on request.",
+      "The Network path (the public JARVIS Network website) does not have browser access. It stays limited to the same narrow web-search capability described on the Research page — using it doesn't mean a Network visitor can operate J.A.R.V.I.S.'s local browser."
+    ],
+    de: [
+      "Bevor eine tatsächliche URL geöffnet wird, wird sie gegen eine reale URL-Sicherheitsprüfung geprüft – nur das übliche sichere Web-Schema ist erlaubt, alles andere wird abgelehnt. Ein separater Mechanismus regelt, welche Domains automatisch als vertrauenswürdig geöffnet werden dürfen.",
+      "Browseraktionen gelten als bewachte Kategorie, genau wie Vision-Aktionen – einige davon gelten als risikoreicher und sind entsprechend abgesichert, nicht einfach auf Anfrage verfügbar.",
+      "Der Network-Pfad (die öffentliche JARVIS-Network-Website) hat keinen Browserzugriff. Er bleibt auf dieselbe eng begrenzte Websuchfähigkeit beschränkt, die auf der Recherche-Seite beschrieben ist – ihre Nutzung bedeutet nicht, dass ein Network-Besucher den lokalen Browser von J.A.R.V.I.S. bedienen kann."
+    ]
+  };
+
+  var worksRows = [
+    { n: { en: 'Open a URL and navigate', de: 'URL öffnen und navigieren' }, s: { en: 'ACTIVE', de: 'AKTIV' }, cls: '' },
+    { n: { en: 'Read real page text and list links', de: 'Echten Seitentext lesen und Links auflisten' }, s: { en: 'ACTIVE', de: 'AKTIV' }, cls: '' },
+    { n: { en: 'Click found text, type text, press Enter', de: 'Gefundenen Text klicken, Text eingeben, Enter drücken' }, s: { en: 'ACTIVE (guarded)', de: 'AKTIV (bewacht)' }, cls: 'secondary' },
+    { n: { en: 'New tab, close tab, refresh, back/forward', de: 'Neuer Tab, Tab schließen, Aktualisieren, Vor/Zurück' }, s: { en: 'ACTIVE (guarded)', de: 'AKTIV (bewacht)' }, cls: 'secondary' },
+    { n: { en: 'Bounded single-domain research reading', de: 'Eng begrenztes Einzeldomain-Recherche-Lesen' }, s: { en: 'ACTIVE (narrow)', de: 'AKTIV (eng begrenzt)' }, cls: 'secondary' },
+    { n: { en: 'URL scheme / trusted-domain safety checks', de: 'URL-Schema-/Trusted-Domain-Sicherheitsprüfung' }, s: { en: 'ACTIVE', de: 'AKTIV' }, cls: '' }
+  ];
+
+  var geckoonlyParagraphs = {
+    en: [
+      "GeckoBrowser's own automation layer can observe lower-level browser events — navigation, network and log activity at protocol level. That deeper diagnostic capability isn't currently exposed as a J.A.R.V.I.S. tool.",
+      "What J.A.R.V.I.S. actually uses today is the practical subset above: opening, navigating, reading, a defined set of interactions, and the narrow research-reading case — not the full diagnostic surface of the browser project itself."
+    ],
+    de: [
+      "Die eigene Automatisierungsebene von GeckoBrowser kann Browser-Ereignisse auf einer tieferen Ebene beobachten – Navigation, Netzwerk- und Log-Aktivität auf Protokollebene. Diese tiefere Diagnosefähigkeit ist derzeit nicht als J.A.R.V.I.S.-Tool verfügbar.",
+      "Was J.A.R.V.I.S. heute tatsächlich nutzt, ist die praktische Teilmenge oben: Öffnen, Navigieren, Lesen, ein definierter Satz an Interaktionen und der eng begrenzte Recherche-Lesefall – nicht die volle Diagnosefläche des Browserprojekts selbst."
+    ]
+  };
+
+  var limitsItems = {
+    en: [
+      "Web pages can technically block or complicate access.",
+      "Dynamic, heavily scripted pages can be harder to read reliably than static ones.",
+      "Login or authentication can require context the browser action doesn't automatically have.",
+      "A page's structure can change between visits.",
+      "Content can be too large to fully process.",
+      "A technically successful click can still be semantically the wrong action."
+    ],
+    de: [
+      "Webseiten können den Zugriff technisch blockieren oder erschweren.",
+      "Dynamische, stark skriptbasierte Seiten lassen sich schwerer zuverlässig lesen als statische.",
+      "Login oder Authentifizierung können Kontext erfordern, den die Browseraktion nicht automatisch hat.",
+      "Der Aufbau einer Seite kann sich zwischen Besuchen ändern.",
+      "Inhalte können zu groß sein, um vollständig verarbeitet zu werden.",
+      "Ein technisch erfolgreicher Klick kann trotzdem semantisch die falsche Aktion sein."
+    ]
+  };
+  var limitsNote = {
+    en: "Being able to open a web page is practical. Knowing what to actually do there is a different problem.",
+    de: "Eine Webseite öffnen zu können ist praktisch. Zu wissen, was man dort tun sollte, ist wieder ein anderes Problem."
+  };
+
+  function renderBrowser() {
+    var lang = SiteChrome.getLang();
+
+    SiteChrome.renderParagraphs(document.getElementById('browser-intro-body'), introParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('browser-why-body'), whyParagraphs);
+
+    SiteChrome.renderParagraphs(document.getElementById('browser-compare-body'), compareParagraphs);
+    var compareList = document.getElementById('browser-compare-list');
+    if (compareList) {
+      compareList.innerHTML = '';
+      compareItems.forEach(function (item) {
+        var div = document.createElement('div');
+        div.className = 'role-item';
+        var k = document.createElement('div');
+        k.className = 'k';
+        k.textContent = SiteChrome.t(item.k);
+        var q = document.createElement('div');
+        q.className = 'q';
+        q.textContent = SiteChrome.t(item.q);
+        div.appendChild(k);
+        div.appendChild(q);
+        compareList.appendChild(div);
+      });
+    }
+
+    SiteChrome.renderParagraphs(document.getElementById('browser-path-body'), pathParagraphs);
+    SiteChrome.renderNodeFlow(document.getElementById('browser-flow-plain'), flowPlain);
+    SiteChrome.renderNodeFlow(document.getElementById('browser-flow-tech'), flowTech);
+    SiteChrome.renderParagraphs(document.getElementById('browser-path-body-2'), pathParagraphs2);
+
+    SiteChrome.renderParagraphs(document.getElementById('browser-reading-body'), readingParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('browser-interaction-body'), interactionParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('browser-gecko-body'), geckoParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('browser-research-body'), researchParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('browser-vision-body'), visionParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('browser-control-body'), controlParagraphs);
+
+    var worksList = document.getElementById('browser-works-list');
+    if (worksList) {
+      worksList.innerHTML = '';
+      worksRows.forEach(function (row) {
+        var div = document.createElement('div');
+        div.className = 'row';
+        var name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = row.n[lang];
+        var tag = document.createElement('span');
+        tag.className = 'tag' + (row.cls ? ' ' + row.cls : '');
+        tag.textContent = row.s[lang];
+        div.appendChild(name);
+        div.appendChild(tag);
+        worksList.appendChild(div);
+      });
+    }
+
+    SiteChrome.renderParagraphs(document.getElementById('browser-geckoonly-body'), geckoonlyParagraphs);
+
+    var limitsList = document.getElementById('browser-limits-list');
+    if (limitsList) {
+      limitsList.innerHTML = '';
+      limitsItems[lang].forEach(function (text) {
+        var li = document.createElement('li');
+        li.textContent = text;
+        limitsList.appendChild(li);
+      });
+    }
+    var limitsNoteEl = document.getElementById('browser-limits-note');
+    if (limitsNoteEl) { limitsNoteEl.textContent = limitsNote[lang]; }
+  }
+
+  SiteChrome.applyStaticStrings();
+  renderBrowser();
+  SiteChrome.onLanguageChange(renderBrowser);
+
+  SiteChrome.initMobileNav();
+  SiteChrome.initProjectNav('browser', '../');
+  SiteChrome.initAuthAndAsk();
+</script>
+</body>
+</html>

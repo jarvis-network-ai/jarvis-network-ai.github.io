@@ -1,0 +1,792 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Core of J.A.R.V.I.S. — J.A.R.V.I.S. Project</title>
+<link rel="stylesheet" href="../../foundation.css" />
+<link rel="stylesheet" href="../../site-chrome.css" />
+<style>
+  /* KERN-page-only styles. Shared chrome (nav, breadcrumb,
+     grouped project navigation, login panel, Ask JARVIS panel, footer, section
+     shells, node-flow primitive, focus-visible) comes from
+     ../../site-chrome.css - see WEBSITE_ARCHITECTURE_V1.md, Abschnitt
+     14/Redesign-Schritt 4D. Deliberately neither GESCHICHTE's warm
+     editorial read nor HARDWARE's table/scale density: precise,
+     central, technical, calm - flow and relationships over tiles
+     (Abschnitt 18 of the 4D-Auftrag). No sci-fi hologram look, no
+     blinking nodes, no giant architecture wall. */
+
+  .kern-hero { padding: 1.6rem 0 clamp(2.6rem, 5vw, 4rem); }
+  .kern-hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    letter-spacing: 0.01em;
+    max-width: 20ch;
+    margin-top: 0.6rem;
+  }
+  .kern-lede {
+    margin-top: 0.9rem;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: var(--ice);
+    font-weight: 500;
+  }
+  .kern-hero .body-copy { margin-top: 1.2rem; }
+
+  .body-copy { max-width: 64ch; }
+  .body-copy p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+  .body-copy p:last-child { margin-bottom: 0; }
+
+  .kern-section h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    max-width: 32ch;
+    margin-bottom: 1.2rem;
+  }
+  .kern-section h3 {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan-dim);
+    margin: 0 0 0.9rem;
+  }
+
+  /* Small contrast flows (Section 2: plain LLM vs J.A.R.V.I.S.) - two
+     short vertical flows side by side on wide screens, stacked on
+     narrow ones. Deliberately tiny compared to the main diagram. */
+  .compare-flows {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.6rem;
+    margin-top: 1.6rem;
+  }
+  @media (max-width: 640px) { .compare-flows { grid-template-columns: 1fr; } }
+  .compare-flow-block { border: 1px solid var(--line); border-radius: 10px; padding: 1.2rem 1.3rem; background: var(--panel); }
+  .compare-flow-block h3 { margin-bottom: 1rem; }
+  .mini-flow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+  .mini-flow .arch-node { font-size: 0.78rem; white-space: normal; max-width: 100%; }
+  .mini-flow .arch-arrow { display: block; padding: 0.2rem 0 0.2rem 1.05rem; transform: rotate(90deg); transform-origin: left center; }
+
+  /* Main architecture visual: the strongest visual on the page
+     (Abschnitt 18) but still just a flow, not a wall - one central
+     emphasized node, everything else in sequence. */
+  .core-flows {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.2rem;
+    margin-top: 1.8rem;
+  }
+  @media (max-width: 900px) { .core-flows { grid-template-columns: 1fr; } }
+  .core-flow-panel { border: 1px solid var(--line); border-radius: 12px; padding: clamp(1.4rem, 3vw, 1.8rem); background: var(--panel); }
+  .core-flow-panel h3 { margin-bottom: 1.1rem; }
+  .core-flow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+  .core-flow .arch-node { font-size: 0.82rem; white-space: normal; max-width: 100%; }
+  .core-flow .arch-arrow { display: block; padding: 0.28rem 0 0.28rem 1.1rem; transform: rotate(90deg); transform-origin: left center; }
+  .core-flow-note { margin-top: 1rem; font-size: 0.8rem; color: var(--muted); font-style: italic; }
+
+  /* Responsibilities / not-part-of-core: plain definition lists, not
+     another card grid - "wenig Kacheln" (Abschnitt 18). */
+  .def-list { margin: 0; padding: 0; list-style: none; max-width: 64ch; }
+  .def-list li { padding: 0.9rem 0; border-bottom: 1px solid var(--line); }
+  .def-list li:last-child { border-bottom: none; }
+  .def-list .term {
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-dim);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+  .def-list .desc { color: var(--muted); font-size: 0.94rem; line-height: 1.6; }
+
+  .plain-list { margin: 0.8rem 0 0; padding-left: 1.2rem; color: var(--muted); font-size: 0.95rem; line-height: 1.8; max-width: 64ch; }
+  .plain-list li { margin-bottom: 0.3rem; }
+
+  .core-quote {
+    margin: 1.6rem 0;
+    padding: 1.1rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    color: var(--ice);
+    font-size: 1.02rem;
+    line-height: 1.6;
+    max-width: 52ch;
+  }
+
+  /* Status list (Section 7): compact rows, not a card grid. */
+  .status-rows { margin: 1rem 0 0; max-width: 64ch; }
+  .status-rows .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .status-rows .row:last-child { border-bottom: none; }
+  .status-rows .name { color: var(--white); font-size: 0.94rem; }
+  .status-rows .tag {
+    font-family: ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+    white-space: nowrap;
+  }
+  .status-rows .tag.early { color: var(--st-experimental); }
+
+  .kern-network-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+  }
+  .kern-network-link {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .kern-network-link:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+  .kern-network-link .t { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--cyan); }
+  .kern-network-link .q { margin-top: 0.4rem; color: var(--white); font-size: 0.9rem; }
+  .kern-network-link.future { opacity: 0.7; cursor: default; }
+  .kern-network-link.future .t { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="../../" data-i18n="nav.home">HOME</a>
+      <a href="../" class="current" data-i18n="nav.project">PROJECT</a>
+      <a href="../../signal/" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="../../lab/" data-i18n="nav.lab">LAB</a>
+      <a href="../../discuss/" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="../../ask/" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap breadcrumb">
+    <a href="../../" data-i18n="nav.home">HOME</a><span class="sep">/</span><a href="../" data-i18n="nav.project">PROJECT</a><span class="sep">/</span><span class="current" data-i18n="kern.breadcrumb">CORE</span>
+  </div>
+
+  <section class="block kern-hero">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="project.eyebrow">J.A.R.V.I.S. PROJECT</span>
+      <h1 data-i18n="kern.h1">The core of J.A.R.V.I.S.</h1>
+      <p class="kern-lede" data-i18n="kern.lede">Where everything comes together.</p>
+      <div class="body-copy" id="kern-intro-body"></div>
+      <nav class="pnav" id="project-nav" aria-label="Project-Navigation"></nav>
+    </div>
+  </section>
+
+  <section class="block kern-section" id="kern-why">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="kern.why.eyebrow">WHY A CORE</span>
+      <h2 data-i18n="kern.why.title">Why J.A.R.V.I.S. needs a core at all.</h2>
+      <div class="body-copy" id="kern-why-body"></div>
+      <div class="compare-flows">
+        <div class="compare-flow-block">
+          <h3 data-i18n="kern.why.llm.title">A PLAIN LANGUAGE MODEL</h3>
+          <div class="mini-flow" id="kern-llm-flow" aria-hidden="true"></div>
+        </div>
+        <div class="compare-flow-block">
+          <h3 data-i18n="kern.why.jarvis.title">J.A.R.V.I.S.</h3>
+          <div class="mini-flow" id="kern-jarvis-mini-flow" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block kern-section" id="kern-path">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="kern.path.eyebrow">THE ARCHITECTURE</span>
+      <h2 data-i18n="kern.path.title">The path through J.A.R.V.I.S.</h2>
+      <div class="body-copy" id="kern-path-body"></div>
+      <div class="core-flows">
+        <div class="core-flow-panel">
+          <h3 data-i18n="kern.path.plain.title">IN PLAIN TERMS</h3>
+          <div class="core-flow" id="kern-flow-plain" aria-hidden="true"></div>
+        </div>
+        <div class="core-flow-panel">
+          <h3 data-i18n="kern.path.tech.title">TECHNICAL VIEW</h3>
+          <div class="core-flow" id="kern-flow-tech" aria-hidden="true"></div>
+          <p class="core-flow-note" data-i18n="kern.path.tech.note">Real class/module names from the current codebase (Core/jarvis.py, Core/brain.py, …) — a simplified view of the actual call order, not the full source.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block kern-section" id="kern-responsibilities">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="kern.resp.eyebrow">RESPONSIBILITIES</span>
+      <h2 data-i18n="kern.resp.title">The core's main responsibilities.</h2>
+      <ul class="def-list" id="kern-resp-list"></ul>
+    </div>
+  </section>
+
+  <section class="block kern-section" id="kern-not-core">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="kern.notcore.eyebrow">SCOPE</span>
+      <h2 data-i18n="kern.notcore.title">What the core is NOT.</h2>
+      <ul class="plain-list" id="kern-notcore-list"></ul>
+      <div class="body-copy" id="kern-notcore-body" style="margin-top:1rem;"></div>
+    </div>
+  </section>
+
+  <section class="block kern-section" id="kern-control">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="kern.control.eyebrow">CONTROL &amp; SAFETY</span>
+      <h2 data-i18n="kern.control.title">Control and safety.</h2>
+      <div class="body-copy" id="kern-control-body"></div>
+      <blockquote class="core-quote" data-i18n="kern.control.quote">A system that's allowed to do everything is surprisingly easy to build. A system that knows when it's not allowed to do something is more interesting.</blockquote>
+
+      <h3 data-i18n="kern.network.title" style="margin-top:1.8rem;">THE NETWORK, AS A CONCRETE EXAMPLE</h3>
+      <div class="core-flow" id="kern-network-flow" aria-hidden="true" style="max-width:360px;"></div>
+      <div class="body-copy" id="kern-network-body" style="margin-top:1rem;"></div>
+    </div>
+  </section>
+
+  <section class="block kern-section" id="kern-works">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="kern.works.eyebrow">WHAT WORKS TODAY</span>
+      <h2 data-i18n="kern.works.title">What works today.</h2>
+      <div class="status-rows" id="kern-works-list"></div>
+    </div>
+  </section>
+
+  <section class="block kern-section" id="kern-limits">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="kern.limits.eyebrow">KNOWN LIMITS</span>
+      <h2 data-i18n="kern.limits.title">Known limits.</h2>
+      <ul class="plain-list" id="kern-limits-list"></ul>
+      <p class="body-copy" style="margin-top:1rem;" data-i18n="kern.limits.personal">The more J.A.R.V.I.S. is supposed to be able to do, the more important the question becomes: when should he not do it right now?</p>
+    </div>
+  </section>
+
+  <section class="block kern-section" id="kern-connections" style="border-bottom:none;">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="kern.connections.eyebrow">CONNECTED TO</span>
+      <h2 data-i18n="kern.connections.title">Connection to other PROJECT areas.</h2>
+      <div class="kern-network-links">
+        <a class="kern-network-link" href="../">
+          <div class="t mono" data-i18n="project.nav.overview">OVERVIEW</div>
+          <div class="q" data-i18n="kern.connections.overview">Where the core fits among everything else.</div>
+        </a>
+        <a class="kern-network-link" href="../geschichte/">
+          <div class="t mono" data-i18n="project.nav.story">STORY</div>
+          <div class="q" data-i18n="kern.connections.story">How the core came to be.</div>
+        </a>
+        <a class="kern-network-link" href="../hardware/">
+          <div class="t mono" data-i18n="project.nav.hardware">HARDWARE</div>
+          <div class="q" data-i18n="kern.connections.hardware">What the core actually runs on.</div>
+        </a>
+        <a class="kern-network-link" href="../gedaechtnis/">
+          <div class="t mono" data-i18n="kern.connections.memory.t">MEMORY</div>
+          <div class="q" data-i18n="kern.connections.memory.q">What should J.A.R.V.I.S. remember?</div>
+        </a>
+        <a class="kern-network-link" href="../planung/">
+          <div class="t mono" data-i18n="kern.connections.planning.t">PLANNING</div>
+          <div class="q" data-i18n="kern.connections.planning.q">How does an intent become concrete steps?</div>
+        </a>
+        <div class="kern-network-link future">
+          <div class="t mono" data-i18n="kern.connections.agents.t">AGENTS</div>
+          <div class="q" data-i18n="kern.connections.agents.q">When does a specialized agent take over?</div>
+        </div>
+        <div class="kern-network-link future">
+          <div class="t mono" data-i18n="kern.connections.tools.t">TOOLS</div>
+          <div class="q" data-i18n="kern.connections.tools.q">How does a decision become an actual ability?</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="../" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="../../signal/" data-i18n="footer.news">AI Signal</a>
+        <a href="../../lab/" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="../../discuss/" data-i18n="footer.discussions">Discussions</a>
+        <a href="../../discuss/" data-i18n="footer.models">Models</a>
+        <a href="../../discuss/" data-i18n="footer.ideas">Ideas</a>
+        <a href="../../discuss/" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="../../#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../../#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../../#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+  </div>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+    </div>
+  </div>
+
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+</div>
+
+<script src="../../site-chrome.js"></script>
+<script src="../../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // KERN-page-only content: strings, flow data, and the small
+  // renderKern() function. Everything global (i18n engine, mobile nav,
+  // login/logout, Ask JARVIS wiring, Supabase config/REST helpers)
+  // comes from ../../site-chrome.js - see Redesign-Schritt 4D. This
+  // page loads no Observation/Reaction code and no HOME-rendering code.
+  //
+  // Fact-checking note: the architecture described below (Jarvis ->
+  // RuntimeSupervisor -> JarvisBrain -> StateManager/DialogManager ->
+  // IntentRouter/AgentPlanner -> SkillManager -> JarvisResult ->
+  // render_result; the network_gateway decision source and its
+  // web.search-only allowlist; the Network reusing the same core path
+  // via Jarvis.handle_result) was verified against the current
+  // Core/*.py source before writing this page. Untracked/unwired
+  // modules that are not referenced anywhere in the active call path
+  // are deliberately not named here.
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "project.eyebrow": { en: "J.A.R.V.I.S. PROJECT", de: "J.A.R.V.I.S. PROJECT" },
+    "project.nav.overview": { en: "OVERVIEW", de: "ÜBERSICHT" },
+    "project.nav.story": { en: "STORY", de: "GESCHICHTE" },
+    "project.nav.core": { en: "CORE", de: "KERN" },
+    "project.nav.memory": { en: "MEMORY", de: "GEDÄCHTNIS" },
+    "project.nav.planning": { en: "PLANNING", de: "PLANUNG" },
+    "project.nav.hardware": { en: "HARDWARE", de: "HARDWARE" },
+    "kern.breadcrumb": { en: "CORE", de: "KERN" },
+    "kern.h1": { en: "The core of J.A.R.V.I.S.", de: "Der Kern von J.A.R.V.I.S." },
+    "kern.lede": { en: "Where everything comes together.", de: "Wo alles zusammenläuft." },
+
+    "kern.why.eyebrow": { en: "WHY A CORE", de: "WARUM EIN KERN" },
+    "kern.why.title": { en: "Why J.A.R.V.I.S. needs a core at all.", de: "Warum J.A.R.V.I.S. überhaupt einen Kern braucht." },
+    "kern.why.llm.title": { en: "A PLAIN LANGUAGE MODEL", de: "EIN REINES SPRACHMODELL" },
+    "kern.why.jarvis.title": { en: "J.A.R.V.I.S.", de: "J.A.R.V.I.S." },
+
+    "kern.path.eyebrow": { en: "THE ARCHITECTURE", de: "DIE ARCHITEKTUR" },
+    "kern.path.title": { en: "The path through J.A.R.V.I.S.", de: "Der Weg durch J.A.R.V.I.S." },
+    "kern.path.plain.title": { en: "IN PLAIN TERMS", de: "FÜR ALLE VERSTÄNDLICH" },
+    "kern.path.tech.title": { en: "TECHNICAL VIEW", de: "TECHNISCHE SICHT" },
+    "kern.path.tech.note": {
+      en: "Real class/module names from the current codebase (Core/jarvis.py, Core/brain.py, …) — a simplified view of the actual call order, not the full source.",
+      de: "Echte Klassen-/Modulnamen aus dem aktuellen Code (Core/jarvis.py, Core/brain.py, …) – eine vereinfachte Sicht auf die tatsächliche Aufrufreihenfolge, nicht der vollständige Quellcode."
+    },
+
+    "kern.resp.eyebrow": { en: "RESPONSIBILITIES", de: "VERANTWORTLICHKEITEN" },
+    "kern.resp.title": { en: "The core's main responsibilities.", de: "Die wichtigsten Verantwortlichkeiten des Kerns." },
+    "kern.resp.understand.t": { en: "UNDERSTAND THE INPUT", de: "EINGABE VERSTEHEN" },
+    "kern.resp.understand.d": { en: "What does the user actually want?", de: "Was möchte der Nutzer?" },
+    "kern.resp.state.t": { en: "HOLD STATE", de: "ZUSTAND HALTEN" },
+    "kern.resp.state.d": { en: "What's relevant for this turn?", de: "Was ist für diesen Turn relevant?" },
+    "kern.resp.decide.t": { en: "DECIDE", de: "ENTSCHEIDEN" },
+    "kern.resp.decide.d": { en: "Direct answer, research, planning, or a tool?", de: "Direkte Antwort, Recherche, Planung oder Werkzeug?" },
+    "kern.resp.plan.t": { en: "PLAN", de: "PLANEN" },
+    "kern.resp.plan.d": { en: "Recognizing whether a plan is needed.", de: "Erkennen, ob geplant werden muss." },
+    "kern.resp.execute.t": { en: "EXECUTE", de: "AUSFÜHREN" },
+    "kern.resp.execute.d": { en: "Which permitted ability actually gets used?", de: "Welche erlaubte Fähigkeit wird verwendet?" },
+    "kern.resp.result.t": { en: "RETURN A RESULT", de: "ERGEBNIS ZURÜCKGEBEN" },
+    "kern.resp.result.d": { en: "How does a technical result become an understandable answer?", de: "Wie wird aus einem technischen Ergebnis eine verständliche Ausgabe?" },
+
+    "kern.notcore.eyebrow": { en: "SCOPE", de: "ABGRENZUNG" },
+    "kern.notcore.title": { en: "What the core is NOT.", de: "Was gehört nicht zum Kern?" },
+    "kern.notcore.item1": { en: "the language model itself", de: "das Sprachmodell selbst" },
+    "kern.notcore.item2": { en: "the browser", de: "der Browser" },
+    "kern.notcore.item3": { en: "memory on its own", de: "das Gedächtnis allein" },
+    "kern.notcore.item4": { en: "a single agent", de: "ein einzelner Agent" },
+    "kern.notcore.item5": { en: "a tool", de: "ein Werkzeug" },
+    "kern.notcore.item6": { en: "the Network website", de: "die Network-Website" },
+
+    "kern.control.eyebrow": { en: "CONTROL & SAFETY", de: "KONTROLLE & SICHERHEIT" },
+    "kern.control.title": { en: "Control and safety.", de: "Kontrolle & Sicherheit." },
+    "kern.control.quote": {
+      en: "A system that's allowed to do everything is surprisingly easy to build. A system that knows when it's not allowed to do something is more interesting.",
+      de: "Ein System, das alles darf, ist erstaunlich einfach zu bauen. Ein System, das weiß, wann es etwas nicht darf, ist interessanter."
+    },
+    "kern.network.title": { en: "THE NETWORK, AS A CONCRETE EXAMPLE", de: "DAS NETWORK ALS KONKRETES BEISPIEL" },
+
+    "kern.works.eyebrow": { en: "WHAT WORKS TODAY", de: "WAS FUNKTIONIERT HEUTE" },
+    "kern.works.title": { en: "What works today.", de: "Was funktioniert heute?" },
+
+    "kern.limits.eyebrow": { en: "KNOWN LIMITS", de: "BEKANNTE GRENZEN" },
+    "kern.limits.title": { en: "Known limits.", de: "Bekannte Grenzen." },
+    "kern.limits.personal": {
+      en: "The more J.A.R.V.I.S. is supposed to be able to do, the more important the question becomes: when should he not do it right now?",
+      de: "Je mehr J.A.R.V.I.S. können soll, desto wichtiger wird die Frage, wann er etwas gerade nicht tun sollte."
+    },
+
+    "kern.connections.eyebrow": { en: "CONNECTED TO", de: "VERBUNDEN MIT" },
+    "kern.connections.title": { en: "Connection to other PROJECT areas.", de: "Verbindung zu anderen PROJECT-Bereichen." },
+    "kern.connections.overview": { en: "Where the core fits among everything else.", de: "Wo der Kern unter allem anderen einzuordnen ist." },
+    "kern.connections.story": { en: "How the core came to be.", de: "Wie der Kern entstanden ist." },
+    "kern.connections.hardware": { en: "What the core actually runs on.", de: "Worauf der Kern tatsächlich läuft." },
+    "kern.connections.memory.t": { en: "MEMORY", de: "GEDÄCHTNIS" },
+    "kern.connections.memory.q": { en: "What should J.A.R.V.I.S. remember?", de: "Was soll J.A.R.V.I.S. behalten?" },
+    "kern.connections.planning.t": { en: "PLANNING", de: "PLANUNG" },
+    "kern.connections.planning.q": { en: "How does an intent become concrete steps?", de: "Wie werden aus Absichten konkrete Schritte?" },
+    "kern.connections.agents.t": { en: "AGENTS", de: "AGENTEN" },
+    "kern.connections.agents.q": { en: "When does a specialized agent take over?", de: "Wann übernimmt ein spezialisierter Agent?" },
+    "kern.connections.tools.t": { en: "TOOLS", de: "WERKZEUGE" },
+    "kern.connections.tools.q": { en: "How does a decision become an actual ability?", de: "Wie wird aus einer Entscheidung eine tatsächliche Fähigkeit?" }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "The Core of J.A.R.V.I.S. — J.A.R.V.I.S. Project",
+    de: "Der Kern von J.A.R.V.I.S. — J.A.R.V.I.S. Project"
+  });
+
+  var introParagraphs = {
+    en: [
+      "A language model can answer.",
+      "J.A.R.V.I.S. has to be able to do more than that.",
+      "The core connects input, state, memory, planning, tools and execution into one controlled flow.",
+      "This is where the system's central coordination happens."
+    ],
+    de: [
+      "Ein Sprachmodell kann antworten.",
+      "J.A.R.V.I.S. muss mehr können.",
+      "Der Kern verbindet Eingaben, Zustand, Gedächtnis, Planung, Werkzeuge und Ausführung zu einem kontrollierten Ablauf.",
+      "Hier läuft die zentrale Koordination des Systems zusammen."
+    ]
+  };
+
+  var whyParagraphs = {
+    en: [
+      "A language model can very convincingly explain what should be done.",
+      "At some point, though, I wanted J.A.R.V.I.S. to actually know which step comes next.",
+      "A plain language model: input goes in, a text answer comes out. Nothing keeps track of what happened before, what's allowed right now, or what should happen after the answer.",
+      "J.A.R.V.I.S. adds exactly that layer around the model."
+    ],
+    de: [
+      "Ein Sprachmodell kann sehr überzeugend erklären, was getan werden müsste.",
+      "Irgendwann wollte ich aber, dass J.A.R.V.I.S. tatsächlich weiß, welcher Schritt als Nächstes dran ist.",
+      "Ein reines Sprachmodell: Eingabe rein, Textantwort raus. Nichts merkt sich, was vorher passiert ist, was gerade erlaubt ist oder was nach der Antwort passieren soll.",
+      "J.A.R.V.I.S. legt genau diese Schicht um das Modell."
+    ]
+  };
+  var llmFlow = [
+    { en: "INPUT", de: "EINGABE" },
+    { en: "TEXT ANSWER", de: "TEXTANTWORT" }
+  ];
+  var jarvisMiniFlow = [
+    { en: "INPUT", de: "EINGABE" },
+    { en: "CONTEXT / STATE", de: "KONTEXT / ZUSTAND" },
+    { en: "DECISION", de: "ENTSCHEIDUNG" },
+    { en: "PLANNING", de: "PLANUNG" },
+    { en: "TOOL (IF NEEDED)", de: "WERKZEUG (FALLS NÖTIG)" },
+    { en: "RESULT", de: "ERGEBNIS" },
+    { en: "CONTROLLED OUTPUT", de: "KONTROLLIERTE AUSGABE" }
+  ];
+
+  var pathParagraphs = {
+    en: [
+      "This is the real, current path a request actually takes — checked against today's code before writing this page, not a historical or planned diagram."
+    ],
+    de: [
+      "Das ist der reale, aktuelle Weg, den eine Anfrage tatsächlich nimmt – vor dem Schreiben dieser Seite gegen den heutigen Code geprüft, kein historisches oder geplantes Diagramm."
+    ]
+  };
+  var flowPlain = [
+    { en: "USER", de: "NUTZER" },
+    { en: "J.A.R.V.I.S. CORE", de: "J.A.R.V.I.S. KERN" },
+    { en: "STATE / DIALOG", de: "ZUSTAND / DIALOG" },
+    { en: "REASONING / ROUTING", de: "SCHLUSSFOLGERN / ROUTING" },
+    { en: "PLANNING", de: "PLANUNG" },
+    { en: "TOOLS / AGENTS", de: "WERKZEUGE / AGENTEN" },
+    { en: "RESULT", de: "ERGEBNIS" },
+    { en: "ANSWER / ACTION", de: "ANTWORT / AKTION" }
+  ];
+  var flowTech = [
+    { en: "Jarvis", de: "Jarvis" },
+    { en: "RuntimeSupervisor", de: "RuntimeSupervisor" },
+    { en: "Brain", de: "Brain" },
+    { en: "StateManager / DialogManager", de: "StateManager / DialogManager" },
+    { en: "Router / Planner", de: "Router / Planner" },
+    { en: "AgentExecutionCoordinator / SkillManager", de: "AgentExecutionCoordinator / SkillManager" },
+    { en: "JarvisResult", de: "JarvisResult" },
+    { en: "render_result", de: "render_result" }
+  ];
+
+  var respItems = [
+    { t: 'kern.resp.understand.t', d: 'kern.resp.understand.d' },
+    { t: 'kern.resp.state.t', d: 'kern.resp.state.d' },
+    { t: 'kern.resp.decide.t', d: 'kern.resp.decide.d' },
+    { t: 'kern.resp.plan.t', d: 'kern.resp.plan.d' },
+    { t: 'kern.resp.execute.t', d: 'kern.resp.execute.d' },
+    { t: 'kern.resp.result.t', d: 'kern.resp.result.d' }
+  ];
+
+  var notCoreItems = ['kern.notcore.item1', 'kern.notcore.item2', 'kern.notcore.item3', 'kern.notcore.item4', 'kern.notcore.item5', 'kern.notcore.item6'];
+  var notCoreParagraphs = {
+    en: [
+      "The core doesn't have to be able to do everything itself.",
+      "It has to know which part of J.A.R.V.I.S. can do something, and under what conditions it's allowed to use it."
+    ],
+    de: [
+      "Der Kern muss nicht alles selbst können.",
+      "Er muss wissen, welcher Teil von J.A.R.V.I.S. etwas kann und unter welchen Bedingungen er ihn einsetzen darf."
+    ]
+  };
+
+  var controlParagraphs = {
+    en: [
+      "More capabilities also mean more ways to get something wrong.",
+      "That's why, for me, the architecture isn't only about what J.A.R.V.I.S. can do — it's just as much about what he's actually allowed to do in this context.",
+      "Every request carries a decision source — where it came from — which co-determines which tools are even up for consideration. Certain actions additionally require explicit approval before they're allowed to run."
+    ],
+    de: [
+      "Mehr Fähigkeiten bedeuten auch mehr Möglichkeiten, etwas falsch zu machen.",
+      "Deshalb gehört für mich zur Architektur nicht nur: Was kann J.A.R.V.I.S.? Sondern genauso: Was darf er in diesem Kontext überhaupt tun?",
+      "Jede Anfrage trägt eine Herkunft (decision source) – woher sie kommt, entscheidet mit, welche Werkzeuge überhaupt infrage kommen. Bestimmte Aktionen benötigen zusätzlich eine ausdrückliche Freigabe, bevor sie ausgeführt werden dürfen."
+    ]
+  };
+  var networkFlow = [
+    { en: "WEBSITE", de: "WEBSITE" },
+    { en: "NETWORK GATEWAY", de: "NETWORK GATEWAY" },
+    { en: "LOCAL J.A.R.V.I.S.", de: "LOKALER J.A.R.V.I.S." },
+    { en: "EXISTING CORE PATH", de: "BESTEHENDER KERNPFAD" },
+    { en: "ANSWER", de: "ANTWORT" },
+    { en: "NETWORK", de: "NETWORK" }
+  ];
+  var networkParagraphs = {
+    en: [
+      "The Network doesn't have a second, separate J.A.R.V.I.S. core.",
+      "A request coming in through the Network runs through exactly the same core path as a local command — just carrying its own decision source, which limits the available tools to a small, checked selection (currently: web search only)."
+    ],
+    de: [
+      "Das Network besitzt keinen zweiten, separaten J.A.R.V.I.S.-Kern.",
+      "Eine Anfrage über das Network läuft durch genau denselben Kernpfad wie ein lokaler Befehl – nur mit einer eigenen Herkunftskennung, die die verfügbaren Werkzeuge auf eine kleine, geprüfte Auswahl beschränkt (aktuell: nur Websuche)."
+    ]
+  };
+
+  var worksRows = [
+    { n: { en: 'Normal dialog processing', de: 'Normale Dialogverarbeitung' }, s: { en: 'ACTIVE', de: 'AKTIV' }, early: false },
+    { n: { en: 'Routing (deciding which path fits)', de: 'Routing (welcher Pfad passt)' }, s: { en: 'ACTIVE', de: 'AKTIV' }, early: false },
+    { n: { en: 'Planning for multi-step tasks', de: 'Planung für mehrstufige Aufgaben' }, s: { en: 'EARLY STAGE', de: 'FRÜHE AUSBAUSTUFE' }, early: true },
+    { n: { en: 'Tool path (controlled execution of permitted abilities)', de: 'Werkzeugpfad (kontrollierte Ausführung erlaubter Fähigkeiten)' }, s: { en: 'ACTIVE', de: 'AKTIV' }, early: false },
+    { n: { en: 'Research path', de: 'Recherche-Pfad' }, s: { en: 'ACTIVE', de: 'AKTIV' }, early: false },
+    { n: { en: 'Network requests through the same core path', de: 'Network-Anfragen über denselben Kernpfad' }, s: { en: 'ACTIVE', de: 'AKTIV' }, early: false }
+  ];
+
+  var limitsItems = {
+    en: [
+      "Local model quality directly affects decisions and answers.",
+      "Not every automated multi-step run reliably makes it to the end — more complex sequences can fail along the way.",
+      "General multi-agent coordination is still an early, narrow first slice, not a complete system.",
+      "Network mode deliberately has only a small, checked set of tools — not the full local range of capabilities."
+    ],
+    de: [
+      "Lokale Modellqualität beeinflusst Entscheidungen und Antworten unmittelbar.",
+      "Nicht jeder automatisierte Mehrschritt-Lauf kommt zuverlässig bis zum Ende – komplexere Abläufe können unterwegs scheitern.",
+      "Die allgemeine Mehrere-Agenten-Koordination ist noch eine frühe, schmale erste Ausbaustufe, kein vollständiges System.",
+      "Der Network-Modus besitzt bewusst nur eine kleine, geprüfte Auswahl an Werkzeugen – nicht den vollen lokalen Funktionsumfang."
+    ]
+  };
+
+  function renderKern() {
+    var lang = SiteChrome.getLang();
+
+    SiteChrome.renderParagraphs(document.getElementById('kern-intro-body'), introParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('kern-why-body'), whyParagraphs);
+    SiteChrome.renderNodeFlow(document.getElementById('kern-llm-flow'), llmFlow);
+    SiteChrome.renderNodeFlow(document.getElementById('kern-jarvis-mini-flow'), jarvisMiniFlow);
+
+    SiteChrome.renderParagraphs(document.getElementById('kern-path-body'), pathParagraphs);
+    SiteChrome.renderNodeFlow(document.getElementById('kern-flow-plain'), flowPlain);
+    SiteChrome.renderNodeFlow(document.getElementById('kern-flow-tech'), flowTech);
+
+    var respList = document.getElementById('kern-resp-list');
+    if (respList) {
+      respList.innerHTML = '';
+      respItems.forEach(function (item) {
+        var li = document.createElement('li');
+        var term = document.createElement('span');
+        term.className = 'term';
+        term.textContent = SiteChrome.t(item.t);
+        var desc = document.createElement('span');
+        desc.className = 'desc';
+        desc.textContent = SiteChrome.t(item.d);
+        li.appendChild(term);
+        li.appendChild(desc);
+        respList.appendChild(li);
+      });
+    }
+
+    var notCoreList = document.getElementById('kern-notcore-list');
+    if (notCoreList) {
+      notCoreList.innerHTML = '';
+      notCoreItems.forEach(function (key) {
+        var li = document.createElement('li');
+        li.textContent = SiteChrome.t(key);
+        notCoreList.appendChild(li);
+      });
+    }
+    SiteChrome.renderParagraphs(document.getElementById('kern-notcore-body'), notCoreParagraphs);
+
+    SiteChrome.renderParagraphs(document.getElementById('kern-control-body'), controlParagraphs);
+    SiteChrome.renderNodeFlow(document.getElementById('kern-network-flow'), networkFlow);
+    SiteChrome.renderParagraphs(document.getElementById('kern-network-body'), networkParagraphs);
+
+    var worksList = document.getElementById('kern-works-list');
+    if (worksList) {
+      worksList.innerHTML = '';
+      worksRows.forEach(function (row) {
+        var div = document.createElement('div');
+        div.className = 'row';
+        var name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = row.n[lang];
+        var tag = document.createElement('span');
+        tag.className = 'tag' + (row.early ? ' early' : '');
+        tag.textContent = row.s[lang];
+        div.appendChild(name);
+        div.appendChild(tag);
+        worksList.appendChild(div);
+      });
+    }
+
+    var limitsList = document.getElementById('kern-limits-list');
+    if (limitsList) {
+      limitsList.innerHTML = '';
+      limitsItems[lang].forEach(function (text) {
+        var li = document.createElement('li');
+        li.textContent = text;
+        limitsList.appendChild(li);
+      });
+    }
+  }
+
+  SiteChrome.applyStaticStrings();
+  renderKern();
+  SiteChrome.onLanguageChange(renderKern);
+
+  SiteChrome.initMobileNav();
+  SiteChrome.initProjectNav('core', '../');
+  SiteChrome.initAuthAndAsk();
+</script>
+</body>
+</html>

@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Signal — J.A.R.V.I.S. Network</title>
+<link rel="stylesheet" href="../foundation.css" />
+<link rel="stylesheet" href="../site-chrome.css" />
+<style>
+  /* SIGNAL-page-only styles. Shared chrome (nav, login panel, Ask JARVIS
+     panel, footer, focus-visible) comes from ../site-chrome.css - see
+     WEBSITE_ARCHITECTURE_V1.md, Redesign-Schritt 5A. SIGNAL is the third
+     main nav area (after HOME/PROJECT) - deliberately more editorial/
+     curated than PROJECT: date, source, rubric, short assessment, a
+     quiet horizontal stream feel. Not a news portal, not a stock
+     ticker, no breaking-news red, no card wall, no blog template, no
+     social feed (Abschnitt 13 of the 5A-Auftrag). Cyan stays the only
+     accent. */
+
+  /* MASTER STYLE 1:1 (Redesign-Schritt 11, design-reference/03_SIGNAL.png):
+     Helle Basis geerbt, SIGNAL-lokal nur Layout/Komposition angepasst. */
+  .signal-hero { padding: 1.6rem 0 clamp(2.6rem, 5vw, 4rem); }
+  .signal-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: stretch;
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+  .signal-hero-copy { max-width: 620px; align-self: center; }
+  .signal-hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 7vw, 5.2rem);
+    letter-spacing: 0.01em;
+    max-width: 16ch;
+    margin-top: 0.6rem;
+  }
+  .signal-lede {
+    margin-top: 0.9rem;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: var(--ice);
+    font-weight: 500;
+  }
+  .signal-hero .body-copy { margin-top: 1.2rem; }
+  .signal-hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.8rem; }
+
+  /* -------- right column: Radar-Motiv + reale Rubrik-Panels -------- */
+  .signal-visual { position: relative; min-height: clamp(340px, 34vw, 480px); }
+  .signal-visual-art { position: absolute; inset: 0; }
+  .signal-visual-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
+
+  .signal-rubric-panel {
+    position: absolute;
+    width: 168px;
+    background: color-mix(in srgb, var(--panel) 90%, transparent);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 0.75rem 0.9rem;
+    box-shadow: var(--shadow-soft);
+  }
+  .signal-rubric-panel .t {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-dim);
+    margin-bottom: 0.35rem;
+  }
+  .signal-rubric-panel .d { display: block; font-size: 0.78rem; color: var(--ice); line-height: 1.4; }
+  .signal-rubric-panel.r1 { top: -2%; left: 6%; }
+  .signal-rubric-panel.r2 { top: 26%; left: -6%; }
+  .signal-rubric-panel.r3 { bottom: 4%; left: 10%; }
+  .signal-rubric-panel.r4 { top: -2%; right: -2%; }
+  .signal-rubric-panel.r5 { top: 40%; right: -8%; }
+  .signal-rubric-panel.r6 { bottom: 2%; right: 0; }
+
+  .signal-fact-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.4rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--line);
+  }
+  .signal-fact dt {
+    font-family: ui-monospace, monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+  .signal-fact dd { margin: 0; font-weight: 600; font-size: 0.9rem; color: var(--white); }
+
+  @media (max-width: 900px) {
+    .signal-hero-grid { grid-template-columns: 1fr; }
+    .signal-hero-copy { max-width: 100%; }
+    .signal-visual { min-height: 0; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.7rem; }
+    .signal-visual-art { position: static; height: 240px; }
+    .signal-visual-art img { position: static; width: 100%; height: 100%; }
+    .signal-rubric-panel { position: static; width: 100%; }
+    .signal-fact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  .body-copy { max-width: 66ch; }
+  .body-copy p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+  .body-copy p:last-child { margin-bottom: 0; }
+
+  .signal-section h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    max-width: 34ch;
+    margin-bottom: 1.2rem;
+  }
+  .signal-section h3 {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan-dim);
+    margin: 0 0 0.9rem;
+  }
+
+  /* Signal stream - articles in a quiet vertical list, dated, not a
+     card wall. */
+  .signal-stream { margin-top: 1.4rem; display: flex; flex-direction: column; gap: 0; }
+  .signal-item {
+    display: block;
+    padding: 1.3rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .signal-item:first-child { padding-top: 0; }
+  .signal-item:last-child { border-bottom: none; }
+  .signal-item .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.6rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan-dim);
+  }
+  .signal-item .meta .cat { color: var(--cyan); }
+  .signal-item .meta time { color: var(--muted); }
+  .signal-item h3.item-title {
+    margin: 0.6rem 0 0;
+    font-family: inherit;
+    letter-spacing: normal;
+    color: var(--white);
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .signal-item .fact { margin-top: 0.5rem; color: var(--muted); font-size: 0.92rem; line-height: 1.65; }
+  .signal-item .assessment {
+    margin-top: 0.7rem;
+    padding: 0.85rem 1rem;
+    border-left: 2px solid var(--cyan-dim);
+    background: var(--panel);
+    border-radius: 0 8px 8px 0;
+  }
+  .signal-item .assessment .label {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-dim);
+    margin-bottom: 0.35rem;
+  }
+  .signal-item .assessment p { margin: 0; color: var(--ice); font-size: 0.9rem; line-height: 1.6; }
+
+  /* Empty state - deliberately calm, not "broken page" looking. */
+  .signal-empty {
+    margin-top: 1.4rem;
+    padding: clamp(1.6rem, 4vw, 2.4rem);
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    max-width: 56ch;
+  }
+  .signal-empty p { margin: 0 0 0.7rem; color: var(--muted); font-size: 0.96rem; line-height: 1.7; }
+  .signal-empty p:last-child { margin-bottom: 0; }
+
+  /* Rubric grid - six labeled cards, not a badge/counter wall. */
+  .rubric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.4rem;
+  }
+  .rubric-item {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    padding: 1.1rem 1.3rem;
+  }
+  .rubric-item .t { font-family: ui-monospace, monospace; font-size: 0.78rem; letter-spacing: 0.04em; color: var(--white); }
+  .rubric-item .d { margin-top: 0.5rem; color: var(--muted); font-size: 0.86rem; line-height: 1.55; }
+
+  /* Detail-model def-list (Abschnitt 7) - future signal detail page IA,
+     shown here as example structure only. */
+  .def-list { margin: 1.2rem 0 0; padding: 0; list-style: none; max-width: 66ch; }
+  .def-list li { padding: 0.9rem 0; border-bottom: 1px solid var(--line); }
+  .def-list li:last-child { border-bottom: none; }
+  .def-list .term {
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-dim);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+  .def-list .desc { color: var(--muted); font-size: 0.94rem; line-height: 1.6; }
+
+  .signal-flow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; margin-top: 1.6rem; max-width: 50ch; }
+  .signal-flow .arch-node { font-size: 0.8rem; white-space: normal; max-width: 100%; overflow-wrap: break-word; }
+  .signal-flow .arch-arrow { display: block; padding: 0.26rem 0 0.26rem 1.1rem; transform: rotate(90deg); transform-origin: left center; }
+  .signal-flow-note { margin-top: 1rem; font-size: 0.8rem; color: var(--muted); font-style: italic; }
+
+  .signal-quote {
+    margin: 1.6rem 0;
+    padding: 1.1rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    color: var(--ice);
+    font-size: 1.02rem;
+    line-height: 1.6;
+    max-width: 52ch;
+  }
+
+  .signal-network-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+  }
+  .signal-network-link {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .signal-network-link:hover { border-color: var(--cyan-dim); transform: translateY(-2px); }
+  .signal-network-link .t { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--cyan); }
+  .signal-network-link .q { margin-top: 0.4rem; color: var(--white); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="../" data-i18n="nav.home">HOME</a>
+      <a href="../project/" data-i18n="nav.project">PROJECT</a>
+      <a href="./" class="current" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="../lab/" data-i18n="nav.lab">LAB</a>
+      <a href="../discuss/" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="../ask/" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap breadcrumb">
+    <a href="../" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="nav.signal">SIGNAL</span>
+  </div>
+
+  <section class="block signal-hero">
+    <div class="wrap signal-hero-grid">
+      <div class="signal-hero-copy">
+        <span class="eyebrow" data-i18n="signal.eyebrow">J.A.R.V.I.S. NETWORK</span>
+        <h1 data-i18n="signal.h1">Signal</h1>
+        <p class="signal-lede" data-i18n="signal.lede">What's happening out there — and why it's interesting for J.A.R.V.I.S.</p>
+        <div class="body-copy" id="signal-intro-body"></div>
+
+        <div class="signal-hero-ctas">
+          <a href="#signal-current" class="cta primary" data-i18n="signal.cta1">VIEW SIGNALS</a>
+          <a href="#signal-how" class="cta ghost" data-i18n="signal.cta2">LEARN MORE</a>
+        </div>
+
+        <!-- Reale Fakten statt Mockup-Zahlen (1.842/+37%/98%/24/7) - die
+             signals-Tabelle hat aktuell 0 veröffentlichte Zeilen, deshalb
+             ehrlicher Stand statt erfundener Statistik. -->
+        <dl class="signal-fact-strip">
+          <div class="signal-fact">
+            <dt data-i18n="signal.fact1Label">RUBRICS</dt>
+            <dd data-i18n="signal.fact1Value">6 categories</dd>
+          </div>
+          <div class="signal-fact">
+            <dt data-i18n="signal.fact2Label">PUBLISHED</dt>
+            <dd data-i18n="signal.fact2Value">None yet</dd>
+          </div>
+          <div class="signal-fact">
+            <dt data-i18n="signal.fact3Label">FILTER</dt>
+            <dd data-i18n="signal.fact3Value">J.A.R.V.I.S.-relevant only</dd>
+          </div>
+          <div class="signal-fact">
+            <dt data-i18n="signal.fact4Label">STATUS</dt>
+            <dd data-i18n="signal.fact4Value">Live</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="signal-visual">
+        <div class="signal-visual-art">
+          <img src="../assets/img/signal-radar.png" alt="" aria-hidden="true" width="1536" height="1024" />
+        </div>
+        <div class="signal-rubric-panel r1"><span class="t" data-i18n="signal.rubric.models.t">MODELS</span><span class="d" data-i18n="signal.rubric.models.d">New models, versions, capabilities.</span></div>
+        <div class="signal-rubric-panel r2"><span class="t" data-i18n="signal.rubric.agents.t">AGENTS</span><span class="d" data-i18n="signal.rubric.agents.d">Agent architecture, delegation, orchestration.</span></div>
+        <div class="signal-rubric-panel r3"><span class="t" data-i18n="signal.rubric.opensource.t">OPEN SOURCE</span><span class="d" data-i18n="signal.rubric.opensource.d">Tools, models, frameworks, projects.</span></div>
+        <div class="signal-rubric-panel r4"><span class="t" data-i18n="signal.rubric.hardware.t">HARDWARE</span><span class="d" data-i18n="signal.rubric.hardware.d">GPUs, memory, local AI hardware.</span></div>
+        <div class="signal-rubric-panel r5"><span class="t" data-i18n="signal.rubric.research.t">RESEARCH</span><span class="d" data-i18n="signal.rubric.research.d">Papers, methods, new technical approaches.</span></div>
+        <div class="signal-rubric-panel r6"><span class="t" data-i18n="signal.rubric.companies.t">COMPANIES & DEVELOPMENTS</span><span class="d" data-i18n="signal.rubric.companies.d">Companies, platforms, relevant product and market developments.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block signal-section" id="signal-current">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="signal.current.eyebrow">CURRENT SIGNALS</span>
+      <h2 data-i18n="signal.current.title">Current signals.</h2>
+      <div class="signal-stream" id="signal-current-stream" aria-live="polite"></div>
+      <div class="signal-empty" id="signal-current-empty">
+        <p data-i18n="signal.empty.p1">No signals published yet.</p>
+        <p data-i18n="signal.empty.p2">Developments will appear here once I've actually assessed them for J.A.R.V.I.S. — not before.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block signal-section" id="signal-rubrics">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="signal.rubrics.eyebrow">RUBRICS</span>
+      <h2 data-i18n="signal.rubrics.title">What SIGNAL watches.</h2>
+      <div class="body-copy" id="signal-rubrics-body"></div>
+      <div class="rubric-grid" id="signal-rubrics-list"></div>
+    </div>
+  </section>
+
+  <section class="block signal-section" id="signal-latest">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="signal.latest.eyebrow">LATEST ASSESSMENTS</span>
+      <h2 data-i18n="signal.latest.title">Recently assessed.</h2>
+      <div class="body-copy" id="signal-latest-body"></div>
+      <div class="signal-stream" id="signal-latest-stream" aria-live="polite"></div>
+      <div class="signal-empty" id="signal-latest-empty">
+        <p data-i18n="signal.latestEmpty.p1">Nothing assessed yet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block signal-section" id="signal-how">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="signal.how.eyebrow">HOW SIGNAL WORKS</span>
+      <h2 data-i18n="signal.how.title">How SIGNAL works.</h2>
+      <div class="body-copy" id="signal-how-body"></div>
+      <blockquote class="signal-quote" data-i18n="signal.how.quote">A source says what was published. My assessment says why I find it interesting for J.A.R.V.I.S.</blockquote>
+
+      <h3 data-i18n="signal.model.title">A signal, as data.</h3>
+      <ul class="def-list" id="signal-model-list"></ul>
+      <p class="body-copy" id="signal-model-note" style="margin-top:1rem;"></p>
+
+      <h3 data-i18n="signal.origin.title">A signal is a starting point, not an obligation.</h3>
+      <div class="body-copy" id="signal-origin-body"></div>
+      <div class="signal-flow" id="signal-flow-diagram" aria-hidden="true"></div>
+      <p class="signal-flow-note" data-i18n="signal.flow.note">This shows the information architecture, not an already-automated workflow — not every signal goes through every stage.</p>
+
+      <h3 data-i18n="signal.aktuell.title">Signal and Aktuell.</h3>
+      <div class="body-copy" id="signal-aktuell-body"></div>
+    </div>
+  </section>
+
+  <section class="block signal-section" id="signal-connections" style="border-bottom:none;">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="signal.connections.eyebrow">CONNECTION TO THE NETWORK</span>
+      <h2 data-i18n="signal.connections.title">Connection to the Network.</h2>
+      <div class="body-copy" id="signal-connections-body"></div>
+      <div class="signal-network-links">
+        <a class="signal-network-link" href="../project/hardware/">
+          <div class="t mono" data-i18n="signal.connections.hardware.t">PROJECT / HARDWARE</div>
+          <div class="q" data-i18n="signal.connections.hardware.q">When new local AI hardware becomes relevant.</div>
+        </a>
+        <a class="signal-network-link" href="../project/browser/">
+          <div class="t mono" data-i18n="signal.connections.browser.t">PROJECT / BROWSER</div>
+          <div class="q" data-i18n="signal.connections.browser.q">When browser automation itself develops further.</div>
+        </a>
+        <a class="signal-network-link" href="../project/agenten/">
+          <div class="t mono" data-i18n="signal.connections.agents.t">PROJECT / AGENTS</div>
+          <div class="q" data-i18n="signal.connections.agents.q">When agent architecture and delegation move forward.</div>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="../project/" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="./" data-i18n="footer.news">AI Signal</a>
+        <a href="../lab/" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="../discuss/" data-i18n="footer.discussions">Discussions</a>
+        <a href="../discuss/" data-i18n="footer.models">Models</a>
+        <a href="../discuss/" data-i18n="footer.ideas">Ideas</a>
+        <a href="../discuss/" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="../#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+  </div>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+    </div>
+  </div>
+
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+</div>
+
+<script src="../site-chrome.js"></script>
+<script src="../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // SIGNAL-page-only content: strings, rubric/detail-model data, and
+  // the small renderSignal() function. Everything global comes from
+  // ../site-chrome.js - see WEBSITE_ARCHITECTURE_V1.md, Redesign-
+  // Schritt 5A. This is the first real subpage of the SIGNAL main-nav
+  // area (Abschnitt 2, WEBSITE_ARCHITECTURE_V1.md Abschnitt 1) - AKTUELL,
+  // KNOWLEDGE, LAB and DISCUSS are explicitly out of scope here.
+  //
+  // Real data: the `signals` table already exists in the live Supabase
+  // project (supabase/migrations/0001_init_schema.sql,
+  // 0003_signal_category_locale.sql), with columns id, category{en,de},
+  // title{en,de}, source, source_url, date_value, summary{en,de},
+  // jarvis_einordnung{en,de} ("why it matters"), published,
+  // related_discussion. Live-checked before writing this page: zero
+  // published rows exist today (real query against the live project
+  // returned an empty result, not an error) - so this page shows a
+  // real, non-fake empty state instead of invented signal entries, and
+  // still performs the same live fetch pattern already used on HOME
+  // (SiteChrome.isSupabaseConfigured() + restFetch('signals?select=*&
+  // published=eq.true')) so real signals appear here automatically once
+  // published, with no further page changes needed.
+  //
+  // The six rubrics (Modelle/Agenten/Forschung/Open Source/Hardware/
+  // Unternehmen & Entwicklungen) are a display-only categorization -
+  // explicitly NOT the same thing as a canonical topic (per
+  // WEBSITE_ARCHITECTURE_V1.md Abschnitt 5) - no topic register/backend
+  // is built here. The "signal as data" definition list documents the
+  // real DB fields (title/source/date/summary/jarvis_einordnung/
+  // published) plus two additional fields (open questions, later topic
+  // link) that are part of the intended information architecture for
+  // future detail pages but are NOT yet present in the schema - the
+  // note below the list says so explicitly, nothing is presented as
+  // already implemented that isn't. The SIGNAL -> LAB -> DISCUSS ->
+  // KNOWLEDGE flow is explicitly labeled as information architecture,
+  // not an automated pipeline. No fake current signal entries, no fake
+  // counters/badges anywhere on this page.
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "signal.eyebrow": { en: "J.A.R.V.I.S. NETWORK", de: "J.A.R.V.I.S. NETWORK" },
+    "signal.h1": { en: "Signal", de: "Signal" },
+    "signal.lede": { en: "What's happening out there — and why it's interesting for J.A.R.V.I.S.", de: "Was draußen passiert – und warum es für J.A.R.V.I.S. interessant ist." },
+    "signal.cta1": { en: "VIEW SIGNALS", de: "SIGNALE ANSEHEN" },
+    "signal.cta2": { en: "LEARN MORE", de: "MEHR ERFAHREN" },
+    "signal.fact1Label": { en: "RUBRICS", de: "RUBRIKEN" },
+    "signal.fact1Value": { en: "6 categories", de: "6 Kategorien" },
+    "signal.fact2Label": { en: "PUBLISHED", de: "VERÖFFENTLICHT" },
+    "signal.fact2Value": { en: "None yet", de: "Noch keine" },
+    "signal.fact3Label": { en: "FILTER", de: "FILTER" },
+    "signal.fact3Value": { en: "J.A.R.V.I.S.-relevant only", de: "Nur mit J.A.R.V.I.S.-Bezug" },
+    "signal.fact4Label": { en: "STATUS", de: "STATUS" },
+    "signal.fact4Value": { en: "Live", de: "Live" },
+
+    "signal.current.eyebrow": { en: "CURRENT SIGNALS", de: "AKTUELLE SIGNALE" },
+    "signal.current.title": { en: "Current signals.", de: "Aktuelle Signale." },
+
+    "signal.empty.p1": { en: "No signals published yet.", de: "Noch keine Signale veröffentlicht." },
+    "signal.empty.p2": {
+      en: "Developments will appear here once I've actually assessed them for J.A.R.V.I.S. — not before.",
+      de: "Hier erscheinen Entwicklungen, sobald ich sie tatsächlich für J.A.R.V.I.S. eingeordnet habe – nicht vorher."
+    },
+
+    "signal.rubrics.eyebrow": { en: "RUBRICS", de: "RUBRIKEN" },
+    "signal.rubrics.title": { en: "What SIGNAL watches.", de: "Was SIGNAL beobachtet." },
+
+    "signal.rubric.models.t": { en: "MODELS", de: "MODELLE" },
+    "signal.rubric.models.d": { en: "New models, versions, capabilities.", de: "Neue Modelle, Versionen, Fähigkeiten." },
+    "signal.rubric.agents.t": { en: "AGENTS", de: "AGENTEN" },
+    "signal.rubric.agents.d": { en: "Agent architecture, delegation, orchestration.", de: "Agentenarchitektur, Delegation, Orchestrierung." },
+    "signal.rubric.research.t": { en: "RESEARCH", de: "FORSCHUNG" },
+    "signal.rubric.research.d": { en: "Papers, methods, new technical approaches.", de: "Paper, Methoden, neue technische Ansätze." },
+    "signal.rubric.opensource.t": { en: "OPEN SOURCE", de: "OPEN SOURCE" },
+    "signal.rubric.opensource.d": { en: "Tools, models, frameworks, projects.", de: "Werkzeuge, Modelle, Frameworks, Projekte." },
+    "signal.rubric.hardware.t": { en: "HARDWARE", de: "HARDWARE" },
+    "signal.rubric.hardware.d": { en: "GPUs, memory, local AI hardware.", de: "GPU, Speicher, lokale AI-Hardware." },
+    "signal.rubric.companies.t": { en: "COMPANIES & DEVELOPMENTS", de: "UNTERNEHMEN & ENTWICKLUNGEN" },
+    "signal.rubric.companies.d": { en: "Companies, platforms, relevant product and market developments.", de: "Unternehmen, Plattformen, relevante Produkt-/Marktentwicklungen." },
+
+    "signal.latest.eyebrow": { en: "LATEST ASSESSMENTS", de: "ZULETZT EINGEORDNET" },
+    "signal.latest.title": { en: "Recently assessed.", de: "Zuletzt eingeordnet." },
+    "signal.latestEmpty.p1": { en: "Nothing assessed yet.", de: "Noch nichts eingeordnet." },
+
+    "signal.how.eyebrow": { en: "HOW SIGNAL WORKS", de: "WIE SIGNAL FUNKTIONIERT" },
+    "signal.how.title": { en: "How SIGNAL works.", de: "Wie SIGNAL funktioniert." },
+    "signal.how.quote": {
+      en: "A source says what was published. My assessment says why I find it interesting for J.A.R.V.I.S.",
+      de: "Eine Quelle sagt, was veröffentlicht wurde. Meine Einordnung sagt, warum ich es für J.A.R.V.I.S. interessant finde."
+    },
+
+    "signal.model.title": { en: "A signal, as data.", de: "Ein Signal als Datensatz." },
+
+    "signal.model.what.t": { en: "WHAT HAPPENED", de: "WAS IST PASSIERT?" },
+    "signal.model.what.d": { en: "The fact or event — what was actually published or announced.", de: "Das Ereignis oder der Fakt – was tatsächlich veröffentlicht oder angekündigt wurde." },
+    "signal.model.date.t": { en: "DATE", de: "DATUM" },
+    "signal.model.date.d": { en: "When it happened.", de: "Wann es passiert ist." },
+    "signal.model.source.t": { en: "SOURCE", de: "QUELLE" },
+    "signal.model.source.d": { en: "Where it came from, with a real link where one exists.", de: "Woher es stammt, mit einem echten Link, wenn vorhanden." },
+    "signal.model.assessment.t": { en: "MY ASSESSMENT", de: "MEINE EINORDNUNG" },
+    "signal.model.assessment.d": { en: "Why I find it interesting or questionable for J.A.R.V.I.S. — visually separated from the fact above.", de: "Warum ich es für J.A.R.V.I.S. interessant oder fraglich finde – visuell getrennt vom Fakt darüber." },
+    "signal.model.open.t": { en: "OPEN QUESTIONS", de: "OFFENE FRAGEN" },
+    "signal.model.open.d": { en: "What isn't clear yet.", de: "Was noch nicht klar ist." },
+    "signal.model.topic.t": { en: "TOPIC", de: "THEMA" },
+    "signal.model.topic.d": { en: "Later linked to a canonical topic — not yet, no topic register exists today.", de: "Später mit einem kanonischen Thema verknüpft – heute noch nicht, es existiert noch kein Themenregister." },
+
+    "signal.model.note": {
+      en: "The first four fields already exist in the real database (title, source, date, summary, assessment, publish status). Open questions and a topic link are part of the planned structure for future signal detail pages — not yet built.",
+      de: "Die ersten Felder existieren bereits real in der Datenbank (Titel, Quelle, Datum, Zusammenfassung, Einordnung, Veröffentlichungsstatus). Offene Fragen und eine Themenverknüpfung sind Teil der geplanten Struktur für künftige Signal-Detailseiten – noch nicht gebaut."
+    },
+
+    "signal.origin.title": { en: "A signal is a starting point, not an obligation.", de: "Ein Signal ist ein Ausgangspunkt, keine Verpflichtung." },
+
+    "signal.flow.note": {
+      en: "This shows the information architecture, not an already-automated workflow — not every signal goes through every stage.",
+      de: "Das zeigt die Informationsarchitektur, keinen bereits automatisierten Workflow – nicht jedes Signal durchläuft jede Stufe."
+    },
+
+    "signal.aktuell.title": { en: "Signal and Aktuell.", de: "Signal und Aktuell." },
+
+    "signal.connections.eyebrow": { en: "CONNECTION TO THE NETWORK", de: "VERBINDUNG ZUM NETWORK" },
+    "signal.connections.title": { en: "Connection to the Network.", de: "Verbindung zum Network." },
+    "signal.connections.hardware.t": { en: "PROJECT / HARDWARE", de: "PROJECT / HARDWARE" },
+    "signal.connections.hardware.q": { en: "When new local AI hardware becomes relevant.", de: "Wenn neue lokale AI-Hardware relevant wird." },
+    "signal.connections.browser.t": { en: "PROJECT / BROWSER", de: "PROJECT / BROWSER" },
+    "signal.connections.browser.q": { en: "When browser automation itself develops further.", de: "Wenn sich Browser-Automatisierung selbst weiterentwickelt." },
+    "signal.connections.agents.t": { en: "PROJECT / AGENTS", de: "PROJECT / AGENTEN" },
+    "signal.connections.agents.q": { en: "When agent architecture and delegation move forward.", de: "Wenn sich Agentenarchitektur und Delegation weiterentwickeln." }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "Signal — J.A.R.V.I.S. Network",
+    de: "Signal — J.A.R.V.I.S. Network"
+  });
+
+  var introParagraphs = {
+    en: [
+      "J.A.R.V.I.S. isn't built in a vacuum.",
+      "New models, research, open-source projects, hardware and companies keep changing what's technically possible.",
+      "SIGNAL doesn't just collect news.",
+      "Only what has a concrete connection to J.A.R.V.I.S. ends up here — not every AI headline is automatically a signal."
+    ],
+    de: [
+      "J.A.R.V.I.S. entsteht nicht im luftleeren Raum.",
+      "Neue Modelle, Forschung, Open-Source-Projekte, Hardware und Unternehmen verändern ständig, was technisch möglich ist.",
+      "SIGNAL sammelt nicht einfach Nachrichten.",
+      "Hier landet nur, was eine konkrete Verbindung zu J.A.R.V.I.S. hat – nicht jede KI-Schlagzeile ist automatisch ein Signal."
+    ]
+  };
+
+  var rubricsParagraphs = {
+    en: [
+      "Six rubrics, purely for display — not the same thing as a canonical topic register, which doesn't exist yet."
+    ],
+    de: [
+      "Sechs Rubriken, rein zur Darstellung – nicht dasselbe wie ein kanonisches Themenregister, das es noch nicht gibt."
+    ]
+  };
+  var rubricItems = [
+    { t: 'signal.rubric.models.t', d: 'signal.rubric.models.d' },
+    { t: 'signal.rubric.agents.t', d: 'signal.rubric.agents.d' },
+    { t: 'signal.rubric.research.t', d: 'signal.rubric.research.d' },
+    { t: 'signal.rubric.opensource.t', d: 'signal.rubric.opensource.d' },
+    { t: 'signal.rubric.hardware.t', d: 'signal.rubric.hardware.d' },
+    { t: 'signal.rubric.companies.t', d: 'signal.rubric.companies.d' }
+  ];
+
+  var latestParagraphs = {
+    en: [
+      "The most recently assessed developments, regardless of rubric — the same real data source as above, just ordered by when I actually looked at it."
+    ],
+    de: [
+      "Die zuletzt eingeordneten Entwicklungen, unabhängig von der Rubrik – dieselbe reale Datenquelle wie oben, nur danach sortiert, wann ich sie tatsächlich betrachtet habe."
+    ]
+  };
+
+  var modelItems = [
+    { term: 'signal.model.what.t', desc: 'signal.model.what.d' },
+    { term: 'signal.model.date.t', desc: 'signal.model.date.d' },
+    { term: 'signal.model.source.t', desc: 'signal.model.source.d' },
+    { term: 'signal.model.assessment.t', desc: 'signal.model.assessment.d' },
+    { term: 'signal.model.open.t', desc: 'signal.model.open.d' },
+    { term: 'signal.model.topic.t', desc: 'signal.model.topic.d' }
+  ];
+
+  var originParagraphs = {
+    en: [
+      "A signal can later lead to a Lab test, a discussion, or an entry in Knowledge — but not every signal has to go through every stage.",
+      "SIGNAL says \"this happened.\" Lab says \"I'm testing it.\" Discuss says \"we're talking about it.\" Knowledge says \"here's what we learned from it.\""
+    ],
+    de: [
+      "Ein Signal kann später zu einem Lab-Test, einer Diskussion oder einem Eintrag in Knowledge führen – aber nicht jedes Signal muss jede Stufe durchlaufen.",
+      "SIGNAL sagt „das ist passiert“. Lab sagt „ich teste es“. Discuss sagt „wir diskutieren es“. Knowledge sagt „das haben wir daraus gelernt“."
+    ]
+  };
+  var flowNodes = [
+    { en: "SIGNAL", de: "SIGNAL" },
+    { en: "LAB TEST", de: "LAB-TEST" },
+    { en: "DISCUSS", de: "DISCUSS" },
+    { en: "KNOWLEDGE", de: "KNOWLEDGE" }
+  ];
+
+  var aktuellParagraphs = {
+    en: [
+      "AKTUELL will later be a global stream of activity across the whole Network. SIGNAL is the canonical home for external developments — a signal can later show up in AKTUELL, but it won't be duplicated there.",
+      "AKTUELL itself doesn't exist yet; this page only establishes SIGNAL as the real, canonical source it would draw from."
+    ],
+    de: [
+      "AKTUELL wird später ein globaler Aktivitätsstream über das gesamte Network hinweg sein. SIGNAL ist die kanonische Heimat externer Entwicklungen – ein Signal kann später in AKTUELL auftauchen, wird dort aber nicht dupliziert.",
+      "AKTUELL selbst existiert noch nicht; diese Seite legt nur SIGNAL als die reale, kanonische Quelle fest, aus der es später schöpfen würde."
+    ]
+  };
+
+  var connectionsParagraphs = {
+    en: [
+      "When a signal is directly relevant to how J.A.R.V.I.S. is actually built, it can point to a real PROJECT page — only real links, never invented just to demonstrate a connection."
+    ],
+    de: [
+      "Wenn ein Signal direkt relevant dafür ist, wie J.A.R.V.I.S. tatsächlich gebaut ist, kann es auf eine reale PROJECT-Seite verweisen – nur echte Links, nie erfunden, um eine Verbindung zu zeigen."
+    ]
+  };
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function renderSignalStream(container, emptyEl, rows, lang) {
+    container.innerHTML = '';
+    if (!rows || !rows.length) {
+      emptyEl.hidden = false;
+      return;
+    }
+    emptyEl.hidden = true;
+    rows.forEach(function (r) {
+      var item = document.createElement('article');
+      item.className = 'signal-item';
+
+      var meta = document.createElement('div');
+      meta.className = 'meta';
+      var cat = document.createElement('span');
+      cat.className = 'cat';
+      cat.textContent = (r.cat && r.cat[lang]) || '';
+      var time = document.createElement('time');
+      var dateVal = (r.date && r.date[lang]) || '';
+      time.setAttribute('datetime', dateVal);
+      time.textContent = dateVal;
+      meta.appendChild(cat);
+      meta.appendChild(time);
+      if (r.src) {
+        var src = document.createElement('span');
+        src.textContent = (r.src[lang]) || '';
+        meta.appendChild(src);
+      }
+      item.appendChild(meta);
+
+      var h3 = document.createElement('h3');
+      h3.className = 'item-title';
+      h3.textContent = (r.title && r.title[lang]) || '';
+      item.appendChild(h3);
+
+      var fact = document.createElement('p');
+      fact.className = 'fact';
+      fact.textContent = (r.sum && r.sum[lang]) || '';
+      item.appendChild(fact);
+
+      var assessment = document.createElement('div');
+      assessment.className = 'assessment';
+      var label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = SiteChrome.t('signal.model.assessment.t');
+      var p = document.createElement('p');
+      p.textContent = (r.why && r.why[lang]) || '';
+      assessment.appendChild(label);
+      assessment.appendChild(p);
+      item.appendChild(assessment);
+
+      container.appendChild(item);
+    });
+  }
+
+  var liveSignals = [];
+
+  function renderSignal() {
+    var lang = SiteChrome.getLang();
+
+    SiteChrome.renderParagraphs(document.getElementById('signal-intro-body'), introParagraphs);
+
+    SiteChrome.renderParagraphs(document.getElementById('signal-rubrics-body'), rubricsParagraphs);
+    var rubricsList = document.getElementById('signal-rubrics-list');
+    if (rubricsList) {
+      rubricsList.innerHTML = '';
+      rubricItems.forEach(function (item) {
+        var div = document.createElement('div');
+        div.className = 'rubric-item';
+        var t = document.createElement('div');
+        t.className = 't';
+        t.textContent = SiteChrome.t(item.t);
+        var d = document.createElement('div');
+        d.className = 'd';
+        d.textContent = SiteChrome.t(item.d);
+        div.appendChild(t);
+        div.appendChild(d);
+        rubricsList.appendChild(div);
+      });
+    }
+
+    SiteChrome.renderParagraphs(document.getElementById('signal-latest-body'), latestParagraphs);
+
+    var modelList = document.getElementById('signal-model-list');
+    if (modelList) {
+      modelList.innerHTML = '';
+      modelItems.forEach(function (item) {
+        var li = document.createElement('li');
+        var term = document.createElement('span');
+        term.className = 'term';
+        term.textContent = SiteChrome.t(item.term);
+        var desc = document.createElement('span');
+        desc.className = 'desc';
+        desc.textContent = SiteChrome.t(item.desc);
+        li.appendChild(term);
+        li.appendChild(desc);
+        modelList.appendChild(li);
+      });
+    }
+    var modelNoteEl = document.getElementById('signal-model-note');
+    if (modelNoteEl) { modelNoteEl.textContent = SiteChrome.t('signal.model.note'); }
+
+    SiteChrome.renderParagraphs(document.getElementById('signal-origin-body'), originParagraphs);
+    SiteChrome.renderNodeFlow(document.getElementById('signal-flow-diagram'), flowNodes);
+    SiteChrome.renderParagraphs(document.getElementById('signal-aktuell-body'), aktuellParagraphs);
+
+    SiteChrome.renderParagraphs(document.getElementById('signal-connections-body'), connectionsParagraphs);
+
+    renderSignalStream(
+      document.getElementById('signal-current-stream'),
+      document.getElementById('signal-current-empty'),
+      liveSignals,
+      lang
+    );
+    renderSignalStream(
+      document.getElementById('signal-latest-stream'),
+      document.getElementById('signal-latest-empty'),
+      liveSignals,
+      lang
+    );
+  }
+
+  function loadLiveSignals() {
+    if (!SiteChrome.isSupabaseConfigured()) { return; }
+    SiteChrome.restFetch('signals?select=*&published=eq.true&order=date_value.desc')
+      .then(function (rows) {
+        if (!rows || !rows.length) { return; }
+        liveSignals = rows.map(function (r) {
+          return {
+            cat: r.category, title: r.title,
+            src: { en: r.source, de: r.source },
+            date: { en: r.date_value, de: r.date_value },
+            sum: r.summary, why: r.jarvis_einordnung
+          };
+        });
+        renderSignal();
+      })
+      .catch(function (e) { console.warn('[jarvis-network] live signals load failed:', e); });
+  }
+
+  SiteChrome.applyStaticStrings();
+  renderSignal();
+  SiteChrome.onLanguageChange(renderSignal);
+  loadLiveSignals();
+
+  SiteChrome.initMobileNav();
+  SiteChrome.initAuthAndAsk();
+</script>
+</body>
+</html>

@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Memory of J.A.R.V.I.S. — J.A.R.V.I.S. Project</title>
+<link rel="stylesheet" href="../../foundation.css" />
+<link rel="stylesheet" href="../../site-chrome.css" />
+<style>
+  /* GEDÄCHTNIS-page-only styles. Shared chrome (nav, breadcrumb,
+     grouped project navigation, login panel, Ask JARVIS panel, footer, section
+     shells, node-flow primitive, focus-visible) comes from
+     ../../site-chrome.css - see WEBSITE_ARCHITECTURE_V1.md, Abschnitt
+     14/Redesign-Schritt 4E. Deliberately calmer and "layered" rather
+     than KERN's flow-diagram energy or HARDWARE's tables - context
+     layers, a small privat/public contrast, few tiles (Abschnitt 20 of
+     the 4E-Auftrag). No brain graphic, no neural-network cliché, no
+     sci-fi memory orbs. */
+
+  .mem-hero { padding: 1.6rem 0 clamp(2.6rem, 5vw, 4rem); }
+  .mem-hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    letter-spacing: 0.01em;
+    max-width: 20ch;
+    margin-top: 0.6rem;
+  }
+  .mem-lede {
+    margin-top: 0.9rem;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: var(--ice);
+    font-weight: 500;
+  }
+  .mem-hero .body-copy { margin-top: 1.2rem; }
+
+  .body-copy { max-width: 64ch; }
+  .body-copy p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+  .body-copy p:last-child { margin-bottom: 0; }
+
+  .mem-section h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    max-width: 32ch;
+    margin-bottom: 1.2rem;
+  }
+  .mem-section h3 {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan-dim);
+    margin: 0 0 0.9rem;
+  }
+
+  /* Layer diagram (Section 3): four stacked layers, top-to-bottom,
+     with Collective Knowledge set visually apart as a separate,
+     non-chained box - it is not the fourth item in the same stack. */
+  .layer-flow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; margin-top: 1.4rem; }
+  .layer-flow .arch-node { font-size: 0.82rem; white-space: normal; max-width: 100%; }
+  .layer-flow .arch-arrow { display: block; padding: 0.28rem 0 0.28rem 1.1rem; transform: rotate(90deg); transform-origin: left center; }
+  .ck-aside {
+    margin-top: 1.6rem;
+    padding: 1rem 1.2rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: 10px;
+    max-width: 420px;
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+  .ck-aside strong { color: var(--ice); font-weight: 600; }
+
+  /* Definition list for the four-way split (A/B/C/D) and for
+     responsibilities-style groupings elsewhere - plain rows, not cards
+     (Abschnitt 20: "wenig Kacheln"). */
+  .def-list { margin: 0; padding: 0; list-style: none; max-width: 66ch; }
+  .def-list li { padding: 0.9rem 0; border-bottom: 1px solid var(--line); }
+  .def-list li:last-child { border-bottom: none; }
+  .def-list .term {
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-dim);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+  .def-list .desc { color: var(--muted); font-size: 0.94rem; line-height: 1.6; }
+  .def-list .tech { display: block; margin-top: 0.35rem; color: var(--muted); font-size: 0.8rem; font-style: italic; }
+
+  .plain-list { margin: 0.8rem 0 0; padding-left: 1.2rem; color: var(--muted); font-size: 0.95rem; line-height: 1.8; max-width: 64ch; }
+  .plain-list li { margin-bottom: 0.3rem; }
+
+  .mem-quote {
+    margin: 1.6rem 0;
+    padding: 1.1rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    color: var(--ice);
+    font-size: 1.02rem;
+    line-height: 1.6;
+    max-width: 52ch;
+  }
+
+  /* Real path flows (Section 4): same pattern as KERN's dual flow -
+     plain terms first, technical names in a clearly separate panel. */
+  .mem-flows { display: grid; grid-template-columns: 1fr 1fr; gap: 2.2rem; margin-top: 1.8rem; }
+  @media (max-width: 900px) { .mem-flows { grid-template-columns: 1fr; } }
+  .mem-flow-panel { border: 1px solid var(--line); border-radius: 12px; padding: clamp(1.4rem, 3vw, 1.8rem); background: var(--panel); }
+  .mem-flow-panel h3 { margin-bottom: 1.1rem; }
+  .mem-flow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+  .mem-flow .arch-node { font-size: 0.82rem; white-space: normal; max-width: 100%; }
+  .mem-flow .arch-arrow { display: block; padding: 0.28rem 0 0.28rem 1.1rem; transform: rotate(90deg); transform-origin: left center; }
+  .mem-flow-note { margin-top: 1rem; font-size: 0.8rem; color: var(--muted); font-style: italic; }
+
+  /* Status rows (Section 5): compact list with a scope tag, not cards. */
+  .status-rows { margin: 1rem 0 0; max-width: 66ch; }
+  .status-rows .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .status-rows .row:last-child { border-bottom: none; }
+  .status-rows .name { color: var(--white); font-size: 0.94rem; }
+  .status-rows .tag {
+    font-family: ui-monospace, monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan);
+    white-space: nowrap;
+    text-align: right;
+  }
+  .status-rows .tag.persisted { color: var(--st-experimental); }
+
+  /* Privat vs. Collective comparison (Section 6 / Abschnitt 17). */
+  .privacy-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    margin: 1.4rem 0;
+  }
+  @media (max-width: 640px) { .privacy-compare { grid-template-columns: 1fr; } }
+  .privacy-item { border: 1px solid var(--line); border-radius: 10px; padding: 1.2rem 1.3rem; background: var(--panel); }
+  .privacy-item.ck { background: linear-gradient(160deg, rgba(73,211,224,0.04), var(--panel) 65%); }
+  .privacy-item h3 { margin-bottom: 0.7rem; }
+  .privacy-item p { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.6; }
+
+  /* Small network-isolation flow (Section 8) - a short horizontal-ish
+     chain, vertical on narrow screens like everything else here. */
+  .iso-flow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; margin-top: 1.4rem; max-width: 420px; }
+  .iso-flow .arch-node { font-size: 0.8rem; white-space: normal; max-width: 100%; }
+  .iso-flow .arch-arrow { display: block; padding: 0.24rem 0 0.24rem 1.05rem; transform: rotate(90deg); transform-origin: left center; }
+
+  .mem-network-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+  }
+  .mem-network-link {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .mem-network-link:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+  .mem-network-link .t { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--cyan); }
+  .mem-network-link .q { margin-top: 0.4rem; color: var(--white); font-size: 0.9rem; }
+  .mem-network-link.future { opacity: 0.7; cursor: default; }
+  .mem-network-link.future .t { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="../../" data-i18n="nav.home">HOME</a>
+      <a href="../" class="current" data-i18n="nav.project">PROJECT</a>
+      <a href="../../signal/" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="../../lab/" data-i18n="nav.lab">LAB</a>
+      <a href="../../discuss/" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="../../ask/" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap breadcrumb">
+    <a href="../../" data-i18n="nav.home">HOME</a><span class="sep">/</span><a href="../" data-i18n="nav.project">PROJECT</a><span class="sep">/</span><span class="current" data-i18n="mem.breadcrumb">MEMORY</span>
+  </div>
+
+  <section class="block mem-hero">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="project.eyebrow">J.A.R.V.I.S. PROJECT</span>
+      <h1 data-i18n="mem.h1">The memory of J.A.R.V.I.S.</h1>
+      <p class="mem-lede" data-i18n="mem.lede">So a conversation doesn't start from zero every time.</p>
+      <div class="body-copy" id="mem-intro-body"></div>
+      <nav class="pnav" id="project-nav" aria-label="Project-Navigation"></nav>
+    </div>
+  </section>
+
+  <section class="block mem-section" id="mem-why">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="mem.why.eyebrow">WHY MEMORY</span>
+      <h2 data-i18n="mem.why.title">Why J.A.R.V.I.S. needs memory at all.</h2>
+      <div class="body-copy" id="mem-why-body"></div>
+      <blockquote class="mem-quote" data-i18n="mem.why.quote">A system that forgets everything isn't very helpful. A system that kept everything wouldn't sit right with me either.</blockquote>
+    </div>
+  </section>
+
+  <section class="block mem-section" id="mem-layers">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="mem.layers.eyebrow">THE LAYERS</span>
+      <h2 data-i18n="mem.layers.title">The different layers.</h2>
+      <div class="body-copy" id="mem-layers-body"></div>
+      <div class="layer-flow" id="mem-layer-flow" aria-hidden="true"></div>
+      <div class="ck-aside" id="mem-ck-aside"></div>
+
+      <ul class="def-list" id="mem-def-list" style="margin-top:2rem;"></ul>
+    </div>
+  </section>
+
+  <section class="block mem-section" id="mem-path">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="mem.path.eyebrow">THE REAL PATH</span>
+      <h2 data-i18n="mem.path.title">The real path through the system.</h2>
+      <div class="body-copy" id="mem-path-body"></div>
+      <div class="mem-flows">
+        <div class="mem-flow-panel">
+          <h3 data-i18n="mem.path.plain.title">IN PLAIN TERMS</h3>
+          <div class="mem-flow" id="mem-flow-plain" aria-hidden="true"></div>
+        </div>
+        <div class="mem-flow-panel">
+          <h3 data-i18n="mem.path.tech.title">TECHNICAL VIEW</h3>
+          <div class="mem-flow" id="mem-flow-tech" aria-hidden="true"></div>
+          <p class="mem-flow-note" data-i18n="mem.path.tech.note">Real class/module names from the current codebase (Core/brain.py, Core/state_manager.py, Core/dialog_manager.py, Memory/memory_manager.py) — a simplified view of the actual call order, not the full source.</p>
+        </div>
+      </div>
+      <div class="body-copy" id="mem-path-body-2" style="margin-top:1rem;"></div>
+    </div>
+  </section>
+
+  <section class="block mem-section" id="mem-remembers">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="mem.remembers.eyebrow">WHAT'S REMEMBERED TODAY</span>
+      <h2 data-i18n="mem.remembers.title">What J.A.R.V.I.S. actually remembers today.</h2>
+      <div class="status-rows" id="mem-remembers-list"></div>
+    </div>
+  </section>
+
+  <section class="block mem-section" id="mem-not-remember">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="mem.notremember.eyebrow">SCOPE</span>
+      <h2 data-i18n="mem.notremember.title">What he deliberately does NOT remember.</h2>
+      <ul class="plain-list" id="mem-notremember-list"></ul>
+      <div class="body-copy" id="mem-notremember-body" style="margin-top:1rem;"></div>
+
+      <h3 style="margin-top:1.8rem;" data-i18n="mem.privacy.title">PERSONAL MEMORY VS. COLLECTIVE KNOWLEDGE</h3>
+      <div class="privacy-compare">
+        <div class="privacy-item">
+          <h3 data-i18n="mem.privacy.personal.t">PERSONAL MEMORY</h3>
+          <p data-i18n="mem.privacy.personal.d">What's relevant for my J.A.R.V.I.S., about me and my tasks.</p>
+        </div>
+        <div class="privacy-item ck">
+          <h3 data-i18n="mem.privacy.ck.t">COLLECTIVE KNOWLEDGE</h3>
+          <p data-i18n="mem.privacy.ck.d">What deliberately becomes shared, checkable Network knowledge.</p>
+        </div>
+      </div>
+      <div class="body-copy" id="mem-privacy-body"></div>
+    </div>
+  </section>
+
+  <section class="block mem-section" id="mem-control">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="mem.control.eyebrow">SEPARATION &amp; SAFETY</span>
+      <h2 data-i18n="mem.control.title">Separation and safety.</h2>
+      <div class="body-copy" id="mem-control-body"></div>
+    </div>
+  </section>
+
+  <section class="block mem-section" id="mem-isolation">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="mem.isolation.eyebrow">NETWORK ISOLATION</span>
+      <h2 data-i18n="mem.isolation.title">Network isolation.</h2>
+      <div class="body-copy" id="mem-isolation-body"></div>
+      <div class="iso-flow" id="mem-isolation-flow" aria-hidden="true"></div>
+      <div class="body-copy" id="mem-isolation-body-2" style="margin-top:1rem;"></div>
+    </div>
+  </section>
+
+  <section class="block mem-section" id="mem-limits">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="mem.limits.eyebrow">KNOWN LIMITS</span>
+      <h2 data-i18n="mem.limits.title">Known limits.</h2>
+      <ul class="plain-list" id="mem-limits-list"></ul>
+    </div>
+  </section>
+
+  <section class="block mem-section" id="mem-connections" style="border-bottom:none;">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="mem.connections.eyebrow">CONNECTED TO</span>
+      <h2 data-i18n="mem.connections.title">Connection to other PROJECT areas.</h2>
+      <div class="mem-network-links">
+        <a class="mem-network-link" href="../">
+          <div class="t mono" data-i18n="project.nav.overview">OVERVIEW</div>
+          <div class="q" data-i18n="mem.connections.overview">Where memory fits among everything else.</div>
+        </a>
+        <a class="mem-network-link" href="../geschichte/">
+          <div class="t mono" data-i18n="project.nav.story">STORY</div>
+          <div class="q" data-i18n="mem.connections.story">How the memory layers came to be.</div>
+        </a>
+        <a class="mem-network-link" href="../kern/">
+          <div class="t mono" data-i18n="project.nav.core">CORE</div>
+          <div class="q" data-i18n="mem.connections.core">How the core reads and updates memory.</div>
+        </a>
+        <a class="mem-network-link" href="../hardware/">
+          <div class="t mono" data-i18n="project.nav.hardware">HARDWARE</div>
+          <div class="q" data-i18n="mem.connections.hardware">What memory actually runs on.</div>
+        </a>
+        <a class="mem-network-link" href="../planung/">
+          <div class="t mono" data-i18n="mem.connections.planning.t">PLANNING</div>
+          <div class="q" data-i18n="mem.connections.planning.q">How memory feeds into concrete steps.</div>
+        </a>
+        <div class="mem-network-link future">
+          <div class="t mono" data-i18n="mem.connections.agents.t">AGENTS</div>
+          <div class="q" data-i18n="mem.connections.agents.q">Which memory an agent is allowed to use.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="../" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="../../signal/" data-i18n="footer.news">AI Signal</a>
+        <a href="../../lab/" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="../../discuss/" data-i18n="footer.discussions">Discussions</a>
+        <a href="../../discuss/" data-i18n="footer.models">Models</a>
+        <a href="../../discuss/" data-i18n="footer.ideas">Ideas</a>
+        <a href="../../discuss/" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="../../#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../../#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../../#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+  </div>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+    </div>
+  </div>
+
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+</div>
+
+<script src="../../site-chrome.js"></script>
+<script src="../../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // GEDÄCHTNIS-page-only content: strings, flow data, and the small
+  // renderMemory() function. Everything global (i18n engine, mobile
+  // nav, login/logout, Ask JARVIS wiring, Supabase config/REST helpers)
+  // comes from ../../site-chrome.js - see Redesign-Schritt 4E. This
+  // page loads no Observation/Reaction code and no HOME-rendering code.
+  //
+  // Fact-checking note: verified against current Core/state_manager.py,
+  // Core/dialog_manager.py, Core/brain.py (lines ~697-753, the
+  // _isolated_network_dialog_scope network-turn isolation) and
+  // Memory/memory_manager.py before writing this page (read-only, no
+  // Core file changed). DialogManager/LocalStateManager are volatile,
+  // in-process, conversation-scoped (conversation_id; history capped at
+  // max_turns, default 6). MemoryManager is the separate, real,
+  // currently-wired long-term store, persisted per user_id to
+  // Memory/memory.json. Collective Knowledge (Apps/JARVIS-Network,
+  // Supabase) has zero code-level connection to Core today - confirmed
+  // by grep, not merely assumed.
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "project.eyebrow": { en: "J.A.R.V.I.S. PROJECT", de: "J.A.R.V.I.S. PROJECT" },
+    "project.nav.overview": { en: "OVERVIEW", de: "ÜBERSICHT" },
+    "project.nav.story": { en: "STORY", de: "GESCHICHTE" },
+    "project.nav.core": { en: "CORE", de: "KERN" },
+    "project.nav.memory": { en: "MEMORY", de: "GEDÄCHTNIS" },
+    "project.nav.planning": { en: "PLANNING", de: "PLANUNG" },
+    "project.nav.hardware": { en: "HARDWARE", de: "HARDWARE" },
+    "mem.breadcrumb": { en: "MEMORY", de: "GEDÄCHTNIS" },
+    "mem.h1": { en: "The memory of J.A.R.V.I.S.", de: "Das Gedächtnis von J.A.R.V.I.S." },
+    "mem.lede": { en: "So a conversation doesn't start from zero every time.", de: "Damit ein Gespräch nicht jedes Mal bei Null beginnt." },
+
+    "mem.why.eyebrow": { en: "WHY MEMORY", de: "WARUM GEDÄCHTNIS" },
+    "mem.why.title": { en: "Why J.A.R.V.I.S. needs memory at all.", de: "Warum J.A.R.V.I.S. überhaupt Gedächtnis braucht." },
+    "mem.why.quote": {
+      en: "A system that forgets everything isn't very helpful. A system that kept everything wouldn't sit right with me either.",
+      de: "Ein System, das alles vergisst, ist wenig hilfreich. Ein System, das alles behält, wäre mir aber genauso wenig recht."
+    },
+
+    "mem.layers.eyebrow": { en: "THE LAYERS", de: "DIE EBENEN" },
+    "mem.layers.title": { en: "The different layers.", de: "Die verschiedenen Ebenen." },
+
+    "mem.def.a.term": { en: "A. DIALOG CONTEXT", de: "A. DIALOGKONTEXT" },
+    "mem.def.a.desc": { en: "What's relevant for the current conversation.", de: "Was für das aktuelle Gespräch relevant ist." },
+    "mem.def.a.tech": { en: "DialogManager — scoped to one conversation_id, volatile (in-process), history capped at a few recent turns.", de: "DialogManager – gebunden an eine conversation_id, flüchtig (nur im Prozess), Historie auf wenige letzte Turns begrenzt." },
+    "mem.def.b.term": { en: "B. STATE", de: "B. ZUSTAND" },
+    "mem.def.b.desc": { en: "What J.A.R.V.I.S. has to know about the current run / turn / system state.", de: "Was J.A.R.V.I.S. über den aktuellen Lauf / Turn / Systemzustand wissen muss." },
+    "mem.def.b.tech": { en: "LocalStateManager — versioned state envelopes for the current input and task; volatile.", de: "LocalStateManager – versionierte Zustandsobjekte für aktuelle Eingabe und Aufgabe; flüchtig." },
+    "mem.def.c.term": { en: "C. MEMORY", de: "C. ERINNERUNG" },
+    "mem.def.c.desc": { en: "What's kept over a longer period of time.", de: "Was über einen längeren Zeitraum erhalten bleibt." },
+    "mem.def.c.tech": { en: "MemoryManager — persisted to disk, bound to a user_id, categories like websites, projects, files, workflows.", de: "MemoryManager – auf Datenträger persistiert, an eine user_id gebunden, Kategorien wie Websites, Projekte, Dateien, Arbeitsabläufe." },
+    "mem.def.d.term": { en: "D. COLLECTIVE KNOWLEDGE", de: "D. COLLECTIVE KNOWLEDGE" },
+    "mem.def.d.desc": { en: "The Network's shared, public knowledge.", de: "Gemeinsames, öffentliches Wissen des Networks." },
+    "mem.def.d.tech": { en: "A separate Supabase-backed feature on the Network website — no code-level connection to Core's memory today.", de: "Ein separates, Supabase-basiertes Feature der Network-Website – heute ohne Code-Verbindung zum Gedächtnis des Kerns." },
+
+    "mem.ck.aside": {
+      en: "<strong>Network Knowledge ≠ personal memory.</strong> Collective Knowledge is shown here for orientation, but it isn't part of the layer chain above it — it's a separate, public system.",
+      de: "<strong>Network-Wissen ≠ persönliches Gedächtnis.</strong> Collective Knowledge wird hier zur Orientierung gezeigt, ist aber nicht Teil der Ebenen-Kette darüber – sondern ein eigenständiges, öffentliches System."
+    },
+
+    "mem.path.eyebrow": { en: "THE REAL PATH", de: "DER REALE WEG" },
+    "mem.path.title": { en: "The real path through the system.", de: "Der reale Weg durch das System." },
+    "mem.path.plain.title": { en: "IN PLAIN TERMS", de: "FÜR ALLE VERSTÄNDLICH" },
+    "mem.path.tech.title": { en: "TECHNICAL VIEW", de: "TECHNISCHE SICHT" },
+    "mem.path.tech.note": {
+      en: "Real class/module names from the current codebase (Core/brain.py, Core/state_manager.py, Core/dialog_manager.py, Memory/memory_manager.py) — a simplified view of the actual call order, not the full source.",
+      de: "Echte Klassen-/Modulnamen aus dem aktuellen Code (Core/brain.py, Core/state_manager.py, Core/dialog_manager.py, Memory/memory_manager.py) – eine vereinfachte Sicht auf die tatsächliche Aufrufreihenfolge, nicht der vollständige Quellcode."
+    },
+
+    "mem.remembers.eyebrow": { en: "WHAT'S REMEMBERED TODAY", de: "WAS MERKT SICH J.A.R.V.I.S. HEUTE" },
+    "mem.remembers.title": { en: "What J.A.R.V.I.S. actually remembers today.", de: "Was merkt sich J.A.R.V.I.S. heute tatsächlich?" },
+
+    "mem.notremember.eyebrow": { en: "SCOPE", de: "ABGRENZUNG" },
+    "mem.notremember.title": { en: "What he deliberately does NOT remember.", de: "Was merkt er sich bewusst nicht?" },
+    "mem.notremember.item1": { en: "not automatically every piece of information, forever", de: "nicht automatisch jede Information dauerhaft" },
+    "mem.notremember.item2": { en: "not automatically Network dialogs across different users", de: "nicht automatisch Network-Dialoge über Nutzer hinweg" },
+    "mem.notremember.item3": { en: "no unchecked sharing of personal memory into Collective Knowledge", de: "kein ungeprüftes Teilen privaten Gedächtnisses ins Collective Knowledge" },
+    "mem.notremember.item4": { en: "no single, global shared conversation history", de: "keine globale, gemeinsame Gesprächshistorie" },
+
+    "mem.privacy.title": { en: "PERSONAL MEMORY VS. COLLECTIVE KNOWLEDGE", de: "PERSÖNLICHES GEDÄCHTNIS VS. COLLECTIVE KNOWLEDGE" },
+    "mem.privacy.personal.t": { en: "PERSONAL MEMORY", de: "PERSÖNLICHES GEDÄCHTNIS" },
+    "mem.privacy.personal.d": { en: "What's relevant for my J.A.R.V.I.S., about me and my tasks.", de: "Was für meinen J.A.R.V.I.S. über mich / meine Aufgaben relevant ist." },
+    "mem.privacy.ck.t": { en: "COLLECTIVE KNOWLEDGE", de: "COLLECTIVE KNOWLEDGE" },
+    "mem.privacy.ck.d": { en: "What deliberately becomes shared, checkable Network knowledge.", de: "Was bewusst als gemeinsames, überprüfbares Network-Wissen entsteht." },
+
+    "mem.control.eyebrow": { en: "SEPARATION & SAFETY", de: "TRENNUNG & SICHERHEIT" },
+    "mem.control.title": { en: "Separation and safety.", de: "Trennung & Sicherheit." },
+
+    "mem.isolation.eyebrow": { en: "NETWORK ISOLATION", de: "NETWORK-ISOLATION" },
+    "mem.isolation.title": { en: "Network isolation.", de: "Network-Isolation." },
+
+    "mem.limits.eyebrow": { en: "KNOWN LIMITS", de: "BEKANNTE GRENZEN" },
+    "mem.limits.title": { en: "Known limits.", de: "Bekannte Grenzen." },
+
+    "mem.connections.eyebrow": { en: "CONNECTED TO", de: "VERBUNDEN MIT" },
+    "mem.connections.title": { en: "Connection to other PROJECT areas.", de: "Verbindung zu anderen PROJECT-Bereichen." },
+    "mem.connections.overview": { en: "Where memory fits among everything else.", de: "Wo das Gedächtnis unter allem anderen einzuordnen ist." },
+    "mem.connections.story": { en: "How the memory layers came to be.", de: "Wie die Gedächtnis-Ebenen entstanden sind." },
+    "mem.connections.core": { en: "How the core reads and updates memory.", de: "Wie der Kern das Gedächtnis liest und aktualisiert." },
+    "mem.connections.hardware": { en: "What memory actually runs on.", de: "Worauf das Gedächtnis tatsächlich läuft." },
+    "mem.connections.planning.t": { en: "PLANNING", de: "PLANUNG" },
+    "mem.connections.planning.q": { en: "How memory feeds into concrete steps.", de: "Wie Gedächtnis in konkrete Schritte einfließt." },
+    "mem.connections.agents.t": { en: "AGENTS", de: "AGENTEN" },
+    "mem.connections.agents.q": { en: "Which memory an agent is allowed to use.", de: "Welches Gedächtnis ein Agent nutzen darf." }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "The Memory of J.A.R.V.I.S. — J.A.R.V.I.S. Project",
+    de: "Das Gedächtnis von J.A.R.V.I.S. — J.A.R.V.I.S. Project"
+  });
+
+  var introParagraphs = {
+    en: [
+      "An assistant without memory can be remarkably patient.",
+      "It just ends up learning the same thing over and over again.",
+      "For J.A.R.V.I.S. it isn't enough to process a single input in isolation. He needs context, state, and — where it's sensible and permitted — longer-term memory."
+    ],
+    de: [
+      "Ein Assistent ohne Gedächtnis kann erstaunlich geduldig sein.",
+      "Er lernt dieselbe Sache schließlich immer wieder neu.",
+      "Für J.A.R.V.I.S. reicht es deshalb nicht, nur eine einzelne Eingabe zu verarbeiten. Er braucht Kontext, Zustand und – dort wo es sinnvoll und erlaubt ist – längerfristige Erinnerung."
+    ]
+  };
+
+  var whyParagraphs = {
+    en: [
+      "Without context, every message stands on its own.",
+      "With context, J.A.R.V.I.S. can understand references — what \"that\" or \"do it again\" actually refers to.",
+      "With longer-term memory, certain information can stay relevant beyond a single conversation.",
+      "But: more memory isn't automatically better."
+    ],
+    de: [
+      "Ohne Kontext steht jede Nachricht für sich.",
+      "Mit Kontext kann J.A.R.V.I.S. Bezüge verstehen – worauf sich „das\" oder „mach das nochmal\" eigentlich bezieht.",
+      "Mit längerfristiger Erinnerung können bestimmte Informationen über eine einzelne Unterhaltung hinaus relevant bleiben.",
+      "Aber: Mehr Erinnerung ist nicht automatisch besser."
+    ]
+  };
+
+  var layersIntroParagraphs = {
+    en: [
+      "This page deliberately separates four different things that everyday language tends to lump together as \"memory\"."
+    ],
+    de: [
+      "Diese Seite unterscheidet bewusst vier verschiedene Dinge, die im Alltag gern alle als „Gedächtnis\" durcheinandergeworfen werden."
+    ]
+  };
+  var layerFlow = [
+    { en: "CURRENT TURN", de: "AKTUELLER TURN" },
+    { en: "DIALOG CONTEXT", de: "DIALOGKONTEXT" },
+    { en: "SYSTEM / TASK STATE", de: "SYSTEM-/TASK-STATE" },
+    { en: "LONGER-TERM MEMORY", de: "LÄNGERFRISTIGE ERINNERUNG" }
+  ];
+  var defItems = [
+    { term: 'mem.def.a.term', desc: 'mem.def.a.desc', tech: 'mem.def.a.tech' },
+    { term: 'mem.def.b.term', desc: 'mem.def.b.desc', tech: 'mem.def.b.tech' },
+    { term: 'mem.def.c.term', desc: 'mem.def.c.desc', tech: 'mem.def.c.tech' },
+    { term: 'mem.def.d.term', desc: 'mem.def.d.desc', tech: 'mem.def.d.tech' }
+  ];
+
+  var pathParagraphs = {
+    en: [
+      "This is the real, current path — checked against today's code before writing this page, not a historical or planned diagram."
+    ],
+    de: [
+      "Das ist der reale, aktuelle Weg – vor dem Schreiben dieser Seite gegen den heutigen Code geprüft, kein historisches oder geplantes Diagramm."
+    ]
+  };
+  var flowPlain = [
+    { en: "INPUT", de: "EINGABE" },
+    { en: "CHECK DIALOG CONTEXT", de: "DIALOGKONTEXT PRÜFEN" },
+    { en: "CHECK STATE", de: "ZUSTAND PRÜFEN" },
+    { en: "DECISION / PLANNING", de: "ENTSCHEIDUNG / PLANUNG" },
+    { en: "RESULT", de: "ERGEBNIS" },
+    { en: "UPDATE CONTEXT / STATE", de: "KONTEXT / ZUSTAND AKTUALISIEREN" }
+  ];
+  var flowTech = [
+    { en: "JarvisBrain", de: "JarvisBrain" },
+    { en: "LocalStateManager (current input scope)", de: "LocalStateManager (Turn-Zustand)" },
+    { en: "DialogManager (conversation_id)", de: "DialogManager (conversation_id)" },
+    { en: "Router / Planner reads the snapshot", de: "Router / Planner liest Snapshot" },
+    { en: "Result", de: "Ergebnis" },
+    { en: "State / dialog update", de: "State-/Dialog-Update" }
+  ];
+  var pathParagraphs2 = {
+    en: [
+      "Longer-term memory (MemoryManager) isn't a fixed part of this per-turn cycle — it's read or written on purpose by specific components (for example file/program/website resolvers, or workflow learning) when it's actually relevant."
+    ],
+    de: [
+      "Die längerfristige Erinnerung (MemoryManager) ist kein fester Bestandteil dieses Turn-Zyklus – sie wird gezielt von einzelnen Komponenten (zum Beispiel Datei-/Programm-/Website-Resolvern oder dem Workflow-Lernen) gelesen oder geschrieben, wenn es fachlich sinnvoll ist."
+    ]
+  };
+
+  var remembersRows = [
+    { n: { en: 'Current input & turn state', de: 'Aktuelle Eingabe & Turn-Zustand' }, s: { en: 'SHORT-LIVED', de: 'KURZLEBIG' }, persisted: false },
+    { n: { en: 'Recent messages, goal, topic in the running conversation (a few recent turns)', de: 'Letzte Nachrichten, Ziel, Thema im laufenden Gespräch (wenige letzte Turns)' }, s: { en: 'CONVERSATION, VOLATILE', de: 'CONVERSATION, FLÜCHTIG' }, persisted: false },
+    { n: { en: 'Websites, people, machines, projects, notes, folders, files, programs J.A.R.V.I.S. is told to remember', de: 'Websites, Personen, Rechner, Projekte, Notizen, Ordner, Dateien, Programme, die J.A.R.V.I.S. merken soll' }, s: { en: 'PERSISTED, PER USER', de: 'PERSISTIERT, PRO NUTZER' }, persisted: true },
+    { n: { en: 'Learned workflows & correction patterns', de: 'Gelernte Arbeitsabläufe & Korrekturmuster' }, s: { en: 'PERSISTED, PER USER', de: 'PERSISTIERT, PRO NUTZER' }, persisted: true }
+  ];
+
+  var notRememberParagraphs = {
+    en: [
+      "What J.A.R.V.I.S. is allowed to know about me, and what the Network learns together, are two different things."
+    ],
+    de: [
+      "Was J.A.R.V.I.S. über mich wissen darf und was das Network gemeinsam lernt, sind zwei verschiedene Dinge."
+    ]
+  };
+  var privacyParagraphs = {
+    en: [
+      "Both can relate to each other later, but they don't automatically exchange data today."
+    ],
+    de: [
+      "Beide dürfen später Beziehungen zueinander haben, tauschen heute aber nicht automatisch Daten aus."
+    ]
+  };
+
+  var controlParagraphs = {
+    en: [
+      "With memory, the most important question isn't just: what can be stored?",
+      "It's just as much: what should actually be stored — and for whom?",
+      "Every memory entry is bound to a user identity. Entries without a clear match are held in a separate, fenced-off area first and require an explicit local confirmation before they're attached to a real user profile."
+    ],
+    de: [
+      "Bei Gedächtnis ist die wichtigste Frage nicht nur: Was kann gespeichert werden?",
+      "Sondern genauso: Was sollte überhaupt gespeichert werden – und für wen?",
+      "Jeder Erinnerungseintrag ist an eine Nutzerkennung gebunden. Einträge ohne eindeutige Zuordnung landen zunächst in einem separaten, gesperrten Bereich und müssen erst lokal ausdrücklich bestätigt werden, bevor sie einem echten Nutzerprofil zugeordnet werden."
+    ]
+  };
+
+  var isolationParagraphs = {
+    en: [
+      "Every request coming in through the Network gets its own, completely empty dialog context — a fresh instance with no access to the history, goals or topics of the local conversation."
+    ],
+    de: [
+      "Jede Anfrage über das Network bekommt einen komplett eigenen, leeren Dialogkontext – eine frische Instanz ohne Zugriff auf die Historie, Ziele oder Themen des lokalen Gesprächs."
+    ]
+  };
+  var isolationFlow = [
+    { en: "NETWORK REQUEST", de: "NETWORK-ANFRAGE" },
+    { en: "FRESH, EMPTY DIALOG CONTEXT", de: "FRISCHER, LEERER DIALOGKONTEXT" },
+    { en: "PROCESSING", de: "VERARBEITUNG" },
+    { en: "ANSWER", de: "ANTWORT" },
+    { en: "ORIGINAL CONTEXT RESTORED", de: "URSPRÜNGLICHER KONTEXT WIEDERHERGESTELLT" }
+  ];
+  var isolationParagraphs2 = {
+    en: [
+      "This is exactly why a Network question can never accidentally blend into a running local conversation — for example, a question about AI agents can't suddenly get answered from a completely different topic that happened to be active in another context."
+    ],
+    de: [
+      "Genau deshalb kann eine Network-Frage niemals versehentlich mit einem laufenden lokalen Gespräch vermischt werden – zum Beispiel kann eine Frage über KI-Agenten nicht plötzlich aus einem völlig anderen Thema heraus beantwortet werden, das gerade in einem anderen Kontext aktiv war."
+    ]
+  };
+
+  var limitsItems = {
+    en: [
+      "Dialog context is deliberately limited to a handful of recent messages — older details fall out of the immediate context.",
+      "Even with correct context, the model can still misinterpret something.",
+      "Long, tangled conversations are a challenge for any context window.",
+      "Having stored something doesn't automatically mean it was understood correctly.",
+      "Keeping different conversation contexts apart is critical, and is treated accordingly.",
+      "Memory and state systems keep evolving alongside the rest of the project."
+    ],
+    de: [
+      "Der Dialogkontext ist bewusst auf wenige zurückliegende Nachrichten begrenzt – ältere Details fallen aus dem unmittelbaren Kontext heraus.",
+      "Selbst mit korrektem Kontext kann das Modell etwas falsch interpretieren.",
+      "Lange, verschachtelte Dialoge sind für jedes Kontextfenster eine Herausforderung.",
+      "Etwas gespeichert zu haben bedeutet nicht automatisch, dass es richtig verstanden wurde.",
+      "Die Trennung verschiedener Gesprächskontexte ist entscheidend und wird entsprechend ernst genommen.",
+      "Gedächtnis- und Zustandssysteme entwickeln sich mit dem restlichen Projekt weiter."
+    ]
+  };
+
+  function renderMemory() {
+    var lang = SiteChrome.getLang();
+
+    SiteChrome.renderParagraphs(document.getElementById('mem-intro-body'), introParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('mem-why-body'), whyParagraphs);
+
+    SiteChrome.renderParagraphs(document.getElementById('mem-layers-body'), layersIntroParagraphs);
+    SiteChrome.renderNodeFlow(document.getElementById('mem-layer-flow'), layerFlow);
+    var ckAside = document.getElementById('mem-ck-aside');
+    if (ckAside) { ckAside.innerHTML = SiteChrome.t('mem.ck.aside'); }
+
+    var defList = document.getElementById('mem-def-list');
+    if (defList) {
+      defList.innerHTML = '';
+      defItems.forEach(function (item) {
+        var li = document.createElement('li');
+        var term = document.createElement('span');
+        term.className = 'term';
+        term.textContent = SiteChrome.t(item.term);
+        var desc = document.createElement('span');
+        desc.className = 'desc';
+        desc.textContent = SiteChrome.t(item.desc);
+        var tech = document.createElement('span');
+        tech.className = 'tech';
+        tech.textContent = SiteChrome.t(item.tech);
+        li.appendChild(term);
+        li.appendChild(desc);
+        li.appendChild(tech);
+        defList.appendChild(li);
+      });
+    }
+
+    SiteChrome.renderParagraphs(document.getElementById('mem-path-body'), pathParagraphs);
+    SiteChrome.renderNodeFlow(document.getElementById('mem-flow-plain'), flowPlain);
+    SiteChrome.renderNodeFlow(document.getElementById('mem-flow-tech'), flowTech);
+    SiteChrome.renderParagraphs(document.getElementById('mem-path-body-2'), pathParagraphs2);
+
+    var remembersList = document.getElementById('mem-remembers-list');
+    if (remembersList) {
+      remembersList.innerHTML = '';
+      remembersRows.forEach(function (row) {
+        var div = document.createElement('div');
+        div.className = 'row';
+        var name = document.createElement('span');
+        name.className = 'name';
+        name.textContent = row.n[lang];
+        var tag = document.createElement('span');
+        tag.className = 'tag' + (row.persisted ? ' persisted' : '');
+        tag.textContent = row.s[lang];
+        div.appendChild(name);
+        div.appendChild(tag);
+        remembersList.appendChild(div);
+      });
+    }
+
+    var notRememberList = document.getElementById('mem-notremember-list');
+    if (notRememberList) {
+      notRememberList.innerHTML = '';
+      ['mem.notremember.item1', 'mem.notremember.item2', 'mem.notremember.item3', 'mem.notremember.item4'].forEach(function (key) {
+        var li = document.createElement('li');
+        li.textContent = SiteChrome.t(key);
+        notRememberList.appendChild(li);
+      });
+    }
+    SiteChrome.renderParagraphs(document.getElementById('mem-notremember-body'), notRememberParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('mem-privacy-body'), privacyParagraphs);
+
+    SiteChrome.renderParagraphs(document.getElementById('mem-control-body'), controlParagraphs);
+
+    SiteChrome.renderParagraphs(document.getElementById('mem-isolation-body'), isolationParagraphs);
+    SiteChrome.renderNodeFlow(document.getElementById('mem-isolation-flow'), isolationFlow);
+    SiteChrome.renderParagraphs(document.getElementById('mem-isolation-body-2'), isolationParagraphs2);
+
+    var limitsList = document.getElementById('mem-limits-list');
+    if (limitsList) {
+      limitsList.innerHTML = '';
+      limitsItems[lang].forEach(function (text) {
+        var li = document.createElement('li');
+        li.textContent = text;
+        limitsList.appendChild(li);
+      });
+    }
+  }
+
+  SiteChrome.applyStaticStrings();
+  renderMemory();
+  SiteChrome.onLanguageChange(renderMemory);
+
+  SiteChrome.initMobileNav();
+  SiteChrome.initProjectNav('memory', '../');
+  SiteChrome.initAuthAndAsk();
+</script>
+</body>
+</html>

@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Machine Behind J.A.R.V.I.S. — J.A.R.V.I.S. Project</title>
+<link rel="stylesheet" href="../../foundation.css" />
+<link rel="stylesheet" href="../../site-chrome.css" />
+<style>
+  /* HARDWARE-page-only styles. Shared chrome (nav, breadcrumb,
+     grouped project navigation, login panel, Ask JARVIS panel, footer, section
+     shells, node-flow primitive, focus-visible) comes from
+     ../../site-chrome.css - see WEBSITE_ARCHITECTURE_V1.md, Abschnitt
+     14/Redesign-Schritt 4C. Slightly more technical than PROJECT/
+     GESCHICHTE (Abschnitt 21 of the 4C-Auftrag) - diagrams, scales and
+     tables instead of a warm editorial read - but still the same
+     JARVIS visual family: no neon, no gamer-PC look, no product photos. */
+
+  .hw-hero { padding: 1.6rem 0 clamp(2.6rem, 5vw, 4rem); }
+  .hw-hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    letter-spacing: 0.01em;
+    max-width: 20ch;
+    margin-top: 0.6rem;
+  }
+
+  .body-copy { max-width: 66ch; }
+  .body-copy p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+  .body-copy p:last-child { margin-bottom: 0; }
+  .body-copy strong { color: var(--ice); font-weight: 600; }
+
+  .hw-section h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3.2vw, 2.1rem);
+    max-width: 30ch;
+    margin-bottom: 1.2rem;
+  }
+  .hw-section h3 {
+    font-family: ui-monospace, monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    color: var(--cyan-dim);
+    margin: 1.8rem 0 0.8rem;
+  }
+
+  /* Model-size scale: reuses the shared .arch-node/.arch-arrow primitive,
+     stacked vertically so it reads top-to-bottom on any width instead of
+     forcing a wide horizontal row (Abschnitt 24/25). */
+  .size-scale {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    margin: 1.6rem 0;
+  }
+  .size-scale .arch-node { font-family: ui-monospace, monospace; font-size: 0.8rem; white-space: normal; max-width: 100%; }
+  .size-scale .arch-arrow { display: block; padding: 0.25rem 0 0.25rem 1.05rem; transform: rotate(90deg); transform-origin: left center; }
+
+  /* Responsive table wrapper: the wrapper scrolls horizontally on
+     narrow viewports, never the whole page (Abschnitt 24). */
+  .table-scroll { overflow-x: auto; margin: 1.4rem 0; }
+  .hw-table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 520px;
+    font-size: 0.88rem;
+  }
+  .hw-table caption { text-align: left; caption-side: top; color: var(--muted); font-size: 0.8rem; margin-bottom: 0.6rem; }
+  .hw-table th, .hw-table td {
+    text-align: left;
+    padding: 0.65rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  .hw-table thead th {
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan-dim);
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .hw-table tbody th[scope="row"] {
+    font-family: ui-monospace, monospace;
+    color: var(--white);
+    white-space: nowrap;
+  }
+  .hw-table td { color: var(--muted); }
+
+  /* Spec grid ("AKTUELLES SYSTEM") - only real, documented fields ever
+     appear here (Abschnitt 13). */
+  .spec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1.6rem 0;
+  }
+  .spec-item {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    padding: 1.1rem 1.3rem;
+  }
+  .spec-item .k {
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    color: var(--cyan-dim);
+  }
+  .spec-item .v { margin-top: 0.5rem; font-size: 0.98rem; color: var(--white); overflow-wrap: break-word; }
+  .spec-item .note { margin-top: 0.4rem; font-size: 0.78rem; color: var(--muted); overflow-wrap: break-word; }
+
+  .model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.9rem;
+    margin: 1.4rem 0;
+  }
+  .model-item {
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    padding: 1rem 1.15rem;
+  }
+  .model-item .t { font-family: ui-monospace, monospace; font-size: 0.86rem; color: var(--white); }
+  .model-item .tag {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.55rem;
+    border-radius: 100px;
+  }
+  .model-item.tested .tag { color: var(--cyan); border: 1px solid rgba(73,211,224,0.35); background: rgba(73,211,224,0.06); }
+  .model-item.theoretical .tag { color: var(--muted); border: 1px dashed var(--line-strong); }
+
+  .frontier-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.9rem;
+    margin: 1.4rem 0;
+  }
+  .frontier-item {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    padding: 1.1rem 1.2rem;
+  }
+  .frontier-item.emphasis { border-color: rgba(73,211,224,0.35); background: linear-gradient(160deg, rgba(73,211,224,0.05), var(--panel) 65%); }
+  .frontier-item .t { font-family: ui-monospace, monospace; font-size: 0.78rem; color: var(--cyan-dim); }
+  .frontier-item.emphasis .t { color: var(--cyan); }
+  .frontier-item .d { margin-top: 0.5rem; color: var(--muted); font-size: 0.85rem; line-height: 1.5; overflow-wrap: break-word; }
+  @media (max-width: 480px) {
+    .frontier-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+  }
+
+  .central-question {
+    margin: 0.6rem 0 1.8rem;
+    padding-left: 1.1rem;
+    border-left: 3px solid var(--cyan-dim);
+    font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+    line-height: 1.5;
+    color: var(--ice);
+    max-width: 44ch;
+  }
+
+  .limits-list { margin: 1.2rem 0 0; padding-left: 1.2rem; color: var(--muted); font-size: 0.95rem; line-height: 1.7; }
+  .limits-list li { margin-bottom: 0.5rem; }
+
+  .hw-network-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.9rem;
+  }
+  .hw-network-link {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .hw-network-link:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+  .hw-network-link .t { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--cyan); }
+  .hw-network-link .q { margin-top: 0.4rem; color: var(--white); font-size: 0.9rem; }
+  .hw-network-link.future { opacity: 0.75; }
+  .hw-network-link.future .t { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="../../" data-i18n="nav.home">HOME</a>
+      <a href="../" class="current" data-i18n="nav.project">PROJECT</a>
+      <a href="../../signal/" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="../../lab/" data-i18n="nav.lab">LAB</a>
+      <a href="../../discuss/" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="../../ask/" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap breadcrumb">
+    <a href="../../" data-i18n="nav.home">HOME</a><span class="sep">/</span><a href="../" data-i18n="nav.project">PROJECT</a><span class="sep">/</span><span class="current" data-i18n="hw.breadcrumb">HARDWARE</span>
+  </div>
+
+  <section class="block hw-hero">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="project.eyebrow">J.A.R.V.I.S. PROJECT</span>
+      <h1 data-i18n="hw.h1">The machine behind J.A.R.V.I.S.</h1>
+      <div class="body-copy" id="hw-intro-body"></div>
+      <nav class="pnav" id="project-nav" aria-label="Project-Navigation"></nav>
+    </div>
+  </section>
+
+  <section class="block hw-section" id="hw-why">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="hw.why.eyebrow">WHY HARDWARE MATTERS</span>
+      <h2 data-i18n="hw.why.title">Why AI needs hardware at all.</h2>
+      <div class="body-copy" id="hw-why-body"></div>
+    </div>
+  </section>
+
+  <section class="block hw-section" id="hw-sizes">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="hw.sizes.eyebrow">MODEL SCALE</span>
+      <h2 data-i18n="hw.sizes.title">Understanding model sizes.</h2>
+      <div class="body-copy" id="hw-sizes-body"></div>
+
+      <div class="size-scale" id="hw-size-scale" aria-hidden="true"></div>
+      <p class="body-copy" style="max-width:66ch;color:var(--muted);font-size:0.82rem;font-style:italic;" data-i18n="hw.sizes.note">These classes are a rough orientation, not a strict scientific standard.</p>
+
+      <h3 data-i18n="hw.sizes.table.title">WHAT THIS MEANS IN PRACTICE</h3>
+      <div class="table-scroll">
+        <table class="hw-table" id="hw-sizes-table">
+          <caption data-i18n="hw.sizes.table.caption">Rough orientation only — actual memory needs depend on precision, quantization and runtime conditions.</caption>
+          <thead>
+            <tr>
+              <th scope="col" data-i18n="hw.sizes.table.col.class">Class</th>
+              <th scope="col" data-i18n="hw.sizes.table.col.req">Requirements</th>
+              <th scope="col" data-i18n="hw.sizes.table.col.cap">Capabilities</th>
+            </tr>
+          </thead>
+          <tbody id="hw-sizes-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block hw-section" id="hw-vram">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="hw.vram.eyebrow">VRAM / RAM / GPU / CPU</span>
+      <h2 data-i18n="hw.vram.title">Where a model actually runs.</h2>
+      <div class="body-copy" id="hw-vram-body"></div>
+    </div>
+  </section>
+
+  <section class="block hw-section" id="hw-quant">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="hw.quant.eyebrow">QUANTIZATION</span>
+      <h2 data-i18n="hw.quant.title">Quantization, explained simply.</h2>
+      <div class="body-copy" id="hw-quant-body"></div>
+      <h3 data-i18n="hw.quant.calc.title">A ROUGH MENTAL MODEL</h3>
+      <div class="body-copy" id="hw-quant-calc-body"></div>
+    </div>
+  </section>
+
+  <section class="block hw-section" id="hw-frontier">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="hw.frontier.eyebrow">FROM LOCAL TO FRONTIER</span>
+      <h2 data-i18n="hw.frontier.title">Local machines and frontier AI aren't the same league.</h2>
+      <div class="body-copy" id="hw-frontier-body"></div>
+      <div class="frontier-grid">
+        <div class="frontier-item">
+          <div class="t" data-i18n="hw.frontier.local.t">LOCAL</div>
+          <div class="d" data-i18n="hw.frontier.local.d">My own machine.</div>
+        </div>
+        <div class="frontier-item">
+          <div class="t" data-i18n="hw.frontier.workstation.t">WORKSTATION</div>
+          <div class="d" data-i18n="hw.frontier.workstation.d">Stronger local systems, possibly multiple GPUs.</div>
+        </div>
+        <div class="frontier-item">
+          <div class="t" data-i18n="hw.frontier.datacenter.t">DATACENTER</div>
+          <div class="d" data-i18n="hw.frontier.datacenter.d">Professional infrastructure.</div>
+        </div>
+        <div class="frontier-item emphasis">
+          <div class="t" data-i18n="hw.frontier.frontier.t">FRONTIER AI</div>
+          <div class="d" data-i18n="hw.frontier.frontier.d">Highly scaled cloud/datacenter systems.</div>
+        </div>
+      </div>
+      <div class="body-copy" id="hw-frontier-body-2" style="margin-top:1rem;"></div>
+    </div>
+  </section>
+
+  <section class="block hw-section" id="hw-central">
+    <div class="wrap">
+      <blockquote class="central-question" data-i18n="hw.central.question">How much model does J.A.R.V.I.S. really need for which task?</blockquote>
+      <div class="body-copy" id="hw-central-body"></div>
+    </div>
+  </section>
+
+  <section class="block hw-section" id="hw-current">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="hw.current.eyebrow">CURRENT SYSTEM</span>
+      <h2 data-i18n="hw.current.title">The current J.A.R.V.I.S. hardware.</h2>
+      <div class="body-copy" id="hw-current-body"></div>
+      <div class="spec-grid">
+        <div class="spec-item">
+          <div class="k" data-i18n="hw.current.gpu.k">GPU</div>
+          <div class="v" data-i18n="hw.current.gpu.v">NVIDIA GeForce RTX 4070 SUPER</div>
+          <div class="note" data-i18n="hw.current.gpu.note">Compute Capability 8.9</div>
+        </div>
+        <div class="spec-item">
+          <div class="k" data-i18n="hw.current.vram.k">VRAM</div>
+          <div class="v" data-i18n="hw.current.vram.v">12 GB</div>
+          <div class="note" data-i18n="hw.current.vram.note">Manufacturer specification for the RTX 4070 SUPER</div>
+        </div>
+        <div class="spec-item">
+          <div class="k" data-i18n="hw.current.runtime.k">INFERENCE RUNTIME</div>
+          <div class="v" data-i18n="hw.current.runtime.v">Ollama 0.32.0</div>
+          <div class="note" data-i18n="hw.current.runtime.note">Version documented in a real live test</div>
+        </div>
+        <div class="spec-item">
+          <div class="k" data-i18n="hw.current.cpu.k">CPU / RAM / STORAGE / OS</div>
+          <div class="v" data-i18n="hw.current.cpu.v">Not yet publicly documented</div>
+          <div class="note" data-i18n="hw.current.cpu.note">Shown here once there is a documented source, not before</div>
+        </div>
+      </div>
+      <p class="body-copy" style="max-width:66ch;color:var(--muted);font-size:0.86rem;" id="hw-current-usage-note"></p>
+    </div>
+  </section>
+
+  <section class="block hw-section" id="hw-models">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="hw.models.eyebrow">RUNNING ON IT</span>
+      <h2 data-i18n="hw.models.title">What can reasonably run on it?</h2>
+      <div class="body-copy" id="hw-models-body"></div>
+      <div class="model-grid">
+        <div class="model-item tested">
+          <div class="t">qwen3:14b</div>
+          <span class="tag" data-i18n="hw.models.tested">REAL TESTED</span>
+          <div class="body-copy" style="margin-top:0.6rem;" data-i18n="hw.models.qwen14.q">Current production baseline.</div>
+        </div>
+        <div class="model-item tested">
+          <div class="t">gemma3:12b</div>
+          <span class="tag" data-i18n="hw.models.tested">REAL TESTED</span>
+          <div class="body-copy" style="margin-top:0.6rem;" data-i18n="hw.models.gemma12.q">Comparison candidate in a real evaluation run.</div>
+        </div>
+        <div class="model-item tested">
+          <div class="t">qwen3:8b</div>
+          <span class="tag" data-i18n="hw.models.tested">REAL TESTED</span>
+          <div class="body-copy" style="margin-top:0.6rem;" data-i18n="hw.models.qwen8.q">Smaller comparison candidate in the same evaluation.</div>
+        </div>
+        <div class="model-item theoretical">
+          <div class="t" data-i18n="hw.models.large.t">30–40B class</div>
+          <span class="tag" data-i18n="hw.models.theoretical">THEORETICAL</span>
+          <div class="body-copy" style="margin-top:0.6rem;" data-i18n="hw.models.large.q">Exceeds the current GPU's 12 GB VRAM — would require offloading or stronger hardware.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block hw-section" id="hw-performance">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="hw.perf.eyebrow">PERFORMANCE &amp; LIMITS</span>
+      <h2 data-i18n="hw.perf.title">Performance and limits.</h2>
+      <div class="body-copy" id="hw-perf-body"></div>
+      <h3 data-i18n="hw.limits.title">LIMITS, HONESTLY</h3>
+      <ul class="limits-list" id="hw-limits-list"></ul>
+    </div>
+  </section>
+
+  <section class="block hw-section" id="hw-meaning">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="hw.meaning.eyebrow">WHAT THIS MEANS</span>
+      <h2 data-i18n="hw.meaning.title">What this means for J.A.R.V.I.S.</h2>
+      <div class="body-copy" id="hw-meaning-body"></div>
+    </div>
+  </section>
+
+  <section class="block hw-section" id="hw-upgrades">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="hw.upgrades.eyebrow">UPGRADES &amp; PLANNING</span>
+      <h2 data-i18n="hw.upgrades.title">Upgrades and planning.</h2>
+      <div class="body-copy" id="hw-upgrades-body"></div>
+    </div>
+  </section>
+
+  <section class="block hw-section" id="hw-network" style="border-bottom:none;">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="hw.network.eyebrow">CONNECTED TO</span>
+      <h2 data-i18n="hw.network.title">Connection to the Network.</h2>
+      <div class="hw-network-links">
+        <a class="hw-network-link" href="../">
+          <div class="t mono" data-i18n="nav.project">PROJECT</div>
+          <div class="q" data-i18n="hw.network.project">Hardware is part of J.A.R.V.I.S.</div>
+        </a>
+        <a class="hw-network-link future" href="../../lab/">
+          <div class="t mono" data-i18n="nav.lab">LAB</div>
+          <div class="q" data-i18n="hw.network.lab">Hardware &amp; performance will be tested here for real, later.</div>
+        </a>
+        <a class="hw-network-link" href="../../signal/">
+          <div class="t mono" data-i18n="nav.signal">SIGNAL</div>
+          <div class="q" data-i18n="hw.network.signal">New GPUs, NPUs and chips show up here as outside developments.</div>
+        </a>
+        <a class="hw-network-link future" href="../../knowledge/">
+          <div class="t mono" data-i18n="nav.knowledge">KNOWLEDGE</div>
+          <div class="q" data-i18n="hw.network.knowledge">Real tests can later turn into real insight.</div>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="../" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="../../signal/" data-i18n="footer.news">AI Signal</a>
+        <a href="../../lab/" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="../../discuss/" data-i18n="footer.discussions">Discussions</a>
+        <a href="../../discuss/" data-i18n="footer.models">Models</a>
+        <a href="../../discuss/" data-i18n="footer.ideas">Ideas</a>
+        <a href="../../discuss/" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="../../#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../../#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../../#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+  </div>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+    </div>
+  </div>
+
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+</div>
+
+<script src="../../site-chrome.js"></script>
+<script src="../../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // HARDWARE-page-only content: strings, tables/scale data, and the
+  // small renderHardware() function. Everything global (i18n engine,
+  // mobile nav, login/logout, Ask JARVIS wiring, Supabase config/REST
+  // helpers) comes from ../../site-chrome.js - see Redesign-Schritt 4C.
+  // This page loads no Observation/Reaction code and no HOME-rendering
+  // code - it never needed either.
+  //
+  // Fact-checking note: every concrete hardware/model claim below is
+  // sourced from real project documentation (HANDOFF.md/ROADMAP.md/
+  // Core/agent_config.py) or from the public manufacturer specification
+  // of the named GPU. Fields with no documented source (CPU, RAM,
+  // storage, OS) are shown as "not yet publicly documented" rather than
+  // guessed. No frontier-model parameter count, GPU count or VRAM figure
+  // is stated anywhere on this page - those are not publicly disclosed.
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "project.eyebrow": { en: "J.A.R.V.I.S. PROJECT", de: "J.A.R.V.I.S. PROJECT" },
+    "project.nav.overview": { en: "OVERVIEW", de: "ÜBERSICHT" },
+    "project.nav.story": { en: "STORY", de: "GESCHICHTE" },
+    "project.nav.core": { en: "CORE", de: "KERN" },
+    "project.nav.memory": { en: "MEMORY", de: "GEDÄCHTNIS" },
+    "project.nav.planning": { en: "PLANNING", de: "PLANUNG" },
+    "project.nav.hardware": { en: "HARDWARE", de: "HARDWARE" },
+    "hw.breadcrumb": { en: "HARDWARE", de: "HARDWARE" },
+    "hw.h1": { en: "The machine behind J.A.R.V.I.S.", de: "Die Maschine hinter J.A.R.V.I.S." },
+
+    "hw.why.eyebrow": { en: "WHY HARDWARE MATTERS", de: "WARUM HARDWARE ZÄHLT" },
+    "hw.why.title": { en: "Why AI needs hardware at all.", de: "Warum KI überhaupt Hardware braucht." },
+
+    "hw.sizes.eyebrow": { en: "MODEL SCALE", de: "MODELLGRÖSSE" },
+    "hw.sizes.title": { en: "Understanding model sizes.", de: "Modellgrößen verstehen." },
+    "hw.sizes.note": { en: "These classes are a rough orientation, not a strict scientific standard.", de: "Diese Klassen sind eine grobe Orientierung, kein strenger wissenschaftlicher Standard." },
+    "hw.sizes.table.title": { en: "WHAT THIS MEANS IN PRACTICE", de: "WAS DAS PRAKTISCH BEDEUTET" },
+    "hw.sizes.table.caption": { en: "Rough orientation only — actual memory needs depend on precision, quantization and runtime conditions.", de: "Nur grobe Orientierung – der tatsächliche Speicherbedarf hängt von Präzision, Quantisierung und Laufzeitbedingungen ab." },
+    "hw.sizes.table.col.class": { en: "Class", de: "Klasse" },
+    "hw.sizes.table.col.req": { en: "Requirements", de: "Anforderungen" },
+    "hw.sizes.table.col.cap": { en: "Capabilities", de: "Fähigkeiten" },
+
+    "hw.vram.eyebrow": { en: "VRAM / RAM / GPU / CPU", de: "VRAM / RAM / GPU / CPU" },
+    "hw.vram.title": { en: "Where a model actually runs.", de: "Wo ein Modell tatsächlich läuft." },
+
+    "hw.quant.eyebrow": { en: "QUANTIZATION", de: "QUANTISIERUNG" },
+    "hw.quant.title": { en: "Quantization, explained simply.", de: "Quantisierung verständlich erklärt." },
+    "hw.quant.calc.title": { en: "A ROUGH MENTAL MODEL", de: "EINE EINFACHE SPEICHER-VORSTELLUNG" },
+
+    "hw.frontier.eyebrow": { en: "FROM LOCAL TO FRONTIER", de: "VON LOKAL BIS FRONTIER" },
+    "hw.frontier.title": { en: "Local machines and frontier AI aren't the same league.", de: "Lokale Rechner und Frontier-KI spielen nicht in derselben Liga." },
+    "hw.frontier.local.t": { en: "LOCAL", de: "LOCAL" },
+    "hw.frontier.local.d": { en: "My own machine.", de: "Der eigene Rechner." },
+    "hw.frontier.workstation.t": { en: "WORKSTATION", de: "WORKSTATION" },
+    "hw.frontier.workstation.d": { en: "Stronger local systems, possibly multiple GPUs.", de: "Stärkere lokale Systeme, möglicherweise mehrere GPUs." },
+    "hw.frontier.datacenter.t": { en: "DATACENTER", de: "DATACENTER" },
+    "hw.frontier.datacenter.d": { en: "Professional infrastructure.", de: "Professionelle Infrastruktur." },
+    "hw.frontier.frontier.t": { en: "FRONTIER AI", de: "FRONTIER AI" },
+    "hw.frontier.frontier.d": { en: "Highly scaled cloud/datacenter systems.", de: "Hochskalierte Cloud-/Rechenzentrumssysteme." },
+
+    "hw.central.question": { en: "How much model does J.A.R.V.I.S. really need for which task?", de: "Wie viel Modell braucht J.A.R.V.I.S. für welche Aufgabe wirklich?" },
+
+    "hw.current.eyebrow": { en: "CURRENT SYSTEM", de: "AKTUELLES SYSTEM" },
+    "hw.current.title": { en: "The current J.A.R.V.I.S. hardware.", de: "Die aktuelle J.A.R.V.I.S.-Hardware." },
+    "hw.current.gpu.k": { en: "GPU", de: "GPU" },
+    "hw.current.gpu.v": { en: "NVIDIA GeForce RTX 4070 SUPER", de: "NVIDIA GeForce RTX 4070 SUPER" },
+    "hw.current.gpu.note": { en: "Compute Capability 8.9", de: "Compute Capability 8.9" },
+    "hw.current.vram.k": { en: "VRAM", de: "VRAM" },
+    "hw.current.vram.v": { en: "12 GB", de: "12 GB" },
+    "hw.current.vram.note": { en: "Manufacturer specification for the RTX 4070 SUPER", de: "Herstellerspezifikation der RTX 4070 SUPER" },
+    "hw.current.runtime.k": { en: "INFERENCE RUNTIME", de: "INFERENZ-RUNTIME" },
+    "hw.current.runtime.v": { en: "Ollama 0.32.0", de: "Ollama 0.32.0" },
+    "hw.current.runtime.note": { en: "Version documented in a real live test", de: "Version aus einem echten Live-Test dokumentiert" },
+    "hw.current.cpu.k": { en: "CPU / RAM / STORAGE / OS", de: "CPU / RAM / SPEICHER / BETRIEBSSYSTEM" },
+    "hw.current.cpu.v": { en: "Not yet publicly documented", de: "Noch nicht öffentlich dokumentiert" },
+    "hw.current.cpu.note": { en: "Shown here once there is a documented source, not before", de: "Wird hier ergänzt, sobald es eine belegte Quelle gibt – nicht vorher" },
+
+    "hw.models.eyebrow": { en: "RUNNING ON IT", de: "WAS LÄUFT DARAUF" },
+    "hw.models.title": { en: "What can reasonably run on it?", de: "Was kann darauf sinnvoll laufen?" },
+    "hw.models.tested": { en: "REAL TESTED", de: "REAL GETESTET" },
+    "hw.models.theoretical": { en: "THEORETICAL", de: "THEORETISCH MÖGLICH" },
+    "hw.models.qwen14.q": { en: "Current production baseline.", de: "Aktuelle Produktions-Baseline." },
+    "hw.models.gemma12.q": { en: "Comparison candidate in a real evaluation run.", de: "Vergleichskandidat in einem echten Evaluationslauf." },
+    "hw.models.qwen8.q": { en: "Smaller comparison candidate in the same evaluation.", de: "Kleinerer Vergleichskandidat in derselben Evaluation." },
+    "hw.models.large.t": { en: "30–40B class", de: "30–40B-Klasse" },
+    "hw.models.large.q": { en: "Exceeds the current GPU's 12 GB VRAM — would require offloading or stronger hardware.", de: "Übersteigt die 12 GB VRAM der aktuellen GPU – würde Offloading oder stärkere Hardware benötigen." },
+
+    "hw.perf.eyebrow": { en: "PERFORMANCE & LIMITS", de: "PERFORMANCE & GRENZEN" },
+    "hw.perf.title": { en: "Performance and limits.", de: "Performance und Grenzen." },
+    "hw.limits.title": { en: "LIMITS, HONESTLY", de: "GRENZEN, EHRLICH" },
+
+    "hw.meaning.eyebrow": { en: "WHAT THIS MEANS", de: "WAS DAS BEDEUTET" },
+    "hw.meaning.title": { en: "What this means for J.A.R.V.I.S.", de: "Was das für J.A.R.V.I.S. bedeutet." },
+
+    "hw.upgrades.eyebrow": { en: "UPGRADES & PLANNING", de: "UPGRADES & PLANUNG" },
+    "hw.upgrades.title": { en: "Upgrades and planning.", de: "Upgrades und Planung." },
+
+    "hw.network.eyebrow": { en: "CONNECTED TO", de: "VERBUNDEN MIT" },
+    "hw.network.title": { en: "Connection to the Network.", de: "Verbindung zum Network." },
+    "hw.network.project": { en: "Hardware is part of J.A.R.V.I.S.", de: "Hardware ist Teil von J.A.R.V.I.S." },
+    "hw.network.lab": { en: "Hardware & performance will be tested here for real, later.", de: "Hardware & Performance wird hier später real getestet." },
+    "hw.network.signal": { en: "New GPUs, NPUs and chips show up here as outside developments.", de: "Neue GPUs, NPUs und Chips erscheinen hier als externe Entwicklungen." },
+    "hw.network.knowledge": { en: "Real tests can later turn into real insight.", de: "Aus realen Tests können später Erkenntnisse entstehen." }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "The Machine Behind J.A.R.V.I.S. — J.A.R.V.I.S. Project",
+    de: "Die Maschine hinter J.A.R.V.I.S. — J.A.R.V.I.S. Project"
+  });
+
+  var introParagraphs = {
+    en: [
+      "Artificial intelligence often looks completely digital.",
+      "But models, memory, browser, voice and agents have to actually run somewhere.",
+      "Here I show which hardware runs behind J.A.R.V.I.S., why certain decisions matter, and where the physical limits of local AI begin."
+    ],
+    de: [
+      "Künstliche Intelligenz wirkt oft vollständig digital.",
+      "Irgendwo müssen Modelle, Speicher, Browser, Sprache und Agenten aber tatsächlich laufen.",
+      "Hier zeige ich, welche Hardware hinter J.A.R.V.I.S. arbeitet, warum bestimmte Entscheidungen wichtig sind und wo die physikalischen Grenzen lokaler KI beginnen."
+    ]
+  };
+
+  var whyParagraphs = {
+    en: [
+      "An AI model has to keep its model weights and other working data in memory while it runs.",
+      "The bigger the model, and the bigger the context or workload, the higher the memory and compute requirements can get.",
+      "More parameters don't automatically mean better answers.",
+      "Practical quality also depends on training, architecture, the task at hand, quantization, context, and the software running it — not on model size alone."
+    ],
+    de: [
+      "Ein KI-Modell muss während der Ausführung seine Modellgewichte und weitere Arbeitsdaten im Speicher halten.",
+      "Je größer das Modell und je größer Kontext oder Arbeitslast, desto höher können Speicher- und Rechenanforderungen werden.",
+      "Mehr Parameter bedeuten nicht automatisch bessere Antworten.",
+      "Die praktische Qualität hängt unter anderem auch von Training, Architektur, Aufgabe, Quantisierung, Kontext und Software ab – nicht allein von der Modellgröße."
+    ]
+  };
+
+  var sizesParagraphs = {
+    en: [
+      "\"B\" stands for billion — billions of parameters.",
+      "The classes below are a simplified orientation to make model sizes easier to talk about."
+    ],
+    de: [
+      "„B\" steht für billion – Milliarden Parameter.",
+      "Die folgenden Klassen sind eine vereinfachte Orientierung, um über Modellgrößen sprechen zu können."
+    ]
+  };
+  var sizeScale = [
+    { en: "SMALL · 1–4B", de: "KLEIN · 1–4B" },
+    { en: "MEDIUM · 7–14B", de: "MITTEL · 7–14B" },
+    { en: "LARGE · 30–40B", de: "GROSS · 30–40B" },
+    { en: "VERY LARGE · 70B+", de: "SEHR GROSS · 70B+" },
+    { en: "FRONTIER · datacenter/cloud class", de: "FRONTIER · Rechenzentrums-/Cloud-Klasse" }
+  ];
+  var sizesTableRows = [
+    {
+      cls: { en: "1–4B", de: "1–4B" },
+      req: { en: "Low requirements — runs well even on modest hardware", de: "Geringe Anforderungen – läuft auch auf bescheidener Hardware gut" },
+      cap: { en: "Very fast, but more limited capabilities", de: "Sehr schnell möglich, aber stärker begrenzte Fähigkeiten" }
+    },
+    {
+      cls: { en: "7–14B", de: "7–14B" },
+      req: { en: "Interesting local trade-off — good consumer-GPU class", de: "Interessanter lokaler Kompromiss – gute Consumer-GPU-Klasse" },
+      cap: { en: "Especially relevant for J.A.R.V.I.S. today", de: "Für J.A.R.V.I.S. besonders relevant" }
+    },
+    {
+      cls: { en: "30–40B", de: "30–40B" },
+      req: { en: "Noticeably higher memory needs", de: "Deutlich höherer Speicherbedarf" },
+      cap: { en: "Needs stronger hardware or compromises", de: "Stärkere Hardware oder Kompromisse nötig" }
+    },
+    {
+      cls: { en: "70B+", de: "70B+" },
+      req: { en: "A serious local hardware undertaking", de: "Lokal eine ernsthafte Hardwareaufgabe" },
+      cap: { en: "Needs a lot of RAM/VRAM, or multiple devices, or offloading", de: "Braucht sehr viel RAM/VRAM oder mehrere Geräte bzw. Offloading" }
+    },
+    {
+      cls: { en: "Frontier", de: "Frontier" },
+      req: { en: "Professional datacenter infrastructure", de: "Professionelle Rechenzentrums-Infrastruktur" },
+      cap: { en: "Not directly comparable to a normal gaming PC", de: "Nicht direkt mit einem normalen Gaming-PC vergleichbar" }
+    }
+  ];
+
+  var vramParagraphs = {
+    en: [
+      "GPU — computes the large, parallel model operations.",
+      "VRAM — the especially fast memory directly on the graphics card.",
+      "RAM — the whole system's working memory; it can hold parts of a model, but is usually noticeably slower than GPU VRAM for inference.",
+      "CPU — steers many general tasks and can take on model work too, but is usually much slower than a suitable GPU for large language models.",
+      "None of this is absolute — the actual behavior also depends heavily on the software and backend running the model."
+    ],
+    de: [
+      "GPU — rechnet die großen parallelen Modelloperationen.",
+      "VRAM — der besonders schnelle Speicher direkt an der Grafikkarte.",
+      "RAM — Arbeitsspeicher des gesamten Systems; kann Modellteile aufnehmen, ist aber normalerweise deutlich langsamer als GPU-VRAM für Inferenz.",
+      "CPU — steuert viele allgemeine Aufgaben und kann ebenfalls Modellarbeit übernehmen, ist für große Sprachmodelle aber meist deutlich langsamer als eine geeignete GPU.",
+      "Nichts davon ist absolut – wie sich das konkret verhält, hängt auch stark von der Software und dem Backend ab, das das Modell ausführt."
+    ]
+  };
+
+  var quantParagraphs = {
+    en: [
+      "A model can be stored and computed with different levels of precision.",
+      "Quantization reduces the number of bits used to represent the model's weights.",
+      "That means the same model needs noticeably less memory.",
+      "Higher precision needs more memory; 4-bit quantization needs substantially less.",
+      "But: there can be quality loss, speed isn't automatically better, and the actual result depends on the method and the hardware."
+    ],
+    de: [
+      "Ein Modell kann mit unterschiedlicher Genauigkeit gespeichert und gerechnet werden.",
+      "Quantisierung reduziert die Zahl der Bits, mit denen Modellgewichte dargestellt werden.",
+      "Dadurch benötigt dasselbe Modell deutlich weniger Speicher.",
+      "Höhere Präzision braucht mehr Speicher; 4-Bit-Quantisierung braucht wesentlich weniger.",
+      "Aber: es kann Qualitätsverluste geben, die Geschwindigkeit ist nicht automatisch immer besser, und das Ergebnis hängt von Verfahren und Hardware ab."
+    ]
+  };
+  var quantCalcParagraphs = {
+    en: [
+      "As a rough learning aid only: parameters × memory per parameter ≈ order of magnitude of the model weights.",
+      "This is a simplified calculation, not a precise real-world number — and it isn't 25% memory in every real case just because it's 4-bit instead of 16-bit.",
+      "On top of the model weights themselves, memory is also needed for context/KV-cache, the runtime, temporary data, and general software overhead. The model weights alone are not the same as total real VRAM usage."
+    ],
+    de: [
+      "Nur als grobe Lernhilfe: Parameter × Speicher pro Parameter ≈ Größenordnung der Modellgewichte.",
+      "Das ist eine vereinfachte Rechnung, keine präzise reale Zahl – und 4-Bit statt 16-Bit bedeutet nicht in jedem realen Fall exakt 25 % Speicher.",
+      "Zusätzlich zu den reinen Modellgewichten wird Speicher für Kontext/KV-Cache, die Runtime, temporäre Daten und allgemeinen Software-Overhead gebraucht. Modellgewicht allein ist nicht dasselbe wie der gesamte reale VRAM-Verbrauch."
+    ]
+  };
+
+  var frontierParagraphs = {
+    en: [
+      "With frontier systems like the large current OpenAI models, we leave the typical single-PC class behind.",
+      "The exact parameter count and the concrete hardware configuration of a frontier model are not publicly disclosed. So any concrete number here would be speculation — and this page doesn't do that."
+    ],
+    de: [
+      "Bei Frontier-Systemen wie den großen aktuellen OpenAI-Modellen verlassen wir die typische Einzel-PC-Klasse.",
+      "Die genaue Parameterzahl und die konkrete Hardwarekonfiguration eines Frontier-Modells sind öffentlich nicht angegeben. Deshalb wäre jede konkrete Zahl an dieser Stelle Spekulation – und die macht diese Seite nicht mit."
+    ]
+  };
+  var frontierParagraphs2 = {
+    en: [
+      "This comparison is only meant to show the order of magnitude — not to put numbers on things that aren't public."
+    ],
+    de: [
+      "Dieser Vergleich soll nur die Größenordnung erklären – keine Zahlen auf Dinge setzen, die nicht öffentlich sind."
+    ]
+  };
+
+  var centralParagraphs = {
+    en: [
+      "The goal is not to run the largest available model locally at any cost.",
+      "This experiment looks at: when a small model is enough, when a larger local model actually helps, when a hybrid setup makes sense, and when external frontier AI can be the better choice.",
+      "That's what connects hardware to the whole J.A.R.V.I.S. concept."
+    ],
+    de: [
+      "Das Ziel ist nicht, um jeden Preis das größte verfügbare Modell lokal zu betreiben.",
+      "Das Experiment untersucht: wann ein kleines Modell reicht, wann ein größeres lokales Modell tatsächlich Vorteile bringt, wann Hybridbetrieb sinnvoll ist und wann externe Frontier-KI sinnvoller sein kann.",
+      "Das verbindet Hardware mit dem gesamten J.A.R.V.I.S.-Konzept."
+    ]
+  };
+
+  var currentParagraphs = {
+    en: [
+      "Only hardware values that are actually documented in the project are shown below. Where something isn't documented yet, this page says so instead of guessing."
+    ],
+    de: [
+      "Unten stehen nur Hardwarewerte, die im Projekt tatsächlich dokumentiert sind. Wo etwas noch nicht dokumentiert ist, steht das hier so – statt geraten zu werden."
+    ]
+  };
+  var currentUsageNote = {
+    en: "Real, measured snapshots during live tests: qwen3:14b fully loaded onto the GPU used about 9.0–9.6 GB of VRAM at the time — a real usage snapshot, not the card's total capacity.",
+    de: "Reale, gemessene Momentaufnahmen aus Live-Tests: vollständig auf die GPU geladen belegte qwen3:14b dabei rund 9,0–9,6 GB VRAM – eine echte Nutzungs-Momentaufnahme, nicht die Gesamtkapazität der Karte."
+  };
+
+  var modelsParagraphs = {
+    en: [
+      "The models below marked \"real tested\" have actually been run and evaluated locally, with recorded model digests and receipts. The larger class shown as \"theoretical\" has not been run on the current GPU."
+    ],
+    de: [
+      "Die unten mit „real getestet\" markierten Modelle wurden tatsächlich lokal ausgeführt und evaluiert, mit erfassten Modell-Digests und Receipts. Die größere, als „theoretisch möglich\" markierte Klasse wurde auf der aktuellen GPU nicht ausgeführt."
+    ]
+  };
+
+  var perfParagraphs = {
+    en: [
+      "One real, measured data point exists so far: in a live test, router provider-decision latency with a warm qwen3:14b was about 37–68 ms per request (median 39 ms). That measures how fast a routing decision was made — not overall answer-generation speed, and not a tokens-per-second figure.",
+      "Systematic tokens-per-second, temperature, or power-draw measurements don't exist yet. That kind of benchmarking is planned for LAB / Hardware & Performance later — this page doesn't invent numbers to fill that gap."
+    ],
+    de: [
+      "Ein realer, gemessener Datenpunkt existiert bereits: In einem Live-Test lag die Router-Entscheidungslatenz mit warmem qwen3:14b bei rund 37–68 ms pro Anfrage (Median 39 ms). Das misst, wie schnell eine Routing-Entscheidung getroffen wurde – nicht die generelle Antwortgeschwindigkeit und keine Tokens-pro-Sekunde-Zahl.",
+      "Systematische Tokens-pro-Sekunde-, Temperatur- oder Leistungsaufnahme-Messungen gibt es noch nicht. Diese Art von Benchmarking ist später unter LAB / Hardware & Performance geplant – diese Seite erfindet dafür keine Zahlen."
+    ]
+  };
+  var limitsItems = {
+    en: [
+      "VRAM limits the model size that can be held directly on the GPU.",
+      "Offloading into RAM can make larger models possible, but is usually slower.",
+      "Context needs additional memory on top of the model weights.",
+      "Larger models mean higher latency and higher resource needs.",
+      "Software and runtime meaningfully affect the actual, real-world performance."
+    ],
+    de: [
+      "VRAM begrenzt die Modellgröße, die direkt auf der GPU gehalten werden kann.",
+      "Offloading in RAM kann größere Modelle ermöglichen, ist aber normalerweise langsamer.",
+      "Kontext benötigt zusätzlich Speicher, über die reinen Modellgewichte hinaus.",
+      "Größere Modelle bedeuten höhere Latenz und höheren Ressourcenbedarf.",
+      "Software und Runtime beeinflussen die tatsächliche Performance erheblich."
+    ]
+  };
+
+  var meaningParagraphs = {
+    en: [
+      "12 GB of VRAM is a real, concrete boundary — it shapes which models can run directly on the GPU today, and where a hybrid or external path starts making more sense.",
+      "That's not a weakness to hide. It's exactly the kind of constraint this whole experiment is about: finding out which task actually belongs on which piece of hardware."
+    ],
+    de: [
+      "12 GB VRAM sind eine reale, konkrete Grenze – sie bestimmen, welche Modelle heute direkt auf der GPU laufen können, und wo ein Hybrid- oder externer Pfad sinnvoller wird.",
+      "Das ist keine Schwäche, die versteckt werden muss. Genau um solche Grenzen geht es in diesem ganzen Experiment: herauszufinden, welche Aufgabe eigentlich auf welche Hardware gehört."
+    ]
+  };
+
+  var upgradesParagraphs = {
+    en: [
+      "This isn't a shopping list.",
+      "Which hardware is worth the next step depends on which tasks J.A.R.V.I.S. should actually take on locally.",
+      "Possible criteria: more VRAM, compute power, energy use, noise, price, model class, and real tasks that need it.",
+      "No specific future hardware is promised here — nothing has been decided yet."
+    ],
+    de: [
+      "Das ist keine Einkaufsliste.",
+      "Welche Hardware sich als nächster Schritt lohnt, hängt davon ab, welche Aufgaben J.A.R.V.I.S. lokal wirklich übernehmen soll.",
+      "Mögliche Kriterien: mehr VRAM, Rechenleistung, Energie, Lautstärke, Preis, Modellklasse und reale Aufgaben, die es brauchen.",
+      "Es wird hier keine konkrete zukünftige Hardware versprochen – noch ist nichts entschieden."
+    ]
+  };
+
+  function renderHardware() {
+    SiteChrome.renderParagraphs(document.getElementById('hw-intro-body'), introParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('hw-why-body'), whyParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('hw-sizes-body'), sizesParagraphs);
+    SiteChrome.renderNodeFlow(document.getElementById('hw-size-scale'), sizeScale);
+    SiteChrome.renderParagraphs(document.getElementById('hw-vram-body'), vramParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('hw-quant-body'), quantParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('hw-quant-calc-body'), quantCalcParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('hw-frontier-body'), frontierParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('hw-frontier-body-2'), frontierParagraphs2);
+    SiteChrome.renderParagraphs(document.getElementById('hw-central-body'), centralParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('hw-current-body'), currentParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('hw-models-body'), modelsParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('hw-perf-body'), perfParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('hw-meaning-body'), meaningParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('hw-upgrades-body'), upgradesParagraphs);
+
+    var lang = SiteChrome.getLang();
+
+    var usageNote = document.getElementById('hw-current-usage-note');
+    if (usageNote) { usageNote.textContent = currentUsageNote[lang]; }
+
+    var tbody = document.getElementById('hw-sizes-table-body');
+    if (tbody) {
+      tbody.innerHTML = '';
+      sizesTableRows.forEach(function (row) {
+        var tr = document.createElement('tr');
+        var th = document.createElement('th');
+        th.scope = 'row';
+        th.textContent = row.cls[lang];
+        var tdReq = document.createElement('td');
+        tdReq.textContent = row.req[lang];
+        var tdCap = document.createElement('td');
+        tdCap.textContent = row.cap[lang];
+        tr.appendChild(th);
+        tr.appendChild(tdReq);
+        tr.appendChild(tdCap);
+        tbody.appendChild(tr);
+      });
+    }
+
+    var limitsList = document.getElementById('hw-limits-list');
+    if (limitsList) {
+      limitsList.innerHTML = '';
+      limitsItems[lang].forEach(function (text) {
+        var li = document.createElement('li');
+        li.textContent = text;
+        limitsList.appendChild(li);
+      });
+    }
+  }
+
+  SiteChrome.applyStaticStrings();
+  renderHardware();
+  SiteChrome.onLanguageChange(renderHardware);
+
+  SiteChrome.initMobileNav();
+  SiteChrome.initProjectNav('hardware', '../');
+  SiteChrome.initAuthAndAsk();
+</script>
+</body>
+</html>

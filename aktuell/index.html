@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aktuell — J.A.R.V.I.S. Network</title>
+<link rel="stylesheet" href="../foundation.css" />
+<link rel="stylesheet" href="../site-chrome.css" />
+<style>
+  /* AKTUELL-page-only styles. Shared chrome comes from ../site-chrome.css
+     - see WEBSITE_ARCHITECTURE_V1.md, Redesign-Schritt 5B. This is a
+     UTILITY page, NOT part of the seven-point main navigation (Abschnitt
+     2 of the 5B-Auftrag) - it only references other areas' real content,
+     it is never their canonical home. Character: a quiet activity
+     stream - date, type, title, short text, a subtle vertical line. Not
+     a social feed, notification center, news portal, dashboard, stock
+     ticker, or endless card wall (Abschnitt 15). */
+
+  .aktuell-hero { padding: 1.6rem 0 clamp(2.4rem, 5vw, 3.6rem); }
+  .aktuell-hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(2rem, 5vw, 3.1rem);
+    letter-spacing: 0.01em;
+    max-width: 14ch;
+    margin-top: 0.6rem;
+  }
+  .aktuell-lede {
+    margin-top: 0.9rem;
+    font-size: clamp(1.05rem, 2vw, 1.2rem);
+    color: var(--ice);
+    font-weight: 500;
+  }
+  .aktuell-hero .body-copy { margin-top: 1.2rem; }
+
+  .body-copy { max-width: 66ch; }
+  .body-copy p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+  .body-copy p:last-child { margin-bottom: 0; }
+
+  .aktuell-section h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    max-width: 34ch;
+    margin-bottom: 1.2rem;
+  }
+  .aktuell-section h3 {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan-dim);
+    margin: 0 0 0.9rem;
+  }
+
+  /* Activity stream - a quiet vertical line down the left edge, entries
+     as plain list items, not cards. Works naturally on mobile without
+     forcing a horizontal timeline (Abschnitt 18). */
+  .stream {
+    margin-top: 1.4rem;
+    position: relative;
+    padding-left: 1.3rem;
+    border-left: 1px solid var(--line);
+  }
+  .stream-item {
+    position: relative;
+    padding: 0 0 1.6rem 0.9rem;
+  }
+  .stream-item:last-child { padding-bottom: 0; }
+  .stream-item::before {
+    content: "";
+    position: absolute;
+    left: -1.65rem;
+    top: 0.35rem;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cyan-dim);
+  }
+  .stream-item .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.6rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan);
+  }
+  .stream-item .meta time { color: var(--muted); font-family: inherit; }
+  .stream-item h3.item-title {
+    margin: 0.55rem 0 0;
+    font-family: inherit;
+    letter-spacing: normal;
+    color: var(--white);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .stream-item p.item-text { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+  .stream-item a.item-link {
+    display: inline-block;
+    margin-top: 0.55rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    color: var(--cyan);
+    text-decoration: none;
+  }
+  .stream-item a.item-link:hover { text-decoration: underline; }
+
+  .aktuell-empty {
+    margin-top: 1.4rem;
+    padding: clamp(1.6rem, 4vw, 2.4rem);
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    max-width: 58ch;
+  }
+  .aktuell-empty p { margin: 0 0 0.7rem; color: var(--muted); font-size: 0.96rem; line-height: 1.7; }
+  .aktuell-empty p:last-child { margin-bottom: 0; }
+
+  .def-list { margin: 1.2rem 0 0; padding: 0; list-style: none; max-width: 66ch; }
+  .def-list li { padding: 0.9rem 0; border-bottom: 1px solid var(--line); }
+  .def-list li:last-child { border-bottom: none; }
+  .def-list .term {
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-dim);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+  .def-list .desc { color: var(--muted); font-size: 0.94rem; line-height: 1.6; }
+
+  .aktuell-quote {
+    margin: 1.6rem 0;
+    padding: 1.1rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    color: var(--ice);
+    font-size: 1.02rem;
+    line-height: 1.6;
+    max-width: 52ch;
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="../" data-i18n="nav.home">HOME</a>
+      <a href="../project/" data-i18n="nav.project">PROJECT</a>
+      <a href="../signal/" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="../lab/" data-i18n="nav.lab">LAB</a>
+      <a href="../discuss/" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="../ask/" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap breadcrumb">
+    <a href="../" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="aktuell.breadcrumb">AKTUELL</span>
+  </div>
+
+  <section class="block aktuell-hero">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="aktuell.eyebrow">J.A.R.V.I.S. NETWORK</span>
+      <h1 data-i18n="aktuell.h1">Aktuell</h1>
+      <p class="aktuell-lede" data-i18n="aktuell.lede">What's changing right now in the J.A.R.V.I.S. Network.</p>
+      <div class="body-copy" id="aktuell-intro-body"></div>
+    </div>
+  </section>
+
+  <section class="block aktuell-section" id="aktuell-stream">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="aktuell.stream.eyebrow">NEW IN THE NETWORK</span>
+      <h2 data-i18n="aktuell.stream.title">New in the Network.</h2>
+      <div class="stream" id="aktuell-stream-list" aria-live="polite" hidden></div>
+      <div class="aktuell-empty" id="aktuell-empty">
+        <p data-i18n="aktuell.empty.p1">Nothing published yet.</p>
+        <p data-i18n="aktuell.empty.p2">As soon as something real changes in Project, Signal, Lab, Knowledge or Discuss, it will show up here — with a link back to where it actually happened.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block aktuell-section" id="aktuell-how" style="border-bottom:none;">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="aktuell.how.eyebrow">HOW AKTUELL WORKS</span>
+      <h2 data-i18n="aktuell.how.title">How Aktuell works.</h2>
+      <div class="body-copy" id="aktuell-how-body"></div>
+      <blockquote class="aktuell-quote" data-i18n="aktuell.how.quote">Aktuell doesn't store anything of its own. It only points to where something real actually happened.</blockquote>
+
+      <h3 data-i18n="aktuell.entry.title">What an entry shows.</h3>
+      <ul class="def-list" id="aktuell-entry-list"></ul>
+
+      <h3 data-i18n="aktuell.sources.title">Where entries can come from.</h3>
+      <div class="body-copy" id="aktuell-sources-body"></div>
+    </div>
+  </section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="../project/" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="../signal/" data-i18n="footer.news">AI Signal</a>
+        <a href="../lab/" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="../discuss/" data-i18n="footer.discussions">Discussions</a>
+        <a href="../discuss/" data-i18n="footer.models">Models</a>
+        <a href="../discuss/" data-i18n="footer.ideas">Ideas</a>
+        <a href="../discuss/" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="../#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="./" data-i18n="footer.updates">Aktuell</a>
+        <a href="../#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+  </div>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+    </div>
+  </div>
+
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+</div>
+
+<script src="../site-chrome.js"></script>
+<script src="../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // AKTUELL-page-only content: strings, entry-model data, and the small
+  // renderAktuell() function. Everything global comes from
+  // ../site-chrome.js - see WEBSITE_ARCHITECTURE_V1.md, Redesign-
+  // Schritt 5B. AKTUELL is a UTILITY page, deliberately NOT part of the
+  // seven-point main navigation.
+  //
+  // Real data check performed before writing this page: a live query
+  // against every real, existing content table in the Supabase project
+  // was run - signals, lab_entries, knowledge_articles, discuss_topics,
+  // and project_changelog (supabase/migrations/0001_init_schema.sql) -
+  // and every single one returned zero published rows today. That is
+  // not a guess or a repo-existence inference; it's a real query result
+  // against the live project. So this page ships with one honest,
+  // combined empty state instead of any invented activity, for every
+  // content type, not just some of them.
+  //
+  // The five real tables are still wired for a live fetch here exactly
+  // like the pattern already used on HOME and on the Signal page
+  // (SiteChrome.isSupabaseConfigured() + SiteChrome.restFetch(...)), so
+  // once any of them gets real published rows, entries appear here
+  // automatically with no further page change needed. Canonical link
+  // per type: signals -> ../signal/ (the real, redesigned Signal page);
+  // project_changelog -> ../project/ (PROJECT has real pages now, but
+  // no per-changelog-entry public page exists yet, so the link goes to
+  // the PROJECT landing page); lab_entries -> ../lab/, knowledge_articles
+  // -> ../knowledge/, discuss_topics -> ../discuss/ (the existing,
+  // real, still-valid anchor sections on HOME - Lab/Knowledge/Discuss
+  // have not been redesigned into their own pages yet, so these are the
+  // only real, non-dead links available for them today).
+  //
+  // Explicitly NOT done: HOME's existing "Aktuell bei J.A.R.V.I.S."
+  // section (the `homePulse` array in index.html) was checked and is
+  // NOT reused as fake dated entries here - it's hand-written mood/
+  // status commentary with no date, no type, and no canonical link per
+  // item, so it doesn't fit this page's real entry model and forcing it
+  // in would misrepresent it as something it isn't. Git commit history
+  // was not used as a source of "public updates" either. No filter bar
+  // was built - Abschnitt 11 of the Auftrag explicitly says not to
+  // force a multi-category filter UI when real content doesn't warrant
+  // it, and today not even one type has real content.
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "aktuell.breadcrumb": { en: "AKTUELL", de: "AKTUELL" },
+    "aktuell.eyebrow": { en: "J.A.R.V.I.S. NETWORK", de: "J.A.R.V.I.S. NETWORK" },
+    "aktuell.h1": { en: "Aktuell", de: "Aktuell" },
+    "aktuell.lede": { en: "What's changing right now in the J.A.R.V.I.S. Network.", de: "Was sich im J.A.R.V.I.S. Network gerade verändert." },
+
+    "aktuell.stream.eyebrow": { en: "NEW IN THE NETWORK", de: "NEU IM NETWORK" },
+    "aktuell.stream.title": { en: "New in the Network.", de: "Neu im Network." },
+
+    "aktuell.empty.p1": { en: "Nothing published yet.", de: "Noch nichts veröffentlicht." },
+    "aktuell.empty.p2": {
+      en: "As soon as something real changes in Project, Signal, Lab, Knowledge or Discuss, it will show up here — with a link back to where it actually happened.",
+      de: "Sobald sich in Project, Signal, Lab, Knowledge oder Discuss wirklich etwas ändert, erscheint es hier – mit einem Link dorthin, wo es tatsächlich passiert ist."
+    },
+
+    "aktuell.how.eyebrow": { en: "HOW AKTUELL WORKS", de: "WIE AKTUELL FUNKTIONIERT" },
+    "aktuell.how.title": { en: "How Aktuell works.", de: "Wie Aktuell funktioniert." },
+    "aktuell.how.quote": {
+      en: "Aktuell doesn't store anything of its own. It only points to where something real actually happened.",
+      de: "Aktuell speichert nichts Eigenes. Es zeigt nur dorthin, wo tatsächlich etwas Reales passiert ist."
+    },
+
+    "aktuell.entry.title": { en: "What an entry shows.", de: "Was ein Eintrag zeigt." },
+    "aktuell.entry.type.t": { en: "TYPE", de: "TYP" },
+    "aktuell.entry.type.d": { en: "Which area it comes from — Project, Signal, Lab, Knowledge or Discuss.", de: "Aus welchem Bereich es stammt – Project, Signal, Lab, Knowledge oder Discuss." },
+    "aktuell.entry.date.t": { en: "DATE", de: "DATUM" },
+    "aktuell.entry.date.d": { en: "When it happened.", de: "Wann es passiert ist." },
+    "aktuell.entry.title2.t": { en: "SHORT TITLE", de: "KURZER TITEL" },
+    "aktuell.entry.title2.d": { en: "What changed, in a few words.", de: "Was sich geändert hat, in wenigen Worten." },
+    "aktuell.entry.short.t": { en: "SHORT DESCRIPTION", de: "KURZE BESCHREIBUNG" },
+    "aktuell.entry.short.d": { en: "A brief note — never the full source text, discussion or insight.", de: "Ein kurzer Hinweis – nie der vollständige Quelltext, die ganze Diskussion oder Erkenntnis." },
+    "aktuell.entry.link.t": { en: "CANONICAL LINK", de: "KANONISCHER LINK" },
+    "aktuell.entry.link.d": { en: "Leads to the real place this belongs — Project, Signal, Lab, Knowledge or Discuss never get duplicated here.", de: "Führt zum eigentlichen Ort, wo es hingehört – Project, Signal, Lab, Knowledge oder Discuss werden hier nie dupliziert." },
+
+    "aktuell.sources.title": { en: "Where entries can come from.", de: "Woher Einträge kommen können." },
+
+    "footer.updates": { en: "Aktuell", de: "Aktuell" }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "Aktuell — J.A.R.V.I.S. Network",
+    de: "Aktuell — J.A.R.V.I.S. Network"
+  });
+
+  var introParagraphs = {
+    en: [
+      "Project, Signal, Lab, Knowledge and Discuss each have a different job.",
+      "Aktuell brings their newest changes together in one place, without copying the content itself.",
+      "An entry here only ever shows what's new — and then leads to the actual source in the Network."
+    ],
+    de: [
+      "Project, Signal, Lab, Knowledge und Discuss haben unterschiedliche Aufgaben.",
+      "Aktuell bringt ihre neuesten Veränderungen an einem Ort zusammen, ohne die Inhalte zu kopieren.",
+      "Ein Eintrag zeigt deshalb nur, was neu ist – und führt anschließend zur eigentlichen Quelle im Network."
+    ]
+  };
+
+  var howParagraphs = {
+    en: [
+      "Every entry stays a short reference, never a second full copy of the original. A Project update here still points to the real Project page; a Signal here still points to the real Signal page — nothing gets its content duplicated under Aktuell."
+    ],
+    de: [
+      "Jeder Eintrag bleibt eine kurze Referenz, nie eine zweite vollständige Kopie des Originals. Ein Project-Update hier verweist weiterhin auf die echte Project-Seite; ein Signal hier verweist weiterhin auf die echte Signal-Seite – nichts bekommt unter Aktuell eine eigene inhaltliche Kopie."
+    ]
+  };
+
+  var entryItems = [
+    { term: 'aktuell.entry.type.t', desc: 'aktuell.entry.type.d' },
+    { term: 'aktuell.entry.date.t', desc: 'aktuell.entry.date.d' },
+    { term: 'aktuell.entry.title2.t', desc: 'aktuell.entry.title2.d' },
+    { term: 'aktuell.entry.short.t', desc: 'aktuell.entry.short.d' },
+    { term: 'aktuell.entry.link.t', desc: 'aktuell.entry.link.d' }
+  ];
+
+  var sourcesParagraphs = {
+    en: [
+      "Today, real data is checked from five places: Project's own changelog, Signal, Lab, Knowledge and Discuss. As of this page going live, none of them has published anything yet — so nothing invented is shown in the stream above.",
+      "No filter by type is shown here yet either — with everything at zero, a row of category buttons wouldn't filter anything real. One will appear once there's enough real, varied content to make it useful."
+    ],
+    de: [
+      "Heute wird echter Bestand aus fünf Quellen geprüft: Projects eigenem Änderungsprotokoll, Signal, Lab, Knowledge und Discuss. Zum Zeitpunkt, an dem diese Seite live ging, hat keine davon bereits etwas veröffentlicht – deshalb wird oben im Stream nichts Erfundenes gezeigt.",
+      "Auch ein Filter nach Typ wird hier noch nicht angezeigt – bei überall null Einträgen würde eine Reihe Kategorie-Buttons nichts Reales filtern. Er erscheint, sobald genug reale, unterschiedliche Inhalte vorhanden sind, um ihn sinnvoll zu machen."
+    ]
+  };
+
+  var liveEntries = [];
+
+  function renderStream() {
+    var lang = SiteChrome.getLang();
+    var listEl = document.getElementById('aktuell-stream-list');
+    var emptyEl = document.getElementById('aktuell-empty');
+
+    if (!liveEntries.length) {
+      listEl.hidden = true;
+      emptyEl.hidden = false;
+      return;
+    }
+
+    emptyEl.hidden = true;
+    listEl.hidden = false;
+    listEl.innerHTML = '';
+
+    liveEntries
+      .slice()
+      .sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); })
+      .forEach(function (entry) {
+        var item = document.createElement('article');
+        item.className = 'stream-item';
+
+        var meta = document.createElement('div');
+        meta.className = 'meta';
+        var typeSpan = document.createElement('span');
+        typeSpan.textContent = entry.type;
+        var time = document.createElement('time');
+        time.setAttribute('datetime', entry.date || '');
+        time.textContent = entry.date || '';
+        meta.appendChild(typeSpan);
+        meta.appendChild(time);
+        item.appendChild(meta);
+
+        var h3 = document.createElement('h3');
+        h3.className = 'item-title';
+        h3.textContent = (entry.title && entry.title[lang]) || '';
+        item.appendChild(h3);
+
+        var p = document.createElement('p');
+        p.className = 'item-text';
+        p.textContent = (entry.text && entry.text[lang]) || '';
+        item.appendChild(p);
+
+        var a = document.createElement('a');
+        a.className = 'item-link';
+        a.href = entry.href;
+        a.textContent = (lang === 'de' ? 'Zur Quelle →' : 'Go to source →');
+        item.appendChild(a);
+
+        listEl.appendChild(item);
+      });
+  }
+
+  function renderAktuell() {
+    SiteChrome.renderParagraphs(document.getElementById('aktuell-intro-body'), introParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('aktuell-how-body'), howParagraphs);
+
+    var entryList = document.getElementById('aktuell-entry-list');
+    if (entryList) {
+      entryList.innerHTML = '';
+      entryItems.forEach(function (item) {
+        var li = document.createElement('li');
+        var term = document.createElement('span');
+        term.className = 'term';
+        term.textContent = SiteChrome.t(item.term);
+        var desc = document.createElement('span');
+        desc.className = 'desc';
+        desc.textContent = SiteChrome.t(item.desc);
+        li.appendChild(term);
+        li.appendChild(desc);
+        entryList.appendChild(li);
+      });
+    }
+
+    SiteChrome.renderParagraphs(document.getElementById('aktuell-sources-body'), sourcesParagraphs);
+
+    renderStream();
+  }
+
+  function loadLiveAktuell() {
+    if (!SiteChrome.isSupabaseConfigured()) { return; }
+
+    var anyLoaded = false;
+    var rerender = function () { if (anyLoaded) { renderAktuell(); } };
+    var warn = function (label) {
+      return function (e) { console.warn('[jarvis-network] aktuell ' + label + ' load failed:', e); };
+    };
+
+    SiteChrome.restFetch('signals?select=*&published=eq.true&order=date_value.desc&limit=10')
+      .then(function (rows) {
+        if (!rows || !rows.length) { return; }
+        rows.forEach(function (r) {
+          liveEntries.push({
+            type: 'SIGNAL', date: r.date_value,
+            title: r.title, text: r.summary,
+            href: '../signal/'
+          });
+        });
+        anyLoaded = true; rerender();
+      }).catch(warn('signals'));
+
+    SiteChrome.restFetch('project_changelog?select=*&published=eq.true&order=date_value.desc&limit=10')
+      .then(function (rows) {
+        if (!rows || !rows.length) { return; }
+        rows.forEach(function (r) {
+          liveEntries.push({
+            type: 'PROJECT', date: r.date_value,
+            title: r.summary, text: r.summary,
+            href: '../project/'
+          });
+        });
+        anyLoaded = true; rerender();
+      }).catch(warn('project_changelog'));
+
+    SiteChrome.restFetch('lab_entries?select=*&published=eq.true&order=created_at.desc&limit=10')
+      .then(function (rows) {
+        if (!rows || !rows.length) { return; }
+        rows.forEach(function (r) {
+          liveEntries.push({
+            type: 'LAB', date: (r.created_at || '').slice(0, 10),
+            title: r.title, text: r.insights,
+            href: '../lab/'
+          });
+        });
+        anyLoaded = true; rerender();
+      }).catch(warn('lab_entries'));
+
+    SiteChrome.restFetch('knowledge_articles?select=*&published=eq.true&order=created_at.desc&limit=10')
+      .then(function (rows) {
+        if (!rows || !rows.length) { return; }
+        rows.forEach(function (r) {
+          liveEntries.push({
+            type: 'KNOWLEDGE', date: (r.created_at || '').slice(0, 10),
+            title: r.title, text: r.body,
+            href: '../knowledge/'
+          });
+        });
+        anyLoaded = true; rerender();
+      }).catch(warn('knowledge_articles'));
+
+    SiteChrome.restFetch('discuss_topics?select=*&published=eq.true&order=created_at.desc&limit=10')
+      .then(function (rows) {
+        if (!rows || !rows.length) { return; }
+        rows.forEach(function (r) {
+          liveEntries.push({
+            type: 'DISCUSS', date: (r.created_at || '').slice(0, 10),
+            title: r.title, text: { en: '', de: '' },
+            href: '../discuss/'
+          });
+        });
+        anyLoaded = true; rerender();
+      }).catch(warn('discuss_topics'));
+  }
+
+  SiteChrome.applyStaticStrings();
+  renderAktuell();
+  SiteChrome.onLanguageChange(renderAktuell);
+  loadLiveAktuell();
+
+  SiteChrome.initMobileNav();
+  SiteChrome.initAuthAndAsk();
+</script>
+</body>
+</html>

@@ -1,0 +1,1027 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Discuss — J.A.R.V.I.S. Network</title>
+<link rel="stylesheet" href="../foundation.css" />
+<link rel="stylesheet" href="../site-chrome.css" />
+<style>
+  /* DISCUSS-page-only styles. Shared chrome (nav, login panel, Ask
+     JARVIS panel, footer, focus-visible) comes from ../site-chrome.css.
+     MASTER STYLE 1:1 (Redesign-Schritt 15, design-reference/
+     06_DISCUSS.png). Real backend: discuss_categories/discuss_topics
+     (supabase/migrations/0001_init_schema.sql) + real auth/roles/RLS/
+     write-guards for discuss_topics/discuss_posts/profiles
+     (0002_discuss_community.sql) - already live, no migration here.
+     Live-checked before writing this page: 0 published rows in
+     discuss_categories and discuss_topics today - not an error - so
+     all three data sections show a real, honest empty state instead of
+     the reference's fake avatar stacks, fake reply counts (48/32/67/28)
+     and fake stat strip (1.2K+ Mitglieder/3.842 Beiträge/842
+     Diskussionen/156 Lösungen/72 Projekte). No avatar wall of invented
+     people, no confirm/contradict on discussions (that belongs only to
+     Observations, a distinct real feature - see #discuss-how below). */
+
+  .discuss-hero { padding: 1.6rem 0 clamp(2.6rem, 5vw, 4rem); }
+  .discuss-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+  .discuss-hero-copy { max-width: 640px; }
+  .discuss-hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 7vw, 5.2rem);
+    letter-spacing: 0.01em;
+    max-width: 16ch;
+    margin-top: 0.6rem;
+  }
+  .discuss-lede {
+    margin-top: 0.9rem;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: var(--ice);
+    font-weight: 500;
+  }
+  .discuss-hero .body-copy { margin-top: 1.2rem; }
+  .discuss-hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.8rem; }
+
+  .body-copy { max-width: 66ch; }
+  .body-copy p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+  .body-copy p:last-child { margin-bottom: 0; }
+
+  /* -------- right column: Community-Motiv + reale Status-Panels -------- */
+  .discuss-visual { position: relative; min-height: clamp(300px, 32vw, 440px); }
+  .discuss-visual-art { position: absolute; inset: 0; }
+  .discuss-visual-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
+
+  .discuss-hero-panel {
+    position: absolute;
+    width: 190px;
+    background: color-mix(in srgb, var(--panel) 90%, transparent);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    box-shadow: var(--shadow-soft);
+  }
+  .discuss-hero-panel .k {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .discuss-hero-panel .v { font-size: 0.85rem; color: var(--white); line-height: 1.45; }
+  .discuss-hero-panel.p1 { top: 0; right: -2%; }
+  .discuss-hero-panel.p2 { top: 42%; left: -8%; transform: translateY(-50%); }
+  .discuss-hero-panel.p3 { bottom: 0; right: -2%; }
+
+  .discuss-fact-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.2rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--line);
+  }
+  .discuss-fact dt {
+    font-family: ui-monospace, monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+  .discuss-fact dd { margin: 0; font-weight: 600; font-size: 0.9rem; color: var(--white); }
+
+  @media (max-width: 900px) {
+    .discuss-hero-grid { grid-template-columns: 1fr; }
+    .discuss-hero-copy { max-width: 100%; }
+    .discuss-visual { min-height: 0; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.8rem; }
+    .discuss-visual-art { position: static; height: 240px; }
+    .discuss-visual-art img { position: static; width: 100%; height: 100%; }
+    .discuss-hero-panel { position: static; width: 100%; }
+    .discuss-fact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  .discuss-section h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    max-width: 34ch;
+    margin-bottom: 1.2rem;
+  }
+  .discuss-section h3 {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan-dim);
+    margin: 0 0 0.9rem;
+  }
+
+  /* -------- real "start a discussion" form - same authenticated-gate
+     UX as the Observations form on HOME, same real Supabase write
+     pattern (see script below), no new auth architecture. -------- */
+  .discuss-form-card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    padding: 1.3rem 1.4rem;
+    margin-bottom: 1.8rem;
+    max-width: 60ch;
+  }
+  .discuss-field { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.86rem; color: var(--muted); margin-bottom: 0.9rem; }
+  .discuss-field[hidden] { display: none; }
+  .discuss-field input[type="text"],
+  .discuss-field select {
+    font: inherit;
+    background: var(--anthracite);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    padding: 0.65rem 0.8rem;
+    color: var(--white);
+  }
+  .discuss-field input[type="text"]:disabled,
+  .discuss-field select:disabled { opacity: 0.5; }
+  .discuss-submit {
+    font: inherit;
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    background-color: var(--cyan);
+    border: 1px solid var(--cyan);
+    color: #ffffff;
+    border-radius: 9px;
+    padding: 0.75rem 1.3rem;
+    cursor: pointer;
+  }
+  .discuss-submit:hover { background-color: var(--cyan-dim); border-color: var(--cyan-dim); }
+  .discuss-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .discuss-status { margin-top: 0.7rem; font-size: 0.86rem; }
+  .discuss-status.is-error { color: var(--st-failed); }
+  .discuss-status.is-ok { color: var(--cyan-dim); }
+  .discuss-auth-required {
+    display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;
+    margin-bottom: 1.8rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: 10px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    max-width: 60ch;
+  }
+  .discuss-auth-required[hidden] { display: none; }
+  .discuss-auth-required button {
+    font: inherit;
+    font-family: ui-monospace, monospace;
+    font-size: 0.78rem;
+    background: none;
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    padding: 0.4rem 0.8rem;
+    color: var(--cyan-dim);
+    cursor: pointer;
+  }
+  .discuss-auth-required button:hover { border-color: var(--cyan-dim); color: var(--cyan); }
+
+  /* Topic/discussion stream - quiet vertical list, same editorial
+     pattern as the other real-data pages. No avatar stacks. */
+  .discuss-stream { margin-top: 0.4rem; display: flex; flex-direction: column; gap: 0; }
+  .discuss-item { display: block; padding: 1.3rem 0; border-bottom: 1px solid var(--line); }
+  .discuss-item:first-child { padding-top: 0; }
+  .discuss-item:last-child { border-bottom: none; }
+  .discuss-item .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan-dim);
+  }
+  .discuss-item .meta time { color: var(--muted); }
+  .discuss-item h3.item-title {
+    margin: 0.6rem 0 0;
+    font-family: inherit;
+    letter-spacing: normal;
+    color: var(--white);
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .discuss-item .replies { margin-top: 0.4rem; color: var(--muted); font-size: 0.86rem; }
+
+  /* Empty state - deliberately calm, not "broken page" looking. */
+  .discuss-empty {
+    margin-top: 1.4rem;
+    padding: clamp(1.6rem, 4vw, 2.4rem);
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    max-width: 56ch;
+  }
+  .discuss-empty p { margin: 0 0 0.7rem; color: var(--muted); font-size: 0.96rem; line-height: 1.7; }
+  .discuss-empty p:last-child { margin-bottom: 0; }
+
+  /* Topics - reuses the cat-grid visual language already established on
+     HOME's preview section, now backed by the real live query. */
+  .discuss-topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.4rem;
+  }
+  .discuss-topic-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    padding: 1.1rem 1.3rem;
+  }
+  .discuss-topic-card .t { font-family: ui-monospace, monospace; font-size: 0.78rem; letter-spacing: 0.04em; color: var(--white); }
+  .discuss-topic-card .d { margin-top: 0.5rem; color: var(--muted); font-size: 0.86rem; line-height: 1.55; }
+
+  .discuss-def-list { margin: 1.2rem 0 0; padding: 0; list-style: none; max-width: 66ch; }
+  .discuss-def-list li { padding: 0.9rem 0; border-bottom: 1px solid var(--line); }
+  .discuss-def-list li:last-child { border-bottom: none; }
+  .discuss-def-list .term {
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-dim);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+  .discuss-def-list .desc { color: var(--muted); font-size: 0.94rem; line-height: 1.6; }
+
+  .discuss-quote {
+    margin: 1.6rem 0;
+    padding: 1.1rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    color: var(--ice);
+    font-size: 1.02rem;
+    line-height: 1.6;
+    max-width: 56ch;
+  }
+
+  .discuss-network-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+  }
+  .discuss-network-link {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .discuss-network-link:hover { border-color: var(--cyan-dim); transform: translateY(-2px); }
+  .discuss-network-link .t { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--cyan); }
+  .discuss-network-link .q { margin-top: 0.4rem; color: var(--white); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="../" data-i18n="nav.home">HOME</a>
+      <a href="../project/" data-i18n="nav.project">PROJECT</a>
+      <a href="../signal/" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="../lab/" data-i18n="nav.lab">LAB</a>
+      <a href="./" class="current" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="../ask/" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap breadcrumb">
+    <a href="../" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="nav.discuss">DISCUSS</span>
+  </div>
+
+  <section class="block discuss-hero">
+    <div class="wrap discuss-hero-grid">
+      <div class="discuss-hero-copy">
+        <span class="eyebrow" data-i18n="discussPage.eyebrow">DISCUSS &amp; CONNECT</span>
+        <h1 data-i18n="discussPage.h1">J.A.R.V.I.S. Discuss</h1>
+        <p class="discuss-lede" data-i18n="discussPage.lede">Other opinions explicitly welcome.</p>
+        <div class="body-copy" id="discuss-intro-body"></div>
+
+        <div class="discuss-hero-ctas">
+          <a href="#discuss-current" class="cta primary" data-i18n="discussPage.cta1">START A DISCUSSION</a>
+          <a href="#discuss-how" class="cta ghost" data-i18n="discussPage.cta2">HOW IT WORKS</a>
+        </div>
+
+        <!-- Reale Fakten statt Mockup-Zahlen (1.2K+/3.842/842/156/72). -->
+        <dl class="discuss-fact-strip">
+          <div class="discuss-fact">
+            <dt data-i18n="discussPage.fact1Label">TOPICS</dt>
+            <dd id="discussPage-fact-topics">—</dd>
+          </div>
+          <div class="discuss-fact">
+            <dt data-i18n="discussPage.fact2Label">DISCUSSIONS</dt>
+            <dd data-i18n="discussPage.fact2Value">None published yet</dd>
+          </div>
+          <div class="discuss-fact">
+            <dt data-i18n="discussPage.fact3Label">COMMUNITY</dt>
+            <dd data-i18n="discussPage.fact3Value">Just getting started</dd>
+          </div>
+          <div class="discuss-fact">
+            <dt data-i18n="discussPage.fact4Label">STATUS</dt>
+            <dd data-i18n="discussPage.fact4Value">Live</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="discuss-visual">
+        <div class="discuss-visual-art">
+          <img src="../assets/img/discuss-community.png" alt="" aria-hidden="true" width="1536" height="1024" />
+        </div>
+        <div class="discuss-hero-panel p1">
+          <span class="k" data-i18n="discussPage.panelStatusLabel">STATUS</span>
+          <span class="v" data-i18n="discussPage.fact4Value">Live</span>
+        </div>
+        <div class="discuss-hero-panel p2">
+          <span class="k" data-i18n="discussPage.panelDiscussionsLabel">DISCUSSIONS</span>
+          <span class="v" data-i18n="discussPage.fact2Value">None published yet</span>
+        </div>
+        <div class="discuss-hero-panel p3">
+          <span class="k" data-i18n="discussPage.panelCommunityLabel">COMMUNITY</span>
+          <span class="v" data-i18n="discussPage.fact3Value">Just getting started</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block discuss-section" id="discuss-current">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="discussPage.current.eyebrow">CURRENT DISCUSSIONS</span>
+      <h2 data-i18n="discussPage.current.title">What's being discussed.</h2>
+
+      <div class="discuss-auth-required" id="discuss-auth-required" hidden>
+        <span data-i18n="discussPage.authRequired">Sign in to start a discussion.</span>
+        <button type="button" id="discuss-auth-login-link" data-i18n="discussPage.authRequiredLink">Sign in</button>
+      </div>
+
+      <div class="discuss-form-card" id="discuss-form-card">
+        <form id="discuss-form" novalidate>
+          <label class="discuss-field">
+            <span data-i18n="discussPage.titleLabel">Title</span>
+            <input type="text" id="discuss-title" maxlength="200" required />
+          </label>
+          <label class="discuss-field" id="discuss-category-field" hidden>
+            <span data-i18n="discussPage.categoryLabel">Topic (optional)</span>
+            <select id="discuss-category"></select>
+          </label>
+          <button type="submit" class="discuss-submit" id="discuss-submit" data-i18n="discussPage.submit">Start discussion</button>
+          <p class="discuss-status" id="discuss-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <div class="discuss-stream" id="discuss-current-stream" aria-live="polite"></div>
+      <div class="discuss-empty" id="discuss-current-empty">
+        <p data-i18n="discussPage.currentEmpty.p1">No discussions published yet.</p>
+        <p data-i18n="discussPage.currentEmpty.p2">Be the first to start one — the form above uses the same real, RLS-protected write path as everything else on this platform.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block discuss-section" id="discuss-topics">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="discussPage.topics.eyebrow">TOPICS</span>
+      <h2 data-i18n="discussPage.topics.title">Discover topics.</h2>
+      <div class="body-copy" id="discuss-topics-body"></div>
+      <div class="discuss-topic-grid" id="discuss-topic-grid"></div>
+      <div class="discuss-empty" id="discuss-topics-empty">
+        <p data-i18n="discussPage.topicsEmpty.p1">No topic categories published yet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block discuss-section" id="discuss-latest">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="discussPage.latest.eyebrow">RECENTLY DISCUSSED</span>
+      <h2 data-i18n="discussPage.latest.title">Recently discussed.</h2>
+      <div class="body-copy" id="discuss-latest-body"></div>
+      <div class="discuss-stream" id="discuss-latest-stream" aria-live="polite"></div>
+      <div class="discuss-empty" id="discuss-latest-empty">
+        <p data-i18n="discussPage.latestEmpty.p1">Nothing discussed yet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block discuss-section" id="discuss-how">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="discussPage.how.eyebrow">HOW DISCUSS WORKS</span>
+      <h2 data-i18n="discussPage.how.title">How Discuss works.</h2>
+      <div class="body-copy" id="discuss-how-body"></div>
+      <blockquote class="discuss-quote" data-i18n="discussPage.how.quote">Other opinions explicitly welcome. Contradiction is more useful here than agreement.</blockquote>
+
+      <h3 data-i18n="discussPage.model.title">Discuss, as data.</h3>
+      <ul class="discuss-def-list" id="discuss-model-list"></ul>
+    </div>
+  </section>
+
+  <section class="block discuss-section" id="discuss-rules">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="discussPage.rules.eyebrow">COMMUNITY &amp; RULES</span>
+      <h2 data-i18n="discussPage.rules.title">Respect people. Question ideas.</h2>
+      <div class="body-copy" id="discuss-rules-body"></div>
+    </div>
+  </section>
+
+  <section class="block discuss-section" id="discuss-connections" style="border-bottom:none;">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="discussPage.connections.eyebrow">CONNECTION TO THE NETWORK</span>
+      <h2 data-i18n="discussPage.connections.title">Connection to the Network.</h2>
+      <div class="discuss-network-links">
+        <a class="discuss-network-link" href="../signal/">
+          <div class="t mono" data-i18n="nav.signal">SIGNAL</div>
+          <div class="q" data-i18n="discussPage.connections.signal">Where a development starts, before it's discussed.</div>
+        </a>
+        <a class="discuss-network-link" href="../lab/">
+          <div class="t mono" data-i18n="nav.lab">LAB</div>
+          <div class="q" data-i18n="discussPage.connections.lab">Where a claim gets tested, before or after it's discussed.</div>
+        </a>
+        <a class="discuss-network-link" href="../knowledge/">
+          <div class="t mono" data-i18n="nav.knowledge">KNOWLEDGE</div>
+          <div class="q" data-i18n="discussPage.connections.knowledge">Where a discussion can lead, once something holds up.</div>
+        </a>
+        <a class="discuss-network-link" href="../project/">
+          <div class="t mono" data-i18n="nav.project">PROJECT</div>
+          <div class="q" data-i18n="discussPage.connections.project">What's actually being discussed, underneath.</div>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="../project/" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="../signal/" data-i18n="footer.news">AI Signal</a>
+        <a href="../lab/" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="./" data-i18n="footer.discussions">Discussions</a>
+        <a href="#discuss-topics" data-i18n="footer.models">Models</a>
+        <a href="#discuss-current" data-i18n="footer.ideas">Ideas</a>
+        <a href="./" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="../#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+  </div>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+    </div>
+  </div>
+
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+</div>
+
+<script src="../site-chrome.js"></script>
+<script src="../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // DISCUSS-page-only content: strings, data, the small
+  // renderDiscussPage() function, and the real "start a discussion"
+  // write path. Everything global comes from ../site-chrome.js. This
+  // is the first real dedicated DISCUSS subpage (Redesign-Schritt 15) -
+  // previously DISCUSS only existed as a small, explicitly
+  // "PREVIEW CONTENT"-tagged section on HOME (#discuss), which now
+  // becomes a teaser linking here.
+  //
+  // Real backend (already live, no migration in this step):
+  // discuss_categories/discuss_topics (0001_init_schema.sql) + real
+  // auth/roles/RLS/write-guards for discuss_topics/discuss_posts/
+  // profiles (0002_discuss_community.sql). Live-checked before writing
+  // this page: 0 published rows in discuss_categories and
+  // discuss_topics today - not an error - so all data sections show a
+  // real, honest empty state.
+  //
+  // The write path below mirrors the existing, already-shipped
+  // Observation write pattern 1:1 (see ../index.html,
+  // insertObservation()): same auth gate, same direct PostgREST POST
+  // with apikey + Bearer token, same "client sends only the legitimate
+  // input fields" discipline. discuss_topics.id/author_id/published/
+  // hidden/replies/participants/flag are ALL set server-side by
+  // guard_discuss_topic_write() in 0002_discuss_community.sql - this
+  // page only ever sends { title: {en, de}, category_id }. title is
+  // stored bilingually in the DB; a member writes in one language, so
+  // the same text is sent for both en/de keys (nothing is translated
+  // or invented - the page displays exactly what the member typed,
+  // regardless of the site's current language toggle).
+  //
+  // DISCUSS is explicitly NOT Observations: no confirm/contradict
+  // reactions here, no topic_area/knowledge_level fields - those only
+  // exist on collective_observations (0009_collective_observations.sql)
+  // and stay HOME-only, unchanged by this page (Auftrag Abschnitt 3).
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "discussPage.eyebrow": { en: "DISCUSS & CONNECT", de: "DISKUTIEREN & VERNETZEN" },
+    "discussPage.h1": { en: "J.A.R.V.I.S. Discuss", de: "J.A.R.V.I.S. Discuss" },
+    "discussPage.lede": { en: "Other opinions explicitly welcome.", de: "Andere Meinungen ausdrücklich erwünscht." },
+    "discussPage.cta1": { en: "START A DISCUSSION", de: "DISKUSSION STARTEN" },
+    "discussPage.cta2": { en: "HOW IT WORKS", de: "WIE ES FUNKTIONIERT" },
+
+    "discussPage.fact1Label": { en: "TOPICS", de: "THEMEN" },
+    "discussPage.fact2Label": { en: "DISCUSSIONS", de: "DISKUSSIONEN" },
+    "discussPage.fact2Value": { en: "None published yet", de: "Noch keine veröffentlicht" },
+    "discussPage.fact3Label": { en: "COMMUNITY", de: "COMMUNITY" },
+    "discussPage.fact3Value": { en: "Just getting started", de: "Steht noch am Anfang" },
+    "discussPage.fact4Label": { en: "STATUS", de: "STATUS" },
+    "discussPage.fact4Value": { en: "Live", de: "Live" },
+
+    "discussPage.panelStatusLabel": { en: "STATUS", de: "STATUS" },
+    "discussPage.panelDiscussionsLabel": { en: "DISCUSSIONS", de: "DISKUSSIONEN" },
+    "discussPage.panelCommunityLabel": { en: "COMMUNITY", de: "COMMUNITY" },
+
+    "discussPage.current.eyebrow": { en: "CURRENT DISCUSSIONS", de: "AKTUELLE DISKUSSIONEN" },
+    "discussPage.current.title": { en: "What's being discussed.", de: "Was gerade diskutiert wird." },
+    "discussPage.authRequired": { en: "Sign in to start a discussion.", de: "Zum Diskussion-Starten anmelden." },
+    "discussPage.authRequiredLink": { en: "Sign in", de: "Anmelden" },
+    "discussPage.titleLabel": { en: "Title", de: "Titel" },
+    "discussPage.categoryLabel": { en: "Topic (optional)", de: "Thema (optional)" },
+    "discussPage.submit": { en: "Start discussion", de: "Diskussion starten" },
+    "discussPage.currentEmpty.p1": { en: "No discussions published yet.", de: "Noch keine Diskussionen veröffentlicht." },
+    "discussPage.currentEmpty.p2": {
+      en: "Be the first to start one — the form above uses the same real, RLS-protected write path as everything else on this platform.",
+      de: "Sei die erste Person, die eine startet – das Formular oben nutzt denselben echten, RLS-geschützten Schreibpfad wie alles andere auf dieser Plattform."
+    },
+
+    "discussPage.topics.eyebrow": { en: "TOPICS", de: "THEMEN" },
+    "discussPage.topics.title": { en: "Discover topics.", de: "Themen entdecken." },
+    "discussPage.topicsEmpty.p1": { en: "No topic categories published yet.", de: "Noch keine Themenkategorien veröffentlicht." },
+
+    "discussPage.latest.eyebrow": { en: "RECENTLY DISCUSSED", de: "NEU DISKUTIERT" },
+    "discussPage.latest.title": { en: "Recently discussed.", de: "Neu diskutiert." },
+    "discussPage.latestEmpty.p1": { en: "Nothing discussed yet.", de: "Noch nichts diskutiert." },
+
+    "discussPage.how.eyebrow": { en: "HOW DISCUSS WORKS", de: "WIE DISCUSS FUNKTIONIERT" },
+    "discussPage.how.title": { en: "How Discuss works.", de: "Wie Discuss funktioniert." },
+    "discussPage.how.quote": {
+      en: "Other opinions explicitly welcome. Contradiction is more useful here than agreement.",
+      de: "Andere Meinungen ausdrücklich erwünscht. Widerspruch ist hier nützlicher als Zustimmung."
+    },
+    "discussPage.model.title": { en: "Discuss, as data.", de: "Discuss als Datensatz." },
+    "discussPage.model.topic.t": { en: "DISCUSSION", de: "DISKUSSION" },
+    "discussPage.model.topic.d": { en: "A question, opinion or experience, open for replies from anyone.", de: "Eine Frage, Meinung oder Erfahrung, offen für Antworten von allen." },
+    "discussPage.model.reply.t": { en: "REPLY", de: "ANTWORT" },
+    "discussPage.model.reply.d": { en: "A response inside a discussion — agreement, contradiction, or a new angle.", de: "Eine Antwort innerhalb einer Diskussion – Zustimmung, Widerspruch oder ein neuer Blickwinkel." },
+    "discussPage.model.observation.t": { en: "OBSERVATION (not this page)", de: "BEOBACHTUNG (nicht diese Seite)" },
+    "discussPage.model.observation.d": { en: "A structured, categorized real-world AI experience — a distinct feature on HOME, not a Discuss reply. A comment here is not automatically an observation.", de: "Eine strukturierte, kategorisierte reale KI-Erfahrung – ein eigenes Feature auf HOME, keine Discuss-Antwort. Ein Kommentar hier ist nicht automatisch eine Beobachtung." },
+    "discussPage.model.source.t": { en: "SOURCE", de: "QUELLE" },
+    "discussPage.model.source.d": { en: "Where a claim in a reply came from — named, or marked as personal opinion.", de: "Woher eine Behauptung in einer Antwort stammt – benannt oder als persönliche Meinung gekennzeichnet." },
+
+    "discussPage.rules.eyebrow": { en: "COMMUNITY & RULES", de: "COMMUNITY & REGELN" },
+    "discussPage.rules.title": { en: "Respect people. Question ideas.", de: "Respektiert Menschen. Hinterfragt Ideen." },
+
+    "discussPage.connections.eyebrow": { en: "CONNECTION TO THE NETWORK", de: "VERBINDUNG ZUM NETWORK" },
+    "discussPage.connections.title": { en: "Connection to the Network.", de: "Verbindung zum Network." },
+    "discussPage.connections.signal": { en: "Where a development starts, before it's discussed.", de: "Wo eine Entwicklung beginnt, bevor sie diskutiert wird." },
+    "discussPage.connections.lab": { en: "Where a claim gets tested, before or after it's discussed.", de: "Wo eine Annahme getestet wird, vor oder nach der Diskussion." },
+    "discussPage.connections.knowledge": { en: "Where a discussion can lead, once something holds up.", de: "Wo eine Diskussion hinführen kann, sobald sich etwas bewährt." },
+    "discussPage.connections.project": { en: "What's actually being discussed, underneath.", de: "Worum es in der Diskussion eigentlich geht." }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "Discuss — J.A.R.V.I.S. Network",
+    de: "Discuss — J.A.R.V.I.S. Network"
+  });
+
+  var discussIntroParagraphs = {
+    en: [
+      "This is where I'd rather be told I'm wrong than left assuming I'm right. Questions, opinions, experiences and disagreement all belong here.",
+      "It's separate from Observations (HOME) on purpose — an observation is a structured, categorized real-world AI experience; a reply here is just a reply. The two don't get mixed."
+    ],
+    de: [
+      "Hier höre ich lieber, dass ich falsch liege, als anzunehmen, dass ich richtig liege. Fragen, Meinungen, Erfahrungen und Widerspruch gehören alle hierher.",
+      "Das ist bewusst getrennt von Beobachtungen (HOME) — eine Beobachtung ist eine strukturierte, kategorisierte reale KI-Erfahrung, eine Antwort hier ist einfach eine Antwort. Beides wird nicht vermischt."
+    ]
+  };
+
+  var discussTopicsParagraphs = {
+    en: [
+      "Real categories, once they exist — not a new canonical topic system, just what's actually been published here."
+    ],
+    de: [
+      "Echte Kategorien, sobald es sie gibt – kein neues kanonisches Themensystem, sondern das, was hier tatsächlich veröffentlicht wurde."
+    ]
+  };
+
+  var discussLatestParagraphs = {
+    en: [
+      "The same real discussions as above, ordered by when they were last touched rather than when they were first started."
+    ],
+    de: [
+      "Dieselben echten Diskussionen wie oben, sortiert danach, wann sie zuletzt bearbeitet wurden statt danach, wann sie gestartet wurden."
+    ]
+  };
+
+  var discussHowParagraphs = {
+    en: [
+      "Anyone can read a published discussion. Starting one, or replying, needs a real account — the same login already used everywhere else on this site, not a separate system.",
+      "A discussion is a topic and its replies. It's not automatically an Observation, and replies here don't carry a confirm/contradict count — that mechanism belongs to Observations specifically, not to open conversation."
+    ],
+    de: [
+      "Eine veröffentlichte Diskussion kann jeder lesen. Um eine zu starten oder zu antworten, braucht es einen echten Account – dasselbe Login, das schon überall sonst auf dieser Seite verwendet wird, kein separates System.",
+      "Eine Diskussion ist ein Thema und seine Antworten. Sie ist nicht automatisch eine Beobachtung, und Antworten hier tragen keinen Zustimmen/Widersprechen-Zähler – dieser Mechanismus gehört gezielt zu Beobachtungen, nicht zum offenen Austausch."
+    ]
+  };
+
+  var discussModelItems = [
+    { term: 'discussPage.model.topic.t', desc: 'discussPage.model.topic.d' },
+    { term: 'discussPage.model.reply.t', desc: 'discussPage.model.reply.d' },
+    { term: 'discussPage.model.observation.t', desc: 'discussPage.model.observation.d' },
+    { term: 'discussPage.model.source.t', desc: 'discussPage.model.source.d' }
+  ];
+
+  // Real, already-approved tone-of-voice rule (WEBSITE_ARCHITECTURE_V1.md,
+  // Abschnitt 9, ABGENOMMEN) - quoted, not invented for this page. No
+  // link to a full code-of-conduct page: COMMUNITY_CODE_OF_CONDUCT.md
+  // exists as a repo document, but its website presentation is
+  // explicitly still open (WEBSITE_ARCHITECTURE_V1.md Abschnitt 12.13) -
+  // so no dead URL is created here.
+  var discussRulesParagraphs = {
+    en: [
+      "“Respect people. Question ideas.” Disagreement is explicitly welcome here — personal attacks are not.",
+      "A full community code of conduct already exists as a document, but its dedicated page on this site isn't live yet — so this section states the real, already-agreed rule directly instead of linking to a page that doesn't exist."
+    ],
+    de: [
+      "„Respektiert Menschen. Hinterfragt Ideen.“ Widerspruch ist hier ausdrücklich erwünscht – persönliche Angriffe nicht.",
+      "Ein vollständiger Community-Verhaltenskodex existiert bereits als Dokument, seine eigene Seite auf dieser Website ist aber noch nicht live – deshalb steht hier direkt die echte, bereits abgenommene Regel, statt auf eine nicht existierende Seite zu verlinken."
+    ]
+  };
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function renderDiscussStream(container, emptyEl, rows, lang) {
+    container.innerHTML = '';
+    if (!rows || !rows.length) {
+      emptyEl.hidden = false;
+      return;
+    }
+    emptyEl.hidden = true;
+    rows.forEach(function (r) {
+      var item = document.createElement('article');
+      item.className = 'discuss-item';
+
+      var meta = document.createElement('div');
+      meta.className = 'meta';
+      if (r.categoryTitle) {
+        var cat = document.createElement('span');
+        cat.textContent = r.categoryTitle[lang] || r.categoryTitle.en || '';
+        meta.appendChild(cat);
+      }
+      var time = document.createElement('time');
+      var dateVal = (r.date || '').slice(0, 10);
+      time.setAttribute('datetime', dateVal);
+      time.textContent = dateVal;
+      meta.appendChild(time);
+      item.appendChild(meta);
+
+      var h3 = document.createElement('h3');
+      h3.className = 'item-title';
+      h3.textContent = (r.title && r.title[lang]) || '';
+      item.appendChild(h3);
+
+      var replies = document.createElement('p');
+      replies.className = 'replies';
+      var repliesWord = lang === 'de' ? 'Antworten' : 'replies';
+      replies.textContent = (r.replies || 0) + ' ' + repliesWord;
+      item.appendChild(replies);
+
+      container.appendChild(item);
+    });
+  }
+
+  var liveCategories = [];
+  var liveTopics = [];
+
+  function renderDiscussPage() {
+    var lang = SiteChrome.getLang();
+
+    SiteChrome.renderParagraphs(document.getElementById('discuss-intro-body'), discussIntroParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('discuss-topics-body'), discussTopicsParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('discuss-latest-body'), discussLatestParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('discuss-how-body'), discussHowParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('discuss-rules-body'), discussRulesParagraphs);
+
+    var modelList = document.getElementById('discuss-model-list');
+    if (modelList) {
+      modelList.innerHTML = '';
+      discussModelItems.forEach(function (item) {
+        var li = document.createElement('li');
+        var term = document.createElement('span');
+        term.className = 'term';
+        term.textContent = SiteChrome.t(item.term);
+        var desc = document.createElement('span');
+        desc.className = 'desc';
+        desc.textContent = SiteChrome.t(item.desc);
+        li.appendChild(term);
+        li.appendChild(desc);
+        modelList.appendChild(li);
+      });
+    }
+
+    // Topics (discuss_categories)
+    var topicGrid = document.getElementById('discuss-topic-grid');
+    var topicsEmpty = document.getElementById('discuss-topics-empty');
+    topicGrid.innerHTML = '';
+    if (liveCategories.length) {
+      topicsEmpty.hidden = true;
+      liveCategories.forEach(function (c) {
+        var div = document.createElement('div');
+        div.className = 'discuss-topic-card';
+        var t = document.createElement('div');
+        t.className = 't';
+        t.textContent = (c.title && c.title[lang]) || '';
+        var d = document.createElement('div');
+        d.className = 'd';
+        d.textContent = (c.description && c.description[lang]) || '';
+        div.appendChild(t);
+        div.appendChild(d);
+        topicGrid.appendChild(div);
+      });
+    } else {
+      topicsEmpty.hidden = false;
+    }
+    var factTopics = document.getElementById('discussPage-fact-topics');
+    if (factTopics) { factTopics.textContent = liveCategories.length ? String(liveCategories.length) : (lang === 'de' ? 'Noch keine' : 'None yet'); }
+
+    // Category select in the write form (only shown if real categories exist)
+    var categoryField = document.getElementById('discuss-category-field');
+    var categorySelect = document.getElementById('discuss-category');
+    if (liveCategories.length) {
+      categoryField.hidden = false;
+      categorySelect.innerHTML = '';
+      liveCategories.forEach(function (c) {
+        var opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = (c.title && c.title[lang]) || '';
+        categorySelect.appendChild(opt);
+      });
+    } else {
+      categoryField.hidden = true;
+    }
+
+    // Discussion streams (discuss_topics), same real data, two sort orders
+    var currentRows = liveTopics.slice().sort(function (a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
+    var latestRows = liveTopics.slice().sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); });
+    renderDiscussStream(document.getElementById('discuss-current-stream'), document.getElementById('discuss-current-empty'), currentRows, lang);
+    renderDiscussStream(document.getElementById('discuss-latest-stream'), document.getElementById('discuss-latest-empty'), latestRows, lang);
+  }
+
+  function loadLiveDiscuss() {
+    if (!SiteChrome.isSupabaseConfigured()) { return; }
+
+    SiteChrome.restFetch('discuss_categories?select=*&published=eq.true')
+      .then(function (rows) {
+        liveCategories = rows || [];
+        renderDiscussPage();
+      })
+      .catch(function (e) { console.warn('[jarvis-network] live discuss_categories load failed:', e); });
+
+    SiteChrome.restFetch('discuss_topics?select=*,discuss_categories(title)&published=eq.true&hidden=eq.false&order=created_at.desc')
+      .then(function (rows) {
+        liveTopics = (rows || []).map(function (r) {
+          return {
+            title: r.title,
+            categoryTitle: r.discuss_categories ? r.discuss_categories.title : null,
+            replies: r.replies,
+            date: r.created_at,
+            createdAt: r.created_at,
+            updatedAt: r.updated_at
+          };
+        });
+        renderDiscussPage();
+      })
+      .catch(function (e) { console.warn('[jarvis-network] live discuss_topics load failed:', e); });
+  }
+
+  // ==================================================================
+  // Real "start a discussion" write path. Mirrors insertObservation()
+  // in ../index.html exactly - same auth gate, same direct PostgREST
+  // POST, same "only legitimate input fields are ever sent" discipline.
+  // No new auth architecture, no schema change, no migration.
+  // ==================================================================
+  (function () {
+    var cfg = SiteChrome.JARVIS_NETWORK_CONFIG;
+    var form = document.getElementById('discuss-form');
+    var titleInput = document.getElementById('discuss-title');
+    var categorySelect = document.getElementById('discuss-category');
+    var submitBtn = document.getElementById('discuss-submit');
+    var statusEl = document.getElementById('discuss-status');
+    var authRequired = document.getElementById('discuss-auth-required');
+    var authLoginLink = document.getElementById('discuss-auth-login-link');
+    if (!form) { return; }
+
+    function updateAuthGate() {
+      var authed = SiteChrome.isAuthenticated();
+      authRequired.hidden = authed;
+      titleInput.disabled = !authed;
+      categorySelect.disabled = !authed;
+      submitBtn.disabled = !authed;
+    }
+    authLoginLink.addEventListener('click', SiteChrome.openLoginPanel);
+
+    function setStatus(message, kind) {
+      statusEl.textContent = message || '';
+      statusEl.classList.remove('is-error', 'is-ok');
+      if (kind) { statusEl.classList.add(kind === 'error' ? 'is-error' : 'is-ok'); }
+    }
+
+    // Only ever sends title + category_id - id/author_id/published/
+    // hidden/replies/participants/flag are set server-side by
+    // guard_discuss_topic_write() regardless of what a client sends.
+    function insertDiscussTopic(payload) {
+      var url = cfg.supabaseUrl.replace(/\/+$/, '') + '/rest/v1/discuss_topics';
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          apikey: cfg.supabasePublishableKey,
+          Authorization: 'Bearer ' + SiteChrome.accessToken(),
+          Prefer: 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      }).then(function (res) {
+        if (res.ok) { return { ok: true }; }
+        return { ok: false, status: res.status };
+      });
+    }
+
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      if (!SiteChrome.isAuthenticated()) { SiteChrome.openLoginPanel(); return; }
+
+      var title = titleInput.value.trim();
+      if (!title) { setStatus(SiteChrome.t('discussPage.titleLabel'), 'error'); return; }
+
+      var payload = { title: { en: title, de: title } };
+      if (!categorySelect.hidden && categorySelect.value) {
+        payload.category_id = categorySelect.value;
+      }
+
+      submitBtn.disabled = true;
+      setStatus('…');
+      insertDiscussTopic(payload).then(function (result) {
+        submitBtn.disabled = false;
+        if (result.ok) {
+          setStatus(SiteChrome.getLang() === 'de' ? 'Diskussion gestartet.' : 'Discussion started.', 'ok');
+          titleInput.value = '';
+          loadLiveDiscuss();
+        } else {
+          setStatus(SiteChrome.getLang() === 'de' ? 'Fehler beim Speichern.' : 'Something went wrong.', 'error');
+        }
+      });
+    });
+
+    updateAuthGate();
+    SiteChrome.onLanguageChange(updateAuthGate);
+    SiteChrome.onAuthChange(updateAuthGate);
+  })();
+
+  SiteChrome.applyStaticStrings();
+  renderDiscussPage();
+  SiteChrome.onLanguageChange(renderDiscussPage);
+  loadLiveDiscuss();
+
+  SiteChrome.initMobileNav();
+  SiteChrome.initAuthAndAsk();
+</script>
+</body>
+</html>

@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lab — J.A.R.V.I.S. Network</title>
+<link rel="stylesheet" href="../foundation.css" />
+<link rel="stylesheet" href="../site-chrome.css" />
+<style>
+  /* LAB-page-only styles. Shared chrome (nav, login panel, Ask JARVIS
+     panel, footer, focus-visible) comes from ../site-chrome.css.
+     MASTER STYLE 1:1 (Redesign-Schritt 14, design-reference/05_LAB.png).
+     Real data: lab_entries already exists in the live Supabase project
+     (see supabase/migrations/0001_init_schema.sql), columns id,
+     title{en,de}, starting_point/goal/approach/result/what_worked/
+     what_did_not_work/why/insights{en,de}, status (active/testing/
+     experimental/failed/archived/research), published, created_at,
+     updated_at. Live-checked before writing this page: 0 published rows
+     today - not an error - so both experiment sections show a real,
+     honest empty state instead of the reference's fake 72%/48%/33%/61%
+     progress bars, fake "128 experiments / 78.4% success / 2.842h /
+     26 prototypes / 42 contributors" stat strip, or invented experiment
+     cards. The illustrative six-entry array previously shown on HOME's
+     #lab section was itself already marked "PREVIEW CONTENT" there
+     (i.e. not presented as confirmed real data) - it is not reused here
+     as if it were real; this page relies solely on the live query. */
+
+  .lab-hero { padding: 1.6rem 0 clamp(2.6rem, 5vw, 4rem); }
+  .lab-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+  .lab-hero-copy { max-width: 640px; }
+  .lab-hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 7vw, 5.2rem);
+    letter-spacing: 0.01em;
+    max-width: 16ch;
+    margin-top: 0.6rem;
+  }
+  .lab-lede {
+    margin-top: 0.9rem;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: var(--ice);
+    font-weight: 500;
+  }
+  .lab-hero .body-copy { margin-top: 1.2rem; }
+  .lab-hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.8rem; }
+
+  .body-copy { max-width: 66ch; }
+  .body-copy p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+  .body-copy p:last-child { margin-bottom: 0; }
+
+  /* -------- right column: Lab-Container-Motiv + reale Status-Panels -------- */
+  .lab-visual { position: relative; min-height: clamp(300px, 32vw, 440px); }
+  .lab-visual-art { position: absolute; inset: 0; }
+  .lab-visual-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
+
+  .lab-hero-panel {
+    position: absolute;
+    width: 200px;
+    background: color-mix(in srgb, var(--panel) 90%, transparent);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    box-shadow: var(--shadow-soft);
+  }
+  .lab-hero-panel .k {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .lab-hero-panel .v {
+    font-size: 0.85rem;
+    color: var(--white);
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .lab-hero-panel.p1 { top: 0; right: -2%; }
+  .lab-hero-panel.p2 { top: 42%; left: -8%; transform: translateY(-50%); }
+  .lab-hero-panel.p3 { bottom: 0; right: -2%; }
+
+  .lab-fact-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.2rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--line);
+  }
+  .lab-fact dt {
+    font-family: ui-monospace, monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+  .lab-fact dd { margin: 0; font-weight: 600; font-size: 0.9rem; color: var(--white); }
+
+  @media (max-width: 900px) {
+    .lab-hero-grid { grid-template-columns: 1fr; }
+    .lab-hero-copy { max-width: 100%; }
+    .lab-visual { min-height: 0; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.8rem; }
+    .lab-visual-art { position: static; height: 240px; }
+    .lab-visual-art img { position: static; width: 100%; height: 100%; }
+    .lab-hero-panel { position: static; width: 100%; }
+    .lab-fact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  .lab-section h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    max-width: 34ch;
+    margin-bottom: 1.2rem;
+  }
+  .lab-section h3 {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan-dim);
+    margin: 0 0 0.9rem;
+  }
+
+  /* Experiment stream - quiet vertical list, same editorial pattern as
+     the other real-data pages (SIGNAL/KNOWLEDGE), not a card wall with
+     fake progress bars. */
+  .lab-stream { margin-top: 1.4rem; display: flex; flex-direction: column; gap: 0; }
+  .lab-item { display: block; padding: 1.3rem 0; border-bottom: 1px solid var(--line); }
+  .lab-item:first-child { padding-top: 0; }
+  .lab-item:last-child { border-bottom: none; }
+  .lab-item .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+  }
+  .lab-item .status-badge { padding: 0.15rem 0.55rem; border-radius: 100px; }
+  .lab-item h3.item-title {
+    margin: 0.6rem 0 0;
+    font-family: inherit;
+    letter-spacing: normal;
+    color: var(--white);
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .lab-item .excerpt { margin-top: 0.5rem; color: var(--muted); font-size: 0.92rem; line-height: 1.65; }
+
+  /* Empty state - deliberately calm, not "broken page" looking. */
+  .lab-empty {
+    margin-top: 1.4rem;
+    padding: clamp(1.6rem, 4vw, 2.4rem);
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    max-width: 56ch;
+  }
+  .lab-empty p { margin: 0 0 0.7rem; color: var(--muted); font-size: 0.96rem; line-height: 1.7; }
+  .lab-empty p:last-child { margin-bottom: 0; }
+
+  .lab-flow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; margin-top: 1.6rem; max-width: 56ch; }
+  .lab-flow .arch-node { font-size: 0.8rem; white-space: normal; max-width: 100%; overflow-wrap: break-word; }
+  .lab-flow .arch-arrow { display: block; padding: 0.26rem 0 0.26rem 1.1rem; transform: rotate(90deg); transform-origin: left center; }
+  .lab-flow-note { margin-top: 1rem; font-size: 0.8rem; color: var(--muted); font-style: italic; }
+
+  .lab-def-list { margin: 1.2rem 0 0; padding: 0; list-style: none; max-width: 66ch; }
+  .lab-def-list li { padding: 0.9rem 0; border-bottom: 1px solid var(--line); }
+  .lab-def-list li:last-child { border-bottom: none; }
+  .lab-def-list .term {
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-dim);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+  .lab-def-list .desc { color: var(--muted); font-size: 0.94rem; line-height: 1.6; }
+
+  .lab-quote {
+    margin: 1.6rem 0;
+    padding: 1.1rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    color: var(--ice);
+    font-size: 1.02rem;
+    line-height: 1.6;
+    max-width: 56ch;
+  }
+
+  .lab-network-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+  }
+  .lab-network-link {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .lab-network-link:hover { border-color: var(--cyan-dim); transform: translateY(-2px); }
+  .lab-network-link .t { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--cyan); }
+  .lab-network-link .q { margin-top: 0.4rem; color: var(--white); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="../" data-i18n="nav.home">HOME</a>
+      <a href="../project/" data-i18n="nav.project">PROJECT</a>
+      <a href="../signal/" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="./" class="current" data-i18n="nav.lab">LAB</a>
+      <a href="../discuss/" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="../ask/" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap breadcrumb">
+    <a href="../" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="nav.lab">LAB</span>
+  </div>
+
+  <section class="block lab-hero">
+    <div class="wrap lab-hero-grid">
+      <div class="lab-hero-copy">
+        <span class="eyebrow" data-i18n="labPage.eyebrow">LAB &amp; EXPERIMENTS</span>
+        <h1 data-i18n="labPage.h1">J.A.R.V.I.S. Lab</h1>
+        <p class="lab-lede" data-i18n="lab.title">Experiments at the edge of AI.</p>
+        <div class="body-copy" id="lab-intro-body"></div>
+
+        <div class="lab-hero-ctas">
+          <a href="#lab-active" class="cta primary" data-i18n="labPage.cta1">VIEW EXPERIMENTS</a>
+          <a href="#lab-how" class="cta ghost" data-i18n="labPage.cta2">HOW IT WORKS</a>
+        </div>
+
+        <!-- Reale Fakten statt Mockup-Zahlen (128/78,4%/2.842h/26/42). -->
+        <dl class="lab-fact-strip">
+          <div class="lab-fact">
+            <dt data-i18n="labPage.fact1Label">EXPERIMENTS</dt>
+            <dd data-i18n="labPage.fact1Value">None published yet</dd>
+          </div>
+          <div class="lab-fact">
+            <dt data-i18n="labPage.fact2Label">STATUS TYPES</dt>
+            <dd data-i18n="labPage.fact2Value">6 tracked</dd>
+          </div>
+          <div class="lab-fact">
+            <dt data-i18n="labPage.fact3Label">APPROACH</dt>
+            <dd data-i18n="labPage.fact3Value">Documented, not hidden</dd>
+          </div>
+          <div class="lab-fact">
+            <dt data-i18n="labPage.fact4Label">STATUS</dt>
+            <dd data-i18n="labPage.fact4Value">Live</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="lab-visual">
+        <div class="lab-visual-art">
+          <img src="../assets/img/lab-container.png" alt="" aria-hidden="true" width="1122" height="1402" />
+        </div>
+        <div class="lab-hero-panel p1">
+          <span class="k" data-i18n="labPage.panelStatusLabel">STATUS</span>
+          <span class="v" data-i18n="labPage.fact4Value">Live</span>
+        </div>
+        <div class="lab-hero-panel p2">
+          <span class="k" data-i18n="status.focusLabel">CURRENT DEVELOPMENT FOCUS</span>
+          <span class="v" data-i18n="status.focusText">Stabilizing browser-controlled actions behind an explicit confirmation
+      step, and extending the memory layer so it can hold a task's goal and
+      open questions across a session.</span>
+        </div>
+        <div class="lab-hero-panel p3">
+          <span class="k" data-i18n="labPage.panelExperimentsLabel">EXPERIMENTS</span>
+          <span class="v" data-i18n="labPage.fact1Value">None published yet</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block lab-section" id="lab-active">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="labPage.active.eyebrow">ACTIVE EXPERIMENTS</span>
+      <h2 data-i18n="labPage.active.title">What I'm testing right now.</h2>
+      <div class="lab-stream" id="lab-active-stream" aria-live="polite"></div>
+      <div class="lab-empty" id="lab-active-empty">
+        <p data-i18n="labPage.activeEmpty.p1">No experiments published yet.</p>
+        <p data-i18n="labPage.activeEmpty.p2">An experiment appears here once there's something real to report — not as a progress bar for its own sake.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block lab-section" id="lab-failed">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="labPage.failed.eyebrow">WHAT DIDN'T WORK</span>
+      <h2 data-i18n="labPage.failed.title">Honest results.</h2>
+      <div class="body-copy" id="lab-failed-body"></div>
+      <div class="lab-stream" id="lab-failed-stream" aria-live="polite"></div>
+      <div class="lab-empty" id="lab-failed-empty">
+        <p data-i18n="labPage.failedEmpty.p1">Nothing written up yet — not because everything worked, but because nothing has been documented for this page yet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block lab-section" id="lab-how">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="labPage.how.eyebrow">HOW THE LAB WORKS</span>
+      <h2 data-i18n="labPage.how.title">How an experiment happens.</h2>
+      <div class="body-copy" id="lab-how-body"></div>
+      <blockquote class="lab-quote" data-i18n="labPage.how.quote">A percentage can't tell you if something actually works. A written result can.</blockquote>
+
+      <h3 data-i18n="labPage.flow.title">From question to insight.</h3>
+      <div class="lab-flow" id="lab-flow-diagram" aria-hidden="true"></div>
+      <p class="lab-flow-note" data-i18n="labPage.flow.note">This shows the intended structure, not a guarantee that every experiment reaches the last step.</p>
+
+      <h3 data-i18n="labPage.model.title">An experiment, as data.</h3>
+      <ul class="lab-def-list" id="lab-model-list"></ul>
+    </div>
+  </section>
+
+  <section class="block lab-section" id="lab-connections" style="border-bottom:none;">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="labPage.connections.eyebrow">CONNECTION TO THE NETWORK</span>
+      <h2 data-i18n="labPage.connections.title">Connection to the Network.</h2>
+      <div class="lab-network-links">
+        <a class="lab-network-link" href="../signal/">
+          <div class="t mono" data-i18n="nav.signal">SIGNAL</div>
+          <div class="q" data-i18n="labPage.connections.signal">Where an idea worth testing often starts.</div>
+        </a>
+        <a class="lab-network-link" href="../discuss/">
+          <div class="t mono" data-i18n="nav.discuss">DISCUSS</div>
+          <div class="q" data-i18n="labPage.connections.discuss">Where an approach gets challenged before or after testing it.</div>
+        </a>
+        <a class="lab-network-link" href="../knowledge/">
+          <div class="t mono" data-i18n="nav.knowledge">KNOWLEDGE</div>
+          <div class="q" data-i18n="labPage.connections.knowledge">Where a tested insight can end up, once it holds up.</div>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="../project/" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="../signal/" data-i18n="footer.news">AI Signal</a>
+        <a href="./" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="../discuss/" data-i18n="footer.discussions">Discussions</a>
+        <a href="../discuss/" data-i18n="footer.models">Models</a>
+        <a href="../discuss/" data-i18n="footer.ideas">Ideas</a>
+        <a href="../discuss/" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="../#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+  </div>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+    </div>
+  </div>
+
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+</div>
+
+<script src="../site-chrome.js"></script>
+<script src="../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // LAB-page-only content: strings, data, and the small
+  // renderLabPage() function. Everything global comes from
+  // ../site-chrome.js. This is the first real dedicated LAB subpage
+  // (Redesign-Schritt 14) - previously LAB only existed as a small,
+  // explicitly "PREVIEW CONTENT"-tagged section on HOME (#lab), which
+  // now becomes a teaser linking here.
+  //
+  // Real data: lab_entries already exists in the live Supabase project
+  // (supabase/migrations/0001_init_schema.sql), columns id, title{en,de},
+  // starting_point/goal/approach/result/what_worked/what_did_not_work/
+  // why/insights{en,de}, status, published, created_at, updated_at.
+  // Live-checked before writing this page: 0 published rows today - not
+  // an error - so both experiment sections show a real, honest empty
+  // state. No fake progress percentages, no fake experiment counts.
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "lab.title": { en: "Experiments at the edge of AI.", de: "Experimente am Rand des Machbaren." },
+    "status.focusLabel": { en: "CURRENT DEVELOPMENT FOCUS", de: "AKTUELLER ENTWICKLUNGSSCHWERPUNKT" },
+    "status.focusText": { en: "Stabilizing browser-controlled actions behind an explicit confirmation step, and extending the memory layer so it can hold a task's goal and open questions across a session.", de: "Browsergesteuerte Aktionen hinter einer ausdrücklichen Bestätigung stabilisieren, und die Gedächtnisebene so erweitern, dass sie Ziel und offene Fragen einer Aufgabe über eine Sitzung hinweg festhalten kann." },
+    "labPage.eyebrow": { en: "LAB & EXPERIMENTS", de: "LABOR & EXPERIMENTE" },
+    "labPage.h1": { en: "J.A.R.V.I.S. Lab", de: "J.A.R.V.I.S. Lab" },
+    "labPage.cta1": { en: "VIEW EXPERIMENTS", de: "EXPERIMENTE ANSEHEN" },
+    "labPage.cta2": { en: "HOW IT WORKS", de: "WIE ES FUNKTIONIERT" },
+
+    "labPage.fact1Label": { en: "EXPERIMENTS", de: "EXPERIMENTE" },
+    "labPage.fact1Value": { en: "None published yet", de: "Noch keine veröffentlicht" },
+    "labPage.fact2Label": { en: "STATUS TYPES", de: "STATUS-ARTEN" },
+    "labPage.fact2Value": { en: "6 tracked", de: "6 erfasst" },
+    "labPage.fact3Label": { en: "APPROACH", de: "PRINZIP" },
+    "labPage.fact3Value": { en: "Documented, not hidden", de: "Dokumentiert statt versteckt" },
+    "labPage.fact4Label": { en: "STATUS", de: "STATUS" },
+    "labPage.fact4Value": { en: "Live", de: "Live" },
+
+    "labPage.panelStatusLabel": { en: "STATUS", de: "STATUS" },
+    "labPage.panelExperimentsLabel": { en: "EXPERIMENTS", de: "EXPERIMENTE" },
+
+    "labPage.active.eyebrow": { en: "ACTIVE EXPERIMENTS", de: "AKTIVE EXPERIMENTE" },
+    "labPage.active.title": { en: "What I'm testing right now.", de: "Was ich gerade teste." },
+    "labPage.activeEmpty.p1": { en: "No experiments published yet.", de: "Noch keine Experimente veröffentlicht." },
+    "labPage.activeEmpty.p2": {
+      en: "An experiment appears here once there's something real to report — not as a progress bar for its own sake.",
+      de: "Ein Experiment erscheint hier, sobald es etwas Reales zu berichten gibt – nicht als Fortschrittsbalken um seiner selbst willen."
+    },
+
+    "labPage.failed.eyebrow": { en: "WHAT DIDN'T WORK", de: "WAS NICHT FUNKTIONIERT HAT" },
+    "labPage.failed.title": { en: "Honest results.", de: "Ehrliche Ergebnisse." },
+    "labPage.failedEmpty.p1": {
+      en: "Nothing written up yet — not because everything worked, but because nothing has been documented for this page yet.",
+      de: "Noch nichts dokumentiert – nicht, weil alles funktioniert hat, sondern weil für diese Seite noch nichts ausgearbeitet wurde."
+    },
+
+    "labPage.how.eyebrow": { en: "HOW THE LAB WORKS", de: "WIE DAS LABOR FUNKTIONIERT" },
+    "labPage.how.title": { en: "How an experiment happens.", de: "Wie ein Experiment entsteht." },
+    "labPage.how.quote": {
+      en: "A percentage can't tell you if something actually works. A written result can.",
+      de: "Eine Prozentzahl sagt nicht, ob etwas wirklich funktioniert. Ein ausformuliertes Ergebnis schon."
+    },
+    "labPage.flow.title": { en: "From question to insight.", de: "Von der Frage zur Erkenntnis." },
+    "labPage.flow.note": {
+      en: "This shows the intended structure, not a guarantee that every experiment reaches the last step.",
+      de: "Das zeigt die vorgesehene Struktur, keine Garantie, dass jedes Experiment die letzte Stufe erreicht."
+    },
+    "labPage.model.title": { en: "An experiment, as data.", de: "Ein Experiment als Datensatz." },
+
+    "labPage.model.starting.t": { en: "STARTING POINT", de: "AUSGANGSPUNKT" },
+    "labPage.model.starting.d": { en: "What prompted the experiment.", de: "Was das Experiment ausgelöst hat." },
+    "labPage.model.goal.t": { en: "GOAL", de: "ZIEL" },
+    "labPage.model.goal.d": { en: "What it was actually trying to find out.", de: "Was tatsächlich herausgefunden werden sollte." },
+    "labPage.model.approach.t": { en: "APPROACH", de: "VORGEHEN" },
+    "labPage.model.approach.d": { en: "How it was actually tested.", de: "Wie es tatsächlich getestet wurde." },
+    "labPage.model.result.t": { en: "RESULT", de: "ERGEBNIS" },
+    "labPage.model.result.d": { en: "What actually happened — not what was hoped for.", de: "Was tatsächlich passiert ist – nicht, was erhofft war." },
+    "labPage.model.worked.t": { en: "WHAT WORKED / WHAT DIDN'T", de: "WAS FUNKTIONIERTE / WAS NICHT" },
+    "labPage.model.worked.d": { en: "Split honestly, not smoothed into a single verdict.", de: "Ehrlich getrennt, nicht zu einem einzigen Urteil geglättet." },
+    "labPage.model.insights.t": { en: "INSIGHTS", de: "ERKENNTNISSE" },
+    "labPage.model.insights.d": { en: "What it's worth remembering — this is what can later become a Knowledge entry.", de: "Was es wert ist, sich zu merken – daraus kann später ein Knowledge-Eintrag werden." },
+    "labPage.model.status.t": { en: "STATUS", de: "STATUS" },
+    "labPage.model.status.d": { en: "active, testing, experimental, failed, archived or research.", de: "aktiv, im test, experimentell, gescheitert, archiviert oder erforschung." },
+
+    "labPage.connections.eyebrow": { en: "CONNECTION TO THE NETWORK", de: "VERBINDUNG ZUM NETWORK" },
+    "labPage.connections.title": { en: "Connection to the Network.", de: "Verbindung zum Network." },
+    "labPage.connections.signal": { en: "Where an idea worth testing often starts.", de: "Wo eine testenswerte Idee oft beginnt." },
+    "labPage.connections.discuss": { en: "Where an approach gets challenged before or after testing it.", de: "Wo ein Vorgehen infrage gestellt wird, vor oder nach dem Test." },
+    "labPage.connections.knowledge": { en: "Where a tested insight can end up, once it holds up.", de: "Wo eine getestete Erkenntnis landen kann, sobald sie sich bewährt." }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "Lab — J.A.R.V.I.S. Network",
+    de: "Lab — J.A.R.V.I.S. Network"
+  });
+
+  var labIntroParagraphs = {
+    en: [
+      "Most ideas sound good until I actually try them. The Lab is where that happens — not on this page in the abstract, but as real, documented attempts with a real outcome.",
+      "Right now there's nothing published here yet. Not because nothing is being tried, but because I'd rather leave this honestly empty than fill it with progress bars that don't mean anything."
+    ],
+    de: [
+      "Die meisten Ideen klingen gut, bis ich sie tatsächlich ausprobiere. Genau das passiert im Labor – nicht abstrakt auf dieser Seite, sondern als echte, dokumentierte Versuche mit einem echten Ergebnis.",
+      "Aktuell ist hier noch nichts veröffentlicht. Nicht, weil nichts ausprobiert wird, sondern weil ich das lieber ehrlich leer lasse, als es mit Fortschrittsbalken zu füllen, die nichts bedeuten."
+    ]
+  };
+
+  var labFailedParagraphs = {
+    en: [
+      "Not every experiment works. The ones that don't are documented here too, with the reasoning — not quietly dropped."
+    ],
+    de: [
+      "Nicht jedes Experiment funktioniert. Auch die, die es nicht tun, werden hier mit Begründung dokumentiert – nicht still fallengelassen."
+    ]
+  };
+
+  var labHowParagraphs = {
+    en: [
+      "An experiment starts with a real starting point — something from Signal, a question from Discuss, or a gap I ran into while building. It gets a stated goal before I start, not just after, so the result can't quietly redefine what success meant.",
+      "The result is written up honestly: what worked, what didn't, and why — the two are never merged into a single vague verdict. Insights worth keeping can later become a Knowledge entry."
+    ],
+    de: [
+      "Ein Experiment beginnt mit einem echten Ausgangspunkt – etwas aus Signal, einer Frage aus Discuss oder einer Lücke, auf die ich beim Bauen gestoßen bin. Es bekommt ein festgelegtes Ziel, bevor ich anfange, nicht erst danach, damit das Ergebnis nicht nachträglich umdefiniert, was als Erfolg zählt.",
+      "Das Ergebnis wird ehrlich ausgeschrieben: was funktioniert hat, was nicht, und warum – beides wird nie zu einem einzigen vagen Urteil verschmolzen. Erkenntnisse, die es wert sind, können später zu einem Knowledge-Eintrag werden."
+    ]
+  };
+
+  var labFlowNodes = [
+    { en: "STARTING POINT", de: "AUSGANGSPUNKT" },
+    { en: "GOAL", de: "ZIEL" },
+    { en: "APPROACH", de: "VORGEHEN" },
+    { en: "RESULT", de: "ERGEBNIS" },
+    { en: "INSIGHT", de: "ERKENNTNIS" }
+  ];
+
+  var labModelItems = [
+    { term: 'labPage.model.starting.t', desc: 'labPage.model.starting.d' },
+    { term: 'labPage.model.goal.t', desc: 'labPage.model.goal.d' },
+    { term: 'labPage.model.approach.t', desc: 'labPage.model.approach.d' },
+    { term: 'labPage.model.result.t', desc: 'labPage.model.result.d' },
+    { term: 'labPage.model.worked.t', desc: 'labPage.model.worked.d' },
+    { term: 'labPage.model.insights.t', desc: 'labPage.model.insights.d' },
+    { term: 'labPage.model.status.t', desc: 'labPage.model.status.d' }
+  ];
+
+  var labStatusLabel = {
+    active: { en: "ACTIVE", de: "AKTIV" }, testing: { en: "TESTING", de: "IM TEST" },
+    experimental: { en: "EXPERIMENTAL", de: "EXPERIMENTELL" }, failed: { en: "FAILED", de: "GESCHEITERT" },
+    archived: { en: "ARCHIVED", de: "ARCHIVIERT" }, research: { en: "RESEARCH", de: "ERFORSCHUNG" }
+  };
+  var labStatusVar = { active: "--st-active", testing: "--st-testing", experimental: "--st-experimental", failed: "--st-failed", archived: "--muted", research: "--st-research" };
+
+  function renderLabStream(container, emptyEl, rows, lang) {
+    container.innerHTML = '';
+    if (!rows || !rows.length) {
+      emptyEl.hidden = false;
+      return;
+    }
+    emptyEl.hidden = true;
+    rows.forEach(function (r) {
+      var item = document.createElement('article');
+      item.className = 'lab-item';
+
+      var meta = document.createElement('div');
+      meta.className = 'meta';
+      var badge = document.createElement('span');
+      badge.className = 'status-badge';
+      var colorVar = labStatusVar[r.status] || '--muted';
+      badge.style.color = 'var(' + colorVar + ')';
+      badge.style.border = '1px solid var(' + colorVar + ')';
+      badge.textContent = (labStatusLabel[r.status] && labStatusLabel[r.status][lang]) || r.status || '';
+      meta.appendChild(badge);
+      item.appendChild(meta);
+
+      var h3 = document.createElement('h3');
+      h3.className = 'item-title';
+      h3.textContent = (r.title && r.title[lang]) || '';
+      item.appendChild(h3);
+
+      var excerpt = document.createElement('p');
+      excerpt.className = 'excerpt';
+      excerpt.textContent = (r.insights && r.insights[lang]) || '';
+      item.appendChild(excerpt);
+
+      container.appendChild(item);
+    });
+  }
+
+  var liveEntries = [];
+
+  function renderLabPage() {
+    var lang = SiteChrome.getLang();
+
+    SiteChrome.renderParagraphs(document.getElementById('lab-intro-body'), labIntroParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('lab-failed-body'), labFailedParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('lab-how-body'), labHowParagraphs);
+
+    SiteChrome.renderNodeFlow(document.getElementById('lab-flow-diagram'), labFlowNodes);
+
+    var modelList = document.getElementById('lab-model-list');
+    if (modelList) {
+      modelList.innerHTML = '';
+      labModelItems.forEach(function (item) {
+        var li = document.createElement('li');
+        var term = document.createElement('span');
+        term.className = 'term';
+        term.textContent = SiteChrome.t(item.term);
+        var desc = document.createElement('span');
+        desc.className = 'desc';
+        desc.textContent = SiteChrome.t(item.desc);
+        li.appendChild(term);
+        li.appendChild(desc);
+        modelList.appendChild(li);
+      });
+    }
+
+    var activeRows = liveEntries.filter(function (r) { return r.status === 'active' || r.status === 'testing' || r.status === 'experimental' || r.status === 'research'; });
+    var failedRows = liveEntries.filter(function (r) { return r.status === 'failed'; });
+    renderLabStream(document.getElementById('lab-active-stream'), document.getElementById('lab-active-empty'), activeRows, lang);
+    renderLabStream(document.getElementById('lab-failed-stream'), document.getElementById('lab-failed-empty'), failedRows, lang);
+  }
+
+  function loadLiveLab() {
+    if (!SiteChrome.isSupabaseConfigured()) { return; }
+    SiteChrome.restFetch('lab_entries?select=*&published=eq.true&order=created_at.desc')
+      .then(function (rows) {
+        if (!rows || !rows.length) { return; }
+        liveEntries = rows.map(function (r) {
+          return { title: r.title, insights: r.insights, status: r.status };
+        });
+        renderLabPage();
+      })
+      .catch(function (e) { console.warn('[jarvis-network] live lab_entries load failed:', e); });
+  }
+
+  SiteChrome.applyStaticStrings();
+  renderLabPage();
+  SiteChrome.onLanguageChange(renderLabPage);
+  loadLiveLab();
+
+  SiteChrome.initMobileNav();
+  SiteChrome.initAuthAndAsk();
+</script>
+</body>
+</html>

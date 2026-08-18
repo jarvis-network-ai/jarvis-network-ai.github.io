@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ask J.A.R.V.I.S. — J.A.R.V.I.S. Network</title>
+<link rel="stylesheet" href="../foundation.css" />
+<link rel="stylesheet" href="../site-chrome.css" />
+<style>
+  /* ASK-page-only styles. Shared chrome (nav, login panel, footer,
+     focus-visible) comes from ../site-chrome.css. MASTER STYLE 1:1
+     (Redesign-Schritt 10, design-reference/07_ASK_JARVIS.png).
+
+     This page reuses the exact same real request/poll/render engine as
+     the sitewide floating Ask panel (SiteChrome.initAuthAndAsk() in
+     ../site-chrome.js, backed by ../ask-jarvis-client.js and the real
+     ask-jarvis Edge Function / network_requests queue / local JARVIS
+     bridge) - the markup below uses the SAME element ids
+     (#ask-panel/#ask-input/#ask-send/#ask-status/#ask-answer/...) as
+     every other page's floating panel, just laid out as normal
+     in-flow page content instead of a fixed-position overlay (see the
+     .askpage-interface-wrap override below). No second chat engine, no
+     second router, no demo answers - this page does not add a single
+     line of request/poll/answer logic of its own. Because this page
+     already IS the dedicated Ask experience, it deliberately omits the
+     small floating "#ask-toggle" corner button that every other page
+     shows (there is nothing to shortcut to from here) - the corner
+     button and the floating panel behavior on every other page are
+     completely unchanged.
+
+     All new class names below are prefixed "askpage-" (never bare
+     "ask-") specifically so nothing here collides with the existing
+     global .ask-panel/.ask-status/.ask-answer/... component classes
+     used by the real floating panel on every page. */
+
+  .askpage-hero { padding: 1.6rem 0 clamp(2.6rem, 5vw, 4rem); }
+  .askpage-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+  .askpage-hero-copy { max-width: 640px; }
+  .askpage-hero h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 7vw, 5.2rem);
+    letter-spacing: 0.01em;
+    max-width: 16ch;
+    margin-top: 0.6rem;
+  }
+  .askpage-lede {
+    margin-top: 0.9rem;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: var(--ice);
+    font-weight: 500;
+  }
+  .askpage-hero .body-copy { margin-top: 1.2rem; }
+  .askpage-hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.8rem; }
+
+  .body-copy { max-width: 66ch; }
+  .body-copy p {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 0.98rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+  }
+  .body-copy p:last-child { margin-bottom: 0; }
+
+  /* -------- right column: AI-head/interface motif + reale Panels -------- */
+  .askpage-visual { position: relative; min-height: clamp(300px, 32vw, 440px); }
+  .askpage-visual-art { position: absolute; inset: 0; }
+  .askpage-visual-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
+
+  .askpage-hero-panel {
+    position: absolute;
+    width: 190px;
+    background: color-mix(in srgb, var(--panel) 90%, transparent);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    box-shadow: var(--shadow-soft);
+  }
+  .askpage-hero-panel .k {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .askpage-hero-panel .v { font-size: 0.85rem; color: var(--white); line-height: 1.45; }
+  .askpage-hero-panel.p1 { top: 0; right: -2%; }
+  .askpage-hero-panel.p2 { top: 42%; left: -8%; transform: translateY(-50%); }
+  .askpage-hero-panel.p3 { bottom: 0; right: -2%; }
+
+  .askpage-fact-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.2rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--line);
+  }
+  .askpage-fact dt {
+    font-family: ui-monospace, monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+  .askpage-fact dd { margin: 0; font-weight: 600; font-size: 0.9rem; color: var(--white); }
+
+  @media (max-width: 900px) {
+    .askpage-hero-grid { grid-template-columns: 1fr; }
+    .askpage-hero-copy { max-width: 100%; }
+    .askpage-visual { min-height: 0; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.8rem; }
+    .askpage-visual-art { position: static; height: 240px; }
+    .askpage-visual-art img { position: static; width: 100%; height: 100%; }
+    .askpage-hero-panel { position: static; width: 100%; }
+    .askpage-fact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  .askpage-section h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    max-width: 34ch;
+    margin-bottom: 1.2rem;
+  }
+  .askpage-section h3 {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--cyan-dim);
+    margin: 0 0 0.9rem;
+  }
+
+  /* -------- the real, embedded Ask interface -------- */
+  .askpage-interface-wrap {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    padding: 1.6rem 1.7rem 1.8rem;
+    max-width: 760px;
+  }
+  /* Overrides the shared, fixed-position floating-panel styling from
+     site-chrome.css so the SAME #ask-panel markup/ids render as normal
+     in-flow page content here instead of a corner overlay. Nothing in
+     site-chrome.css itself is changed - this is a local, scoped
+     override for this page only. */
+  .askpage-interface-wrap .ask-panel {
+    position: static;
+    z-index: auto;
+    width: 100%;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+    box-shadow: none;
+    padding: 0;
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .askpage-interface-wrap .ask-input-row input { font-size: 0.98rem; padding: 0.75rem 0.9rem; }
+  .askpage-interface-wrap .ask-input-row button { font-size: 0.8rem; padding: 0 1.3rem; }
+  .askpage-interface-wrap .ask-scroll { max-height: 50vh; }
+
+  .askpage-def-list { margin: 1.2rem 0 0; padding: 0; list-style: none; max-width: 66ch; }
+  .askpage-def-list li { padding: 0.9rem 0; border-bottom: 1px solid var(--line); }
+  .askpage-def-list li:last-child { border-bottom: none; }
+  .askpage-def-list .term {
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan-dim);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+  .askpage-def-list .desc { color: var(--muted); font-size: 0.94rem; line-height: 1.6; }
+
+  /* Vertical node-flow layout (same technique as knowledge/index.html's
+     .knowledge-flow) - avoids the horizontal, non-wrapping row that the
+     shared .arch-node/.arch-arrow primitive defaults to, which would
+     otherwise overflow at narrower widths with four flow steps. */
+  .askpage-flow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; margin-top: 1.4rem; max-width: 56ch; }
+  .askpage-flow .arch-node { font-size: 0.8rem; white-space: normal; max-width: 100%; overflow-wrap: break-word; }
+  .askpage-flow .arch-arrow { display: block; padding: 0.26rem 0 0.26rem 1.1rem; transform: rotate(90deg); transform-origin: left center; }
+
+  .askpage-quote {
+    margin: 1.6rem 0;
+    padding: 1.1rem 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    color: var(--ice);
+    font-size: 1.02rem;
+    line-height: 1.6;
+    max-width: 56ch;
+  }
+
+  .askpage-network-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+  }
+  .askpage-network-link {
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    box-shadow: var(--shadow-soft);
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .askpage-network-link:hover { border-color: var(--cyan-dim); transform: translateY(-2px); }
+  .askpage-network-link .t { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--cyan); }
+  .askpage-network-link .q { margin-top: 0.4rem; color: var(--white); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="../" data-i18n="nav.home">HOME</a>
+      <a href="../project/" data-i18n="nav.project">PROJECT</a>
+      <a href="../signal/" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="../lab/" data-i18n="nav.lab">LAB</a>
+      <a href="../discuss/" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="./" class="current" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap breadcrumb">
+    <a href="../" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="ask.btn">ASK J.A.R.V.I.S.</span>
+  </div>
+
+  <section class="block askpage-hero">
+    <div class="wrap askpage-hero-grid">
+      <div class="askpage-hero-copy">
+        <span class="eyebrow" data-i18n="askPage.eyebrow">ASK &amp; CONNECT</span>
+        <h1 data-i18n="askPage.h1">Ask J.A.R.V.I.S.</h1>
+        <p class="askpage-lede" data-i18n="askPage.lede">Your questions. Real answers.</p>
+        <div class="body-copy" id="askpage-intro-body"></div>
+
+        <div class="askpage-hero-ctas">
+          <a href="#askpage-interface" class="cta primary" data-i18n="askPage.cta1">ASK A QUESTION</a>
+          <a href="#askpage-how" class="cta ghost" data-i18n="askPage.cta2">HOW IT WORKS</a>
+        </div>
+
+        <!-- Reale Fakten statt Mockup-Zahlen (12.5K+/28/4.8M+/1.2s/96%/99.9%). -->
+        <dl class="askpage-fact-strip">
+          <div class="askpage-fact">
+            <dt data-i18n="askPage.fact1Label">TOPIC ACCESS</dt>
+            <dd data-i18n="askPage.fact1Value">This platform</dd>
+          </div>
+          <div class="askpage-fact">
+            <dt data-i18n="askPage.fact2Label">RESEARCH</dt>
+            <dd data-i18n="askPage.fact2Value">Real, when needed</dd>
+          </div>
+          <div class="askpage-fact">
+            <dt data-i18n="askPage.fact3Label">DEMO ANSWERS</dt>
+            <dd data-i18n="askPage.fact3Value">None</dd>
+          </div>
+          <div class="askpage-fact">
+            <dt data-i18n="askPage.fact4Label">STATUS</dt>
+            <dd data-i18n="askPage.fact4Value">Live</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="askpage-visual">
+        <div class="askpage-visual-art">
+          <img src="../assets/img/ask-ai-interface.png" alt="" aria-hidden="true" width="1536" height="1024" />
+        </div>
+        <div class="askpage-hero-panel p1">
+          <span class="k" data-i18n="askPage.panelModeLabel">MODE</span>
+          <span class="v" data-i18n="askPage.panelModeValue">Real research, not a demo</span>
+        </div>
+        <div class="askpage-hero-panel p2">
+          <span class="k" data-i18n="askPage.panelAccessLabel">ACCESS</span>
+          <span class="v" data-i18n="askPage.panelAccessValue">Question-only</span>
+        </div>
+        <div class="askpage-hero-panel p3">
+          <span class="k" data-i18n="askPage.panelStatusLabel">STATUS</span>
+          <span class="v" data-i18n="askPage.fact4Value">Live</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block askpage-section" id="askpage-interface">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="askPage.interface.eyebrow">ASK A QUESTION</span>
+      <h2 data-i18n="askPage.interface.title">What do you want to know?</h2>
+      <div class="body-copy" id="askpage-interface-body"></div>
+
+      <div class="askpage-interface-wrap">
+        <div class="ask-panel" id="ask-panel">
+          <div class="ask-examples" id="ask-examples"></div>
+          <div class="ask-input-row">
+            <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+            <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+          </div>
+          <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+          <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+          <div class="ask-auth-required" id="ask-auth-required" hidden>
+            <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+            <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+          </div>
+
+          <div class="ask-scroll" id="ask-scroll">
+            <div class="ask-answer-section">
+              <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+              <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+            </div>
+
+            <details class="ask-details" id="ask-details" hidden>
+              <summary data-i18n="ask.showDetails">Show research details</summary>
+              <div class="ask-details-body" id="ask-details-body"></div>
+            </details>
+
+            <div class="ask-sources-section" id="ask-sources-section" hidden>
+              <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+            </div>
+          </div>
+
+          <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block askpage-section" id="askpage-how">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="askPage.how.eyebrow">HOW ASK JARVIS WORKS</span>
+      <h2 data-i18n="askPage.how.title">How Ask J.A.R.V.I.S. works.</h2>
+      <div class="body-copy" id="askpage-how-body"></div>
+      <blockquote class="askpage-quote" data-i18n="askPage.how.quote">No prepared demo chatbot. Every question goes through the real Network → J.A.R.V.I.S. path.</blockquote>
+
+      <h3 data-i18n="askPage.flow.title">The real request path.</h3>
+      <div class="askpage-flow" id="askpage-flow" aria-hidden="true"></div>
+
+      <h3 data-i18n="askPage.states.title">Status states, exactly as they happen.</h3>
+      <ul class="askpage-def-list" id="askpage-states-list"></ul>
+    </div>
+  </section>
+
+  <section class="block askpage-section" id="askpage-connections" style="border-bottom:none;">
+    <div class="wrap">
+      <span class="eyebrow" data-i18n="askPage.connections.eyebrow">CONNECTION TO THE NETWORK</span>
+      <h2 data-i18n="askPage.connections.title">Connection to the Network.</h2>
+      <div class="askpage-network-links">
+        <a class="askpage-network-link" href="../knowledge/">
+          <div class="t mono" data-i18n="nav.knowledge">KNOWLEDGE</div>
+          <div class="q" data-i18n="askPage.connections.knowledge">Where a good answer can end up, once it's been checked.</div>
+        </a>
+        <a class="askpage-network-link" href="../discuss/">
+          <div class="t mono" data-i18n="nav.discuss">DISCUSS</div>
+          <div class="q" data-i18n="askPage.connections.discuss">Where an answer can be questioned further, by other people.</div>
+        </a>
+        <a class="askpage-network-link" href="../signal/">
+          <div class="t mono" data-i18n="nav.signal">SIGNAL</div>
+          <div class="q" data-i18n="askPage.connections.signal">Part of what J.A.R.V.I.S. can research from, when needed.</div>
+        </a>
+        <a class="askpage-network-link" href="../project/">
+          <div class="t mono" data-i18n="nav.project">PROJECT</div>
+          <div class="q" data-i18n="askPage.connections.project">The real system this question actually runs through.</div>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="../project/" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="../signal/" data-i18n="footer.news">AI Signal</a>
+        <a href="../lab/" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="../discuss/" data-i18n="footer.discussions">Discussions</a>
+        <a href="../discuss/" data-i18n="footer.models">Models</a>
+        <a href="../discuss/" data-i18n="footer.ideas">Ideas</a>
+        <a href="../discuss/" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="../#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<script src="../site-chrome.js"></script>
+<script src="../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // ASK-page-only content: strings, static hero/explanation copy, and
+  // the example-question buttons (identical real pattern already used
+  // on HOME - see ../index.html's askExamples). Everything that
+  // actually talks to the network (request/poll/render, auth gate) is
+  // NOT duplicated here - SiteChrome.initAuthAndAsk() below wires the
+  // #ask-panel markup above exactly like it does on every other page.
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "askPage.eyebrow": { en: "ASK & CONNECT", de: "FRAGEN & VERBINDEN" },
+    "askPage.h1": { en: "Ask J.A.R.V.I.S.", de: "Ask J.A.R.V.I.S." },
+    "askPage.lede": { en: "Your questions. Real answers.", de: "Deine Fragen. Echte Antworten." },
+    "askPage.cta1": { en: "ASK A QUESTION", de: "FRAGE STELLEN" },
+    "askPage.cta2": { en: "HOW IT WORKS", de: "WIE ES FUNKTIONIERT" },
+
+    "askPage.fact1Label": { en: "TOPIC ACCESS", de: "THEMEN-ZUGRIFF" },
+    "askPage.fact1Value": { en: "This platform", de: "Diese Plattform" },
+    "askPage.fact2Label": { en: "RESEARCH", de: "RECHERCHE" },
+    "askPage.fact2Value": { en: "Real, when needed", de: "Echt, bei Bedarf" },
+    "askPage.fact3Label": { en: "DEMO ANSWERS", de: "DEMO-ANTWORTEN" },
+    "askPage.fact3Value": { en: "None", de: "Keine" },
+    "askPage.fact4Label": { en: "STATUS", de: "STATUS" },
+    "askPage.fact4Value": { en: "Live", de: "Live" },
+
+    "askPage.panelModeLabel": { en: "MODE", de: "MODUS" },
+    "askPage.panelModeValue": { en: "Real research, not a demo", de: "Echte Recherche, keine Demo" },
+    "askPage.panelAccessLabel": { en: "ACCESS", de: "ZUGRIFF" },
+    "askPage.panelAccessValue": { en: "Question-only", de: "Nur Fragen beantworten" },
+    "askPage.panelStatusLabel": { en: "STATUS", de: "STATUS" },
+
+    "askPage.interface.eyebrow": { en: "ASK A QUESTION", de: "FRAGE STELLEN" },
+    "askPage.interface.title": { en: "What do you want to know?", de: "Was möchtest du wissen?" },
+
+    "askPage.how.eyebrow": { en: "HOW ASK JARVIS WORKS", de: "WIE ASK JARVIS FUNKTIONIERT" },
+    "askPage.how.title": { en: "How Ask J.A.R.V.I.S. works.", de: "Wie Ask J.A.R.V.I.S. funktioniert." },
+    "askPage.how.quote": {
+      en: "No prepared demo chatbot. Every question goes through the real Network → J.A.R.V.I.S. path.",
+      de: "Kein vorbereiteter Demo-Chatbot. Jede Frage geht über den echten Network-→-J.A.R.V.I.S.-Pfad."
+    },
+    "askPage.flow.title": { en: "The real request path.", de: "Der echte Anfragepfad." },
+    "askPage.states.title": { en: "Status states, exactly as they happen.", de: "Statuszustände, genau wie sie auftreten." },
+
+    "askPage.state.pending.t": { en: "PENDING", de: "PENDING" },
+    "askPage.state.pending.d": { en: "Waiting in queue, at most one active question per account at a time.", de: "Wartet in der Warteschlange, höchstens eine aktive Frage pro Konto gleichzeitig." },
+    "askPage.state.processing.t": { en: "PROCESSING", de: "PROCESSING" },
+    "askPage.state.processing.d": { en: "J.A.R.V.I.S. is researching and composing the answer.", de: "J.A.R.V.I.S. recherchiert und formuliert die Antwort." },
+    "askPage.state.success.t": { en: "SUCCESS", de: "SUCCESS" },
+    "askPage.state.success.d": { en: "The answer appears above, with sources shown underneath when there are any.", de: "Die Antwort erscheint oben, mit Quellen darunter, wenn welche vorhanden sind." },
+    "askPage.state.error.t": { en: "ERROR", de: "ERROR" },
+    "askPage.state.error.d": { en: "A specific, honest message (e.g. queue full, invalid question) instead of a generic failure.", de: "Eine konkrete, ehrliche Meldung (z. B. Warteschlange voll, ungültige Frage) statt eines generischen Fehlers." },
+    "askPage.state.expired.t": { en: "EXPIRED", de: "EXPIRED" },
+    "askPage.state.expired.d": { en: "The request took too long and expired server-side - never invented client-side, the backend is the only authority on this.", de: "Die Anfrage hat zu lange gedauert und ist serverseitig abgelaufen - nie clientseitig erfunden, das Backend ist hierfür die einzige Instanz." },
+
+    "askPage.connections.eyebrow": { en: "CONNECTION TO THE NETWORK", de: "VERBINDUNG ZUM NETWORK" },
+    "askPage.connections.title": { en: "Connection to the Network.", de: "Verbindung zum Network." },
+    "askPage.connections.knowledge": { en: "Where a good answer can end up, once it's been checked.", de: "Wo eine gute Antwort landen kann, sobald sie geprüft ist." },
+    "askPage.connections.discuss": { en: "Where an answer can be questioned further, by other people.", de: "Wo eine Antwort von anderen weiter hinterfragt werden kann." },
+    "askPage.connections.signal": { en: "Part of what J.A.R.V.I.S. can research from, when needed.", de: "Ein Teil dessen, woraus J.A.R.V.I.S. bei Bedarf recherchieren kann." },
+    "askPage.connections.project": { en: "The real system this question actually runs through.", de: "Das echte System, durch das diese Frage tatsächlich läuft." }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "Ask J.A.R.V.I.S. — J.A.R.V.I.S. Network",
+    de: "Ask J.A.R.V.I.S. — J.A.R.V.I.S. Network"
+  });
+
+  var askpageIntroParagraphs = {
+    en: [
+      "There's no prepared demo chatbot running here. The request goes through the Network to the real J.A.R.V.I.S. path.",
+      "Sometimes he impresses me.",
+      "And sometimes he reminds me why this project is nowhere near finished."
+    ],
+    de: [
+      "Hier läuft kein vorbereiteter Demo-Chatbot. Die Anfrage geht über das Network an den echten J.A.R.V.I.S.-Pfad.",
+      "Manchmal beeindruckt er mich.",
+      "Und manchmal erinnert er mich daran, warum dieses Projekt noch lange nicht fertig ist."
+    ]
+  };
+
+  var askpageInterfaceParagraphs = {
+    en: [
+      "Sign in and ask anything about this platform. The question goes to the same real J.A.R.V.I.S. path as everywhere else on this site — no separate demo model."
+    ],
+    de: [
+      "Melde dich an und frag alles über diese Plattform. Die Frage geht an denselben echten J.A.R.V.I.S.-Pfad wie überall sonst auf dieser Seite – kein separates Demo-Modell."
+    ]
+  };
+
+  var askpageHowParagraphs = {
+    en: [
+      "Signing in is required to ask a question — the same login already used everywhere else on this site, not a separate account system.",
+      "Only questions are allowed. The Network path can research and answer, but it can't take any other action on your behalf — a deliberate, hard boundary (Question-Only Gate), not a missing feature."
+    ],
+    de: [
+      "Zum Fragen ist eine Anmeldung nötig – dasselbe Login, das schon überall sonst auf dieser Seite verwendet wird, kein separates Kontosystem.",
+      "Erlaubt sind ausschließlich Fragen. Der Network-Pfad kann recherchieren und antworten, aber keine andere Aktion in deinem Namen ausführen – eine bewusste, harte Grenze (Question-Only-Gate), kein fehlendes Feature."
+    ]
+  };
+
+  var askpageFlow = [
+    { en: "ASK A QUESTION", de: "FRAGE STELLEN" },
+    { en: "REAL J.A.R.V.I.S. PATH", de: "ECHTER J.A.R.V.I.S.-PFAD" },
+    { en: "RESEARCH IF NEEDED", de: "RECHERCHE BEI BEDARF" },
+    { en: "ANSWER WITH SOURCES", de: "ANTWORT MIT QUELLEN" }
+  ];
+
+  var askpageStateItems = [
+    { term: 'askPage.state.pending.t', desc: 'askPage.state.pending.d' },
+    { term: 'askPage.state.processing.t', desc: 'askPage.state.processing.d' },
+    { term: 'askPage.state.success.t', desc: 'askPage.state.success.d' },
+    { term: 'askPage.state.error.t', desc: 'askPage.state.error.d' },
+    { term: 'askPage.state.expired.t', desc: 'askPage.state.expired.d' }
+  ];
+
+  // Same four real example questions already used on HOME's floating
+  // panel (../index.html) - not duplicated logic, just the same
+  // honest, real content shown again in this page's own larger
+  // interface. Clicking fills the input, exactly like on HOME; it does
+  // not auto-submit.
+  var askpageExamples = [
+    { en: "What are AI Agents?", de: "Was sind KI-Agenten?" },
+    { en: "Which local models are being discussed?", de: "Welche lokalen Modelle werden diskutiert?" },
+    { en: "What's new on the JARVIS project?", de: "Was gibt's Neues beim JARVIS-Projekt?" },
+    { en: "Show discussions about browser agents.", de: "Zeige Diskussionen über Browser-Agenten." }
+  ];
+
+  function renderAskPage() {
+    SiteChrome.renderParagraphs(document.getElementById('askpage-intro-body'), askpageIntroParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('askpage-interface-body'), askpageInterfaceParagraphs);
+    SiteChrome.renderParagraphs(document.getElementById('askpage-how-body'), askpageHowParagraphs);
+
+    SiteChrome.renderNodeFlow(document.getElementById('askpage-flow'), askpageFlow);
+
+    var statesList = document.getElementById('askpage-states-list');
+    statesList.innerHTML = '';
+    askpageStateItems.forEach(function (item) {
+      var li = document.createElement('li');
+      var term = document.createElement('span');
+      term.className = 'term';
+      term.textContent = SiteChrome.t(item.term);
+      var desc = document.createElement('span');
+      desc.className = 'desc';
+      desc.textContent = SiteChrome.t(item.desc);
+      li.appendChild(term);
+      li.appendChild(desc);
+      statesList.appendChild(li);
+    });
+
+    var lang = SiteChrome.getLang();
+    var examplesEl = document.getElementById('ask-examples');
+    if (examplesEl) {
+      examplesEl.innerHTML = '';
+      askpageExamples.forEach(function (ex) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = ex[lang];
+        btn.addEventListener('click', function () {
+          var input = document.getElementById('ask-input');
+          if (input) { input.value = ex[lang]; input.focus(); }
+        });
+        examplesEl.appendChild(btn);
+      });
+    }
+  }
+
+  SiteChrome.applyStaticStrings();
+  renderAskPage();
+  SiteChrome.onLanguageChange(renderAskPage);
+
+  SiteChrome.initMobileNav();
+  SiteChrome.initAuthAndAsk();
+</script>
+</body>
+</html>
