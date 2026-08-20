@@ -105,6 +105,18 @@ img, svg, canvas { display: block; max-width: 100%; }
   --sem-neutral: var(--muted);     /* neutral / inaktiv */
 
   color-scheme: light;
+
+  /* Redesign-Schritt 16: Global page background tokens (2026-08-20)
+     Zentrale Hintergrunddefinition für alle vollflächigen Page-/Hero-/Section-Container.
+     Anwendung auf allen 9 Network-Seiten für konsistente Lesbarkeit und visuellen Komfort. */
+  --bg-page: #d8e0e8;
+  --bg-page-vignette: linear-gradient(
+    90deg,
+    rgba(51, 70, 94, 0.12) 0%,
+    transparent 22%,
+    transparent 78%,
+    rgba(51, 70, 94, 0.12) 100%
+  );
 }
 
 /* --------------------------------------------------------------------------
