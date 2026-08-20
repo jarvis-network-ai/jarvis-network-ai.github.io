@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>J.A.R.V.I.S. Network — Foundation (Phase 02)</title>
+<link rel="stylesheet" href="foundation.css" />
+<style>
+  /* Nur für diese interne Referenzseite — keine Foundation-Tokens,
+     rein strukturell, damit die Demo lesbar bleibt. */
+  .demo-section { padding: 2.5rem 0; border-bottom: 1px solid var(--line); }
+  .demo-row { display: flex; flex-wrap: wrap; gap: 0.9rem; align-items: center; margin-top: 1rem; }
+  .demo-col { display: flex; flex-direction: column; gap: 0.6rem; }
+  .swatch { width: 88px; }
+  .swatch .chip { height: 56px; border-radius: var(--radius-sm); border: 1px solid var(--line-strong); }
+  .swatch .label { margin-top: 0.35rem; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
+  .grid-demo { height: 140px; border-radius: var(--radius-md); border: 1px solid var(--line); position: relative; overflow: hidden; }
+  .grid-demo.bg-grid { }
+  .glow-demo { height: 140px; border-radius: var(--radius-md); border: 1px solid var(--line); position: relative; overflow: hidden; background: var(--black); }
+  .glow-demo.bg-glow { }
+  .space-demo span { display: inline-block; background: var(--cyan-dim); height: 10px; }
+  .note { font-size: 0.85rem; color: var(--muted); max-width: 62ch; }
+</style>
+</head>
+<body>
+
+<div class="wrap" style="padding-top:2.5rem; padding-bottom:1rem;">
+  <span class="text-label">PHASE 02 — BODENPLATTE</span>
+  <h1 class="text-h1" style="margin-top:0.4rem;">J.A.R.V.I.S. Network — Foundation</h1>
+  <p class="note" style="margin-top:0.6rem;">
+    Interne Referenz-/Testseite für das gemeinsame Designsystem
+    (<code class="mono">foundation.css</code>). Keine öffentliche Seite,
+    keine Navigation, kein Hero, kein Seiteninhalt — ausschließlich Tokens
+    und wiederverwendbare UI-Grundbausteine zur visuellen Verifikation.
+  </p>
+</div>
+
+<section class="demo-section">
+  <div class="wrap">
+    <h2 class="text-h2">Farben</h2>
+    <p class="note">Basisfarben</p>
+    <div class="demo-row">
+      <div class="swatch"><div class="chip" style="background:var(--black)"></div><div class="label">--black</div></div>
+      <div class="swatch"><div class="chip" style="background:var(--anthracite)"></div><div class="label">--anthracite</div></div>
+      <div class="swatch"><div class="chip" style="background:var(--panel)"></div><div class="label">--panel</div></div>
+      <div class="swatch"><div class="chip" style="background:var(--panel-raised)"></div><div class="label">--panel-raised</div></div>
+      <div class="swatch"><div class="chip" style="background:var(--deep-blue)"></div><div class="label">--deep-blue</div></div>
+      <div class="swatch"><div class="chip" style="background:var(--cyan)"></div><div class="label">--cyan</div></div>
+      <div class="swatch"><div class="chip" style="background:var(--cyan-dim)"></div><div class="label">--cyan-dim</div></div>
+      <div class="swatch"><div class="chip" style="background:var(--ice)"></div><div class="label">--ice</div></div>
+      <div class="swatch"><div class="chip" style="background:var(--white)"></div><div class="label">--white</div></div>
+      <div class="swatch"><div class="chip" style="background:var(--muted)"></div><div class="label">--muted</div></div>
+    </div>
+    <p class="note" style="margin-top:1.6rem;">Semantische Zustandsfarben</p>
+    <div class="demo-row">
+      <div class="swatch"><div class="chip" style="background:var(--sem-online)"></div><div class="label">ONLINE</div></div>
+      <div class="swatch"><div class="chip" style="background:var(--sem-warning)"></div><div class="label">WARNING</div></div>
+      <div class="swatch"><div class="chip" style="background:var(--sem-error)"></div><div class="label">ERROR</div></div>
+      <div class="swatch"><div class="chip" style="background:var(--sem-info)"></div><div class="label">INFO</div></div>
+      <div class="swatch"><div class="chip" style="background:var(--sem-neutral)"></div><div class="label">NEUTRAL</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="demo-section">
+  <div class="wrap">
+    <h2 class="text-h2">Typografie</h2>
+    <div class="demo-col" style="margin-top:1rem; gap:1rem;">
+      <div class="text-display">Display</div>
+      <div class="text-h1">Heading 1</div>
+      <div class="text-h2">Heading 2</div>
+      <div class="text-h3">Heading 3</div>
+      <div class="text-body">Body text — Fließtext für normale Inhalte, gut lesbar.</div>
+      <div class="text-small">Small text — sekundäre Information.</div>
+      <div class="text-label">System Label</div>
+      <div class="text-system">SYSTEM / STATUS TEXT 042</div>
+    </div>
+  </div>
+</section>
+
+<section class="demo-section">
+  <div class="wrap">
+    <h2 class="text-h2">Abstände</h2>
+    <div class="demo-col space-demo" style="margin-top:1rem;">
+      <div><span style="width:0.4rem"></span> --space-1</div>
+      <div><span style="width:0.65rem"></span> --space-2</div>
+      <div><span style="width:1rem"></span> --space-3</div>
+      <div><span style="width:1.5rem"></span> --space-4</div>
+      <div><span style="width:2.4rem"></span> --space-5</div>
+    </div>
+  </div>
+</section>
+
+<section class="demo-section">
+  <div class="wrap">
+    <h2 class="text-h2">Oberflächen</h2>
+    <div class="demo-row" style="align-items:stretch;">
+      <div class="surface" style="padding:1rem; width:180px;">surface</div>
+      <div class="surface-elevated" style="padding:1rem; width:180px;">surface-elevated</div>
+      <div class="surface-interactive" style="padding:1rem; width:180px;" tabindex="0">surface-interactive (hover/focus)</div>
+      <div class="surface-overlay" style="padding:1rem; width:180px;">surface-overlay</div>
+    </div>
+  </div>
+</section>
+
+<section class="demo-section">
+  <div class="wrap">
+    <h2 class="text-h2">UI-Grundbausteine</h2>
+
+    <p class="note" style="margin-top:1rem;">Button</p>
+    <div class="demo-row">
+      <button class="btn btn-primary" type="button">PRIMARY</button>
+      <button class="btn btn-ghost" type="button">GHOST</button>
+      <button class="btn btn-primary" type="button" disabled>DISABLED</button>
+      <a class="btn btn-ghost" href="#">AS LINK</a>
+    </div>
+
+    <p class="note" style="margin-top:1.6rem;">Text Link</p>
+    <div class="demo-row"><a class="link" href="#">A text link</a></div>
+
+    <p class="note" style="margin-top:1.6rem;">Card</p>
+    <div class="demo-row">
+      <div class="card" style="width:220px;">Card (static)</div>
+      <div class="card card-interactive" style="width:220px;" tabindex="0">Card (interactive)</div>
+      <div class="card card-elevated" style="width:220px;">Card (elevated)</div>
+    </div>
+
+    <p class="note" style="margin-top:1.6rem;">Tag</p>
+    <div class="demo-row">
+      <span class="tag">local-ai</span>
+      <span class="tag tag-accent">AI AGENTS</span>
+    </div>
+
+    <p class="note" style="margin-top:1.6rem;">Badge</p>
+    <div class="demo-row">
+      <span class="badge badge-online">ONLINE</span>
+      <span class="badge badge-warning">WARNING</span>
+      <span class="badge badge-error">ERROR</span>
+      <span class="badge badge-info">EXPERIMENTAL</span>
+      <span class="badge badge-neutral">NEUTRAL</span>
+    </div>
+
+    <p class="note" style="margin-top:1.6rem;">Status Indicator</p>
+    <div class="demo-row">
+      <span class="status-indicator" style="color:var(--sem-online)"><span class="status-dot status-dot-live"></span>ONLINE</span>
+      <span class="status-indicator" style="color:var(--st-testing)"><span class="status-dot"></span>TESTING</span>
+      <span class="status-indicator" style="color:var(--st-experimental)"><span class="status-dot"></span>EXPERIMENTAL</span>
+    </div>
+
+    <p class="note" style="margin-top:1.6rem;">Input / Search Input</p>
+    <div class="demo-row">
+      <input class="input" style="max-width:260px;" type="text" placeholder="Text input…" />
+      <input class="input" style="max-width:260px;" type="text" placeholder="Disabled…" disabled />
+      <div class="search-input" style="max-width:260px;">
+        <input class="input" type="text" placeholder="Search…" />
+        <span class="kbd-hint">⌘K</span>
+      </div>
+    </div>
+
+    <p class="note" style="margin-top:1.6rem;">Avatar Placeholder</p>
+    <div class="demo-row">
+      <span class="avatar-placeholder avatar-placeholder--sm">A</span>
+      <span class="avatar-placeholder">A</span>
+      <span class="avatar-placeholder avatar-placeholder--lg">A</span>
+    </div>
+
+    <p class="note" style="margin-top:1.6rem;">Divider</p>
+    <div style="max-width:400px;">
+      <div class="text-small">above</div>
+      <hr class="divider" />
+      <div class="text-small">below</div>
+    </div>
+
+    <p class="note" style="margin-top:1.6rem;">Section Header</p>
+    <div class="section-header" style="margin-top:1rem;">
+      <div>
+        <span class="text-label">EYEBROW</span>
+        <h2 class="text-h2" style="margin-top:0.4rem;">Section Title</h2>
+        <p class="sub">Optional subtext describing the section.</p>
+      </div>
+      <span class="system-label system-label-tag">PREVIEW CONTENT</span>
+    </div>
+
+    <p class="note" style="margin-top:1.6rem;">System Label</p>
+    <div class="demo-row">
+      <span class="system-label">TRANSPARENCY</span>
+      <span class="system-label system-label-tag">PREVIEW DATA — NOT LIVE YET</span>
+    </div>
+  </div>
+</section>
+
+<section class="demo-section" style="border-bottom:none;">
+  <div class="wrap">
+    <h2 class="text-h2">Atmosphäre</h2>
+    <div class="demo-row" style="align-items:stretch;">
+      <div class="grid-demo bg-grid" style="width:260px;"></div>
+      <div class="glow-demo bg-glow" style="width:260px;"></div>
+    </div>
+    <p class="note" style="margin-top:1rem;">
+      Sehr dezent, kein Canvas/JS. Die Hero-Neural-Net-Animation aus
+      <code class="mono">index.html</code> gehört zu Home/Hero und wird hier
+      bewusst nicht dupliziert.
+    </p>
+  </div>
+</section>
+
+</body>
+</html>

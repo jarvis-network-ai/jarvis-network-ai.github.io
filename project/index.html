@@ -12,40 +12,114 @@
      focus-visible) comes from ../site-chrome.css - see
      WEBSITE_ARCHITECTURE_V1.md, Abschnitt 14. */
 
-  /* MASTER STYLE 1:1 (Redesign-Schritt 10, design-reference/02_PROJECT.png):
-     Helle Basis geerbt, PROJECT-lokal nur Layout/Komposition angepasst. */
-  .breadcrumb + .wrap > .pnav { margin-top: 1rem; padding-bottom: 1.4rem; border-bottom: 1px solid var(--line); }
-  .project-hero { padding: 1.6rem 0 clamp(3rem, 6vw, 4.5rem); }
+  /* MASTER STYLE 1:1 (Redesign-Schritt 10, design-reference/02_PROJECT.png).
+     Redesign-Schritt 14 (19. August 2026): Hero-Komposition strikt nach
+     MASTER_VISUAL_SYSTEM.md an 02_PROJECT.png angeglichen. Behobene
+     Abweichungen (alle real gemessen, siehe Bericht):
+       - H1 stand in Mono -> verstoesst gegen §4.1 ("keine Mono-Schrift
+         fuer grosse Titel"), jetzt Sans + kontrollierter 2-Zeilen-Bruch
+         mit Cyan-Akzentzeile (§4.3), wie in der Referenz.
+       - Bodytext 16px -> Mindestgroesse laut §4.2 ist 17.6px.
+       - .project-hero-grid hatte align-items:stretch: die Bildspalte
+         blaehte sich auf die Hoehe der Textspalte (745px) auf, das 3:2-
+         Asset wurde per object-fit:contain darin letterboxed -> real nur
+         493x329 sichtbar bei 416px toter Flaeche. Jetzt align-items:
+         center + Bild mit width:100%/height:auto (§9.1), kein Letterbox.
+       - Panels lagen frei ueber dem Motiv verstreut (p2 sogar links
+         ueber dem Gehirn). Referenz zeigt einen sauberen vertikalen
+         Stapel rechts -> eigene dritte Rasterspalte, Flex-Stack (§6.2).
+       - `.project-hero { padding }` war totes CSS: `section.block` hat
+         hoehere Spezifitaet und gewann. Jetzt `section.project-hero`. */
+  /* Punkt 3: Kopfbereich vertikal kompakter, damit der Hero hoeher
+     rueckt. AUSSCHLIESSLICH Abstaende - keine Links entfernt, keine
+     Schriftgroesse reduziert, Funktion unveraendert (13 Links, alle
+     Gruppen). Seiten-lokal, site-chrome.css bleibt unberuehrt. */
+  .breadcrumb + .wrap > .pnav { margin-top: 0.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--line); }
+  .breadcrumb { padding-top: 0.8rem; }
+  .pnav-panel { margin-top: 0.5rem; row-gap: 0.45rem; }
+
+  /* Seiten-lokaler Token-Override (MASTER_VISUAL_SYSTEM §12.2): die
+     Referenzkomposition spannt real von x=93 bis x=1405 (=1312px) und
+     passt nicht in die 1180px des globalen Tokens. Wirkt nur in diesem
+     Dokument, andere Seiten bleiben unberuehrt. */
+  :root { --content-max-width: 1400px; }
+
+  section.project-hero { padding: 1.6rem 0 clamp(3rem, 6vw, 4.5rem); }
+  /* Seitenrand nur im Hero verschmaelert, um dem Motiv Breite zu geben
+     (Referenz hat rechts ebenfalls nur ~35px Rand). Andere Abschnitte
+     behalten den normalen Gutter. */
+  section.project-hero > .wrap { padding-left: 20px; padding-right: 20px; }
+
+  /* Drei Zonen wie in der Referenz: Text | Brain/Core | Panel-Stapel.
+     Referenzmasse (auf 1440 skaliert): Text 450 / Motiv 556 / Panels 215. */
   .project-hero-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    align-items: stretch;
-    gap: clamp(2rem, 5vw, 4rem);
+    grid-template-columns: 545px minmax(0, 1fr) 215px;
+    align-items: center;
+    column-gap: 0;
+    row-gap: 0;
   }
-  .project-hero-copy { max-width: 620px; align-self: center; }
+  /* Referenz setzt die Abstaende bewusst asymmetrisch: links viel Luft
+     zwischen Text und Motiv (83px), rechts sitzt das Motiv fast an den
+     Panels (9px). Ueber Margins statt column-gap geloest, weil Grid nur
+     einen einheitlichen Spaltenabstand kennt. Der negative rechte Rand
+     vergroessert das Motiv zusaetzlich, ohne die Panels zu beruehren
+     (live geprueft: 15px Restabstand). */
+  .project-visual { margin-left: 60px; margin-right: 10px; }
+  .project-hero-copy { max-width: 100%; align-self: center; }
   .project-hero h1 {
-    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
-    font-weight: 700;
-    font-size: clamp(2.1rem, 5vw, 3.4rem);
-    letter-spacing: 0.01em;
-    max-width: 18ch;
-    margin-top: 0.6rem;
+    font-family: var(--font-ui);
+    font-weight: 800;
+    /* Auf ausdrueckliche Freigabe hin gilt fuer PROJECT die 2-Zeilen-
+       Regel aus MASTER_VISUAL_SYSTEM §4.3 NICHT - drei kontrollierte
+       Zeilen sind erlaubt, damit der Titel wieder als grosser visueller
+       Anker wirkt. 68px ist das Maximum: bindend ist nicht das
+       Deutsche (laengste Zeile "Wie J.A.R.V.I.S." = 512px), sondern
+       das Englische "How J.A.R.V.I.S." mit 537px. Bei 70px waeren es
+       552px und die Textspalte muesste dem Motiv weitere Breite
+       wegnehmen. */
+    font-size: clamp(2.1rem, 4.7vw, 4.25rem);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    max-width: 100%;
+    margin-top: 0.7rem;
   }
-  .project-hero .body-copy { margin-top: 1.4rem; max-width: 62ch; }
-  .project-hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.8rem; }
+  /* pre-line macht den Zeilenumbruch explizit steuerbar: ein "\n" im
+     i18n-String bricht genau dort um, statt den Bruch der Spaltenbreite
+     zu ueberlassen ("kein automatischer zufaelliger Umbruch").
+     Das Deutsche nutzt das fuer die dritte Zeile, das Englische bleibt
+     ohne "\n" bei zwei Zeilen. */
+  .project-hero h1 span { display: block; white-space: pre-line; }
+  .project-hero h1 .accent { color: var(--cyan); }
+  .project-hero .body-copy { margin-top: 1.2rem; max-width: 100%; }
+  /* Global Readability Standard (MASTER_VISUAL_SYSTEM §4.5): Body-Text
+     17.6px, font-weight 500, dunkler Navy-Ton, kein blasses Grau. */
+  .project-hero .body-copy p { font-size: 1.1rem; font-weight: 500; line-height: 1.6; color: var(--ice); }
+  .project-hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.6rem; }
 
-  /* -------- right column: Brain/Core-Motiv + reale Status-Panels -------- */
-  .project-visual {
+  /* -------- Mittelspalte: Brain/Core-Motiv -------- */
+  .project-visual { position: relative; }
+  /* Punkt 2: kontrollierter Crop - aber nur so weit, wie das Asset ihn
+     vertraegt. Messung der Alphakanaele: die beschrifteten Label-Kaesten
+     reichen von x=55 bis x=1485 (von 1536). Symmetrisch sicher sind
+     daher nur 50px je Seite => minimales Seitenverhaeltnis 1.40.
+     Ein zuvor getestetes 1.25 haette 128px je Seite beschnitten und
+     schnitt live sichtbar die Labels "MODULE KERN"/"DATEN & WISSEN"/
+     "WERKZEUGE & AUTOMATION" links und "INTERAKTION & SPRACHE"/
+     "ANALYSE & PLANUNG"/"SYSTEM & SICHERHEIT" rechts an - deshalb
+     verworfen. 1.40 trimmt ausschliesslich den duennen aeusseren
+     Schein. Keine Verzerrung: cover skaliert proportional. */
+  .project-visual-art {
     position: relative;
-    min-height: clamp(340px, 34vw, 480px);
+    aspect-ratio: 1.4 / 1;
+    overflow: hidden;
   }
-  .project-visual-art { position: absolute; inset: 0; }
   .project-visual-art img {
-    position: absolute;
-    inset: 0;
+    display: block;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
+    object-position: center;
     pointer-events: none;
     user-select: none;
   }
@@ -62,10 +136,13 @@
     box-shadow: var(--shadow-soft);
     padding: 1.1rem 1.3rem;
   }
+  /* Global Readability Standard: kleine Labels mindestens 14px statt
+     der vorherigen 10.9px - Hierarchie kommt ueber Farbe/Letter-Spacing/
+     Versalien, nicht ueber Mikro-Schrift. */
   .status-row-item .k {
     font-family: ui-monospace, monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.1em;
+    font-size: 0.875rem;
+    letter-spacing: 0.08em;
     color: var(--cyan-dim);
   }
   .status-row-item .v { margin-top: 0.5rem; font-size: 0.98rem; color: var(--white); }
@@ -82,42 +159,68 @@
     padding: 0.9rem 1rem;
     box-shadow: var(--shadow-soft);
   }
+  /* Global Readability Standard: 9.9px -> 14px, 13.6px -> 15px. */
   .project-status-panel .k {
     display: block;
     font-family: ui-monospace, monospace;
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
+    font-size: 0.875rem;
+    letter-spacing: 0.06em;
     color: var(--muted);
     margin-bottom: 0.5rem;
   }
-  .project-status-panel .v { font-size: 0.85rem; color: var(--white); line-height: 1.45; }
-  .project-status-panel.p1 { top: 0; right: -2%; }
-  .project-status-panel.p2 { top: 26%; left: -4%; transform: translateY(-50%); }
-  .project-status-panel.p3 { bottom: 0; right: -2%; }
+  .project-status-panel .v { font-size: 0.9375rem; font-weight: 500; color: var(--white); line-height: 1.45; }
 
+  /* Referenz zeigt die Panels als ruhigen vertikalen Stapel in einer
+     eigenen rechten Spalte - nicht frei ueber dem Motiv. Flex-Stack mit
+     gleichmaessigem Abstand statt fixer top-Werte pro Panel
+     (MASTER_VISUAL_SYSTEM §6.2). */
+  .project-panel-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-self: center;
+  }
+  .project-panel-stack .project-status-panel {
+    position: static;
+    width: 100%;
+  }
+
+  /* Zwei statt vier Spalten: die Textspalte ist jetzt auf das
+     Referenzmass von 450px verschlankt, vier Faktenspalten darin waeren
+     je ~100px breit und schnitten die realen Werte ab (live gesehen:
+     "Aktive Entwicklung" brach auf "Aktive"). Inhalte unveraendert. */
   .project-fact-strip {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.1rem 1.5rem;
     margin-top: 2.4rem;
     padding-top: 1.6rem;
     border-top: 1px solid var(--line);
   }
+  /* Global Readability Standard: 10.2px -> 14px, dd auf 15px angehoben. */
   .project-fact dt {
     font-family: ui-monospace, monospace;
-    font-size: 0.64rem;
-    letter-spacing: 0.08em;
+    font-size: 0.875rem;
+    letter-spacing: 0.06em;
     color: var(--muted);
     margin-bottom: 0.3rem;
   }
-  .project-fact dd { margin: 0; font-weight: 600; font-size: 0.9rem; color: var(--white); }
+  .project-fact dd { margin: 0; font-weight: 600; font-size: 0.9375rem; color: var(--white); }
 
+  /* Mobile: in diesem Schritt bewusst KEIN Tuning (Auftrag "Desktop
+     zuerst"). Hier nur der Regressionsschutz, den §8.2 zwingend
+     verlangt: das neue dreispaltige Desktop-Raster und die feste
+     Panel-Spaltenbreite muessen einspaltig zurueckgesetzt werden,
+     sonst laeuft die Seite unter 900px ueber. Feinschliff folgt in
+     einem eigenen Mobile-Schritt. */
   @media (max-width: 900px) {
-    .project-hero-grid { grid-template-columns: 1fr; }
+    .project-hero-grid { grid-template-columns: 1fr; row-gap: 2rem; }
     .project-hero-copy { max-width: 100%; }
-    .project-visual { min-height: 0; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.8rem; }
-    .project-visual-art { position: static; height: 240px; }
-    .project-visual-art img { position: static; width: 100%; height: 100%; }
+    .project-hero h1 span { display: inline; }
+    .project-visual { min-height: 0; }
+    .project-visual-art { position: static; height: auto; }
+    .project-visual-art img { position: static; width: 100%; height: auto; }
+    .project-panel-stack { align-self: stretch; }
     .project-status-panel { position: static; width: 100%; }
     .project-fact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
@@ -141,7 +244,7 @@
     display: inline-block;
     margin-top: 1.3rem;
     font-family: ui-monospace, monospace;
-    font-size: 0.82rem;
+    font-size: 0.875rem;
     color: var(--cyan);
     text-decoration: none;
   }
@@ -162,8 +265,8 @@
   .module-group:last-child { margin-bottom: 0; }
   .module-group-title {
     font-family: ui-monospace, monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
+    font-size: 0.875rem;
+    letter-spacing: 0.08em;
     color: var(--cyan-dim);
     margin-bottom: 0.9rem;
   }
@@ -181,11 +284,11 @@
   }
   .module-tile .t {
     font-family: ui-monospace, monospace;
-    font-size: 0.78rem;
-    letter-spacing: 0.04em;
+    font-size: 0.9375rem;
+    letter-spacing: 0.03em;
     color: var(--white);
   }
-  .module-tile .q { margin-top: 0.45rem; color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+  .module-tile .q { margin-top: 0.45rem; color: var(--muted); font-size: 0.9375rem; line-height: 1.5; }
   /* Only HARDWARE has a real subpage so far - it is the one module tile
      that is an actual <a>, with a visible hover state and its own CTA
      line, so it reads as genuinely clickable without making the other,
@@ -201,7 +304,7 @@
     display: block;
     margin-top: 0.7rem;
     font-family: ui-monospace, monospace;
-    font-size: 0.74rem;
+    font-size: 0.875rem;
     color: var(--cyan);
   }
 
@@ -218,7 +321,7 @@
     padding: 1.2rem 1.3rem;
   }
   .dev-card h3 { font-size: 0.98rem; font-weight: 600; }
-  .dev-card p { margin: 0.6rem 0 0; color: var(--muted); font-size: 0.88rem; line-height: 1.55; }
+  .dev-card p { margin: 0.6rem 0 0; color: var(--muted); font-size: 0.9375rem; line-height: 1.55; }
 
   .misfire-panel {
     max-width: 66ch;
@@ -240,7 +343,7 @@
     transition: border-color 0.2s ease, transform 0.15s ease;
   }
   .network-link:hover { border-color: var(--cyan-dim); transform: translateY(-2px); }
-  .network-link .t { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--cyan); }
+  .network-link .t { font-family: ui-monospace, monospace; font-size: 0.875rem; color: var(--cyan); }
   .network-link .q { margin-top: 0.4rem; color: var(--white); font-size: 0.92rem; }
 </style>
 </head>
@@ -250,7 +353,7 @@
   <div class="wrap nav-inner">
     <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
     <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
-      <a href="../" data-i18n="nav.home">HOME</a>
+      <a href="../home/" data-i18n="nav.home">HOME</a>
       <a href="./" class="current" data-i18n="nav.project">PROJECT</a>
       <a href="../signal/" data-i18n="nav.signal">SIGNAL</a>
       <a href="../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
@@ -280,7 +383,7 @@
 
 <main>
   <div class="wrap breadcrumb">
-    <a href="../" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="nav.project">PROJECT</span>
+    <a href="../home/" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="nav.project">PROJECT</span>
   </div>
 
   <div class="wrap">
@@ -291,7 +394,12 @@
     <div class="wrap project-hero-grid">
       <div class="project-hero-copy">
         <span class="eyebrow" data-i18n="project.eyebrow">J.A.R.V.I.S. PROJECT</span>
-        <h1 data-i18n="project.h1">How J.A.R.V.I.S. is really built.</h1>
+        <!-- Kontrollierter 2-Zeilen-Bruch mit Cyan-Akzentzeile wie in
+             02_PROJECT.png (MASTER_VISUAL_SYSTEM §4.3). Wortlaut exakt
+             unveraendert, nur auf zwei data-i18n-Spans aufgeteilt -
+             applyStaticStrings() setzt textContent, Markup im String
+             wuerde als sichtbarer Tag-Text erscheinen. -->
+        <h1><span data-i18n="project.h1Line1">How J.A.R.V.I.S.</span> <span class="accent" data-i18n="project.h1Line2">is really built.</span></h1>
         <div class="body-copy" id="project-intro-body"></div>
         <div class="project-hero-ctas">
           <a href="#project-modules" class="cta primary" data-i18n="project.cta1">SEE THE MODULES</a>
@@ -324,6 +432,14 @@
         <div class="project-visual-art">
           <img src="../assets/img/project-brain-core.png" alt="" aria-hidden="true" width="1536" height="1024" />
         </div>
+      </div>
+
+      <!-- Eigene dritte Rasterspalte statt frei ueber dem Motiv schwebend
+           (02_PROJECT.png zeigt einen ruhigen Stapel rechts). Inhalte
+           unveraendert und weiterhin real belegt - keine erfundenen
+           Kennzahlen, keine vierte Karte erfunden, obwohl die Referenz
+           vier zeigt (MASTER_VISUAL_SYSTEM §7). -->
+      <div class="project-panel-stack">
         <div class="project-status-panel p1">
           <span class="k" data-i18n="project.status.k1">STATUS</span>
           <span class="v" data-i18n="project.status.v1">Active development</span>
@@ -470,7 +586,7 @@
     <div class="footer-grid">
       <div>
         <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
-        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+        <p style="color:var(--muted); font-size:0.875rem; max-width:32ch;" data-i18n="footer.desc">
           A digital platform for people who want to understand, discuss and
           build the next generation of intelligent systems.
         </p>
@@ -492,9 +608,9 @@
       </div>
       <div>
         <h4 data-i18n="footer.about">ABOUT</h4>
-        <a href="../#about" data-i18n="footer.aboutProject">About the Project</a>
-        <a href="../#about" data-i18n="footer.roadmap">Roadmap</a>
-        <a href="../#about" data-i18n="footer.contact">Contact</a>
+        <a href="../home/#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../home/#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../home/#about" data-i18n="footer.contact">Contact</a>
       </div>
     </div>
     <div class="footer-bottom">
@@ -596,7 +712,9 @@
   // ==================================================================
   SiteChrome.registerStrings({
     "project.eyebrow": { en: "J.A.R.V.I.S. PROJECT", de: "J.A.R.V.I.S. PROJECT" },
-    "project.h1": { en: "How J.A.R.V.I.S. is really built.", de: "Wie J.A.R.V.I.S. wirklich gebaut wird." },
+    /* Wortlaut unveraendert, nur zeilenweise aufgeteilt (siehe H1-Markup). */
+    "project.h1Line1": { en: "How J.A.R.V.I.S.", de: "Wie J.A.R.V.I.S." },
+    "project.h1Line2": { en: "is really built.", de: "wirklich gebaut\nwird." },
     "project.cta1": { en: "SEE THE MODULES", de: "MODULE ANSEHEN" },
     "project.cta2": { en: "FOLLOW DEVELOPMENT", de: "ENTWICKLUNG VERFOLGEN" },
     "project.fact1Label": { en: "MODULES", de: "MODULE" },

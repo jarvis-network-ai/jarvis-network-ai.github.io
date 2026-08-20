@@ -23,15 +23,15 @@
   .knowledge-hero { padding: 1.6rem 0 clamp(2.6rem, 5vw, 4rem); }
   .knowledge-hero-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.1fr);
     align-items: center;
-    gap: clamp(2rem, 5vw, 4rem);
+    gap: clamp(1.5rem, 4vw, 3rem);
   }
-  .knowledge-hero-copy { max-width: 640px; align-self: center; }
+  .knowledge-hero-copy { max-width: 520px; align-self: center; }
   .knowledge-hero h1 {
-    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
     font-weight: 700;
-    font-size: clamp(2.6rem, 7vw, 5.2rem);
+    font-size: clamp(2.1rem, 5.2vw, 4.25rem);
     letter-spacing: 0.01em;
     max-width: 16ch;
     margin-top: 0.6rem;
@@ -58,7 +58,7 @@
   /* -------- right column: Wissenskern-Motiv + reale Status-Panels -------- */
   .knowledge-visual { position: relative; min-height: clamp(300px, 32vw, 440px); }
   .knowledge-visual-art { position: absolute; inset: 0; }
-  .knowledge-visual-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
+  .knowledge-visual-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; transform: scale(1.32); transform-origin: center; }
 
   .knowledge-hero-panel {
     position: absolute;
@@ -78,7 +78,7 @@
     color: var(--muted);
     margin-bottom: 0.4rem;
   }
-  .knowledge-hero-panel .v { font-size: 0.85rem; color: var(--white); line-height: 1.45; }
+  .knowledge-hero-panel .v { font-size: 0.9375rem; color: var(--white); line-height: 1.45; }
   .knowledge-hero-panel.p1 { top: 0; right: -2%; }
   .knowledge-hero-panel.p2 { top: 42%; left: -6%; transform: translateY(-50%); }
   .knowledge-hero-panel.p3 { bottom: 0; right: -2%; }
@@ -98,16 +98,26 @@
     color: var(--muted);
     margin-bottom: 0.3rem;
   }
-  .knowledge-fact dd { margin: 0; font-weight: 600; font-size: 0.9rem; color: var(--white); }
+  .knowledge-fact dd { margin: 0; font-weight: 600; font-size: 0.9375rem; color: var(--white); }
 
   @media (max-width: 900px) {
-    .knowledge-hero-grid { grid-template-columns: 1fr; }
-    .knowledge-hero-copy { max-width: 100%; }
-    .knowledge-visual { min-height: 0; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.8rem; }
-    .knowledge-visual-art { position: static; height: 240px; }
-    .knowledge-visual-art img { position: static; width: 100%; height: 100%; }
-    .knowledge-hero-panel { position: static; width: 100%; }
-    .knowledge-fact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .knowledge-hero { padding: 1.6rem 0 clamp(1.8rem, 4vw, 2.6rem); }
+    .knowledge-hero-grid { grid-template-columns: 1fr; gap: clamp(1.2rem, 3vw, 1.8rem); }
+    .knowledge-hero-copy { max-width: 100%; padding: 0 1rem; }
+    .knowledge-hero h1 { font-size: clamp(1.8rem, 5.5vw, 3rem); max-width: 100%; }
+    .knowledge-lede { margin-top: 0.7rem; }
+    .knowledge-hero .body-copy { margin-top: 0.9rem; }
+    .knowledge-hero-ctas { gap: 0.8rem; margin-top: 1.3rem; }
+    .knowledge-hero-ctas .cta { flex: 1; min-width: 140px; }
+    .knowledge-visual { min-height: 0; margin-top: 1.2rem; margin-left: -1rem; margin-right: -1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .knowledge-visual-art { position: static; height: clamp(160px, 40vw, 200px); width: calc(100% + 2rem); }
+    .knowledge-visual-art img { position: static; width: 100%; height: 100%; object-fit: cover; transform: none !important; }
+    .knowledge-hero-panel { position: static; width: calc(100% - 2rem); margin: 0.4rem 1rem; padding: 0.6rem 0.7rem; font-size: 0.78rem; }
+    .knowledge-hero-panel .k { font-size: 0.6rem; margin-bottom: 0.25rem; }
+    .knowledge-hero-panel .v { font-size: 0.7rem; }
+    .knowledge-fact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1.6rem; padding-top: 1rem; margin-left: -1rem; margin-right: -1rem; padding-left: 1rem; padding-right: 1rem; }
+    .knowledge-fact dt { font-size: 0.6rem; margin-bottom: 0.25rem; }
+    .knowledge-fact dd { font-size: 0.85rem; }
   }
 
   .knowledge-section h2 {
@@ -240,7 +250,7 @@
   <div class="wrap nav-inner">
     <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
     <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
-      <a href="../" data-i18n="nav.home">HOME</a>
+      <a href="../home/" data-i18n="nav.home">HOME</a>
       <a href="../project/" data-i18n="nav.project">PROJECT</a>
       <a href="../signal/" data-i18n="nav.signal">SIGNAL</a>
       <a href="./" class="current" data-i18n="nav.knowledge">KNOWLEDGE</a>
@@ -270,7 +280,7 @@
 
 <main>
   <div class="wrap breadcrumb">
-    <a href="../" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="nav.knowledge">KNOWLEDGE</span>
+    <a href="../home/" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="nav.knowledge">KNOWLEDGE</span>
   </div>
 
   <section class="block knowledge-hero">
@@ -436,9 +446,9 @@
       </div>
       <div>
         <h4 data-i18n="footer.about">ABOUT</h4>
-        <a href="../#about" data-i18n="footer.aboutProject">About the Project</a>
-        <a href="../#about" data-i18n="footer.roadmap">Roadmap</a>
-        <a href="../#about" data-i18n="footer.contact">Contact</a>
+        <a href="../home/#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../home/#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../home/#about" data-i18n="footer.contact">Contact</a>
       </div>
     </div>
     <div class="footer-bottom">

@@ -34,19 +34,22 @@
   }
   .lab-hero-copy { max-width: 640px; }
   .lab-hero h1 {
-    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
     font-weight: 700;
-    font-size: clamp(2.6rem, 7vw, 5.2rem);
-    letter-spacing: 0.01em;
-    max-width: 16ch;
+    font-size: clamp(2.8rem, 7.2vw, 5.8rem);
+    letter-spacing: 0;
+    max-width: 18ch;
     margin-top: 0.6rem;
+    line-height: 1.1;
   }
+  .lab-hero h1 .h1-accent { color: var(--cyan); }
   .lab-lede {
     margin-top: 0.9rem;
     font-size: clamp(1.05rem, 2vw, 1.25rem);
     color: var(--ice);
     font-weight: 500;
   }
+  .lab-lede .accent { color: var(--cyan); }
   .lab-hero .body-copy { margin-top: 1.2rem; }
   .lab-hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.8rem; }
 
@@ -61,7 +64,7 @@
   .body-copy p:last-child { margin-bottom: 0; }
 
   /* -------- right column: Lab-Container-Motiv + reale Status-Panels -------- */
-  .lab-visual { position: relative; min-height: clamp(300px, 32vw, 440px); }
+  .lab-visual { position: relative; min-height: clamp(380px, 42vw, 540px); }
   .lab-visual-art { position: absolute; inset: 0; }
   .lab-visual-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
 
@@ -114,13 +117,17 @@
   .lab-fact dd { margin: 0; font-weight: 600; font-size: 0.9rem; color: var(--white); }
 
   @media (max-width: 900px) {
-    .lab-hero-grid { grid-template-columns: 1fr; }
-    .lab-hero-copy { max-width: 100%; }
+    .lab-hero-grid { grid-template-columns: 1fr; padding: 0 1rem; box-sizing: border-box; }
+    .lab-hero-copy { max-width: 100%; padding: 0; }
+    .lab-hero h1 { font-size: clamp(1.8rem, 5.5vw, 3rem); max-width: 100%; }
+    .lab-lede { font-size: clamp(0.95rem, 2.2vw, 1.1rem); }
     .lab-visual { min-height: 0; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.8rem; }
-    .lab-visual-art { position: static; height: 240px; }
+    .lab-visual-art { position: static; height: clamp(160px, 40vw, 200px); }
     .lab-visual-art img { position: static; width: 100%; height: 100%; }
-    .lab-hero-panel { position: static; width: 100%; }
-    .lab-fact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lab-hero-panel { position: static; width: 100%; margin: 0.8rem 0; }
+    .lab-fact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1.5rem; padding-top: 1rem; margin-left: 0; margin-right: 0; }
+    .lab-fact dt { font-size: 0.6rem; }
+    .lab-fact dd { font-size: 0.85rem; }
   }
 
   .lab-section h2 {
@@ -234,7 +241,7 @@
   <div class="wrap nav-inner">
     <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
     <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
-      <a href="../" data-i18n="nav.home">HOME</a>
+      <a href="../home/" data-i18n="nav.home">HOME</a>
       <a href="../project/" data-i18n="nav.project">PROJECT</a>
       <a href="../signal/" data-i18n="nav.signal">SIGNAL</a>
       <a href="../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
@@ -264,15 +271,15 @@
 
 <main>
   <div class="wrap breadcrumb">
-    <a href="../" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="nav.lab">LAB</span>
+    <a href="../home/" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="nav.lab">LAB</span>
   </div>
 
   <section class="block lab-hero">
     <div class="wrap lab-hero-grid">
       <div class="lab-hero-copy">
         <span class="eyebrow" data-i18n="labPage.eyebrow">LAB &amp; EXPERIMENTS</span>
-        <h1 data-i18n="labPage.h1">J.A.R.V.I.S. Lab</h1>
-        <p class="lab-lede" data-i18n="lab.title">Experiments at the edge of AI.</p>
+        <h1><span data-i18n="labPage.h1Part1">J.A.R.V.I.S.</span> <span data-i18n="labPage.h1Part2" class="h1-accent">Lab</span></h1>
+        <p class="lab-lede"><span data-i18n="labPage.lede1">Experiments</span> <span data-i18n="labPage.lede2" class="accent">at the edge</span> <span data-i18n="labPage.lede3">of AI.</span></p>
         <div class="body-copy" id="lab-intro-body"></div>
 
         <div class="lab-hero-ctas">
@@ -412,9 +419,9 @@
       </div>
       <div>
         <h4 data-i18n="footer.about">ABOUT</h4>
-        <a href="../#about" data-i18n="footer.aboutProject">About the Project</a>
-        <a href="../#about" data-i18n="footer.roadmap">Roadmap</a>
-        <a href="../#about" data-i18n="footer.contact">Contact</a>
+        <a href="../home/#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../home/#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../home/#about" data-i18n="footer.contact">Contact</a>
       </div>
     </div>
     <div class="footer-bottom">
@@ -524,7 +531,11 @@
     "status.focusLabel": { en: "CURRENT DEVELOPMENT FOCUS", de: "AKTUELLER ENTWICKLUNGSSCHWERPUNKT" },
     "status.focusText": { en: "Stabilizing browser-controlled actions behind an explicit confirmation step, and extending the memory layer so it can hold a task's goal and open questions across a session.", de: "Browsergesteuerte Aktionen hinter einer ausdrücklichen Bestätigung stabilisieren, und die Gedächtnisebene so erweitern, dass sie Ziel und offene Fragen einer Aufgabe über eine Sitzung hinweg festhalten kann." },
     "labPage.eyebrow": { en: "LAB & EXPERIMENTS", de: "LABOR & EXPERIMENTE" },
-    "labPage.h1": { en: "J.A.R.V.I.S. Lab", de: "J.A.R.V.I.S. Lab" },
+    "labPage.h1Part1": { en: "J.A.R.V.I.S.", de: "J.A.R.V.I.S." },
+    "labPage.h1Part2": { en: "Lab", de: "Lab" },
+    "labPage.lede1": { en: "Experiments", de: "Experimente" },
+    "labPage.lede2": { en: "at the edge", de: "am Rand" },
+    "labPage.lede3": { en: "of AI.", de: "des Machbaren." },
     "labPage.cta1": { en: "VIEW EXPERIMENTS", de: "EXPERIMENTE ANSEHEN" },
     "labPage.cta2": { en: "HOW IT WORKS", de: "WIE ES FUNKTIONIERT" },
 

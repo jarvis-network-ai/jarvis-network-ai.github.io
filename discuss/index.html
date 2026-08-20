@@ -32,19 +32,22 @@
   }
   .discuss-hero-copy { max-width: 640px; }
   .discuss-hero h1 {
-    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
     font-weight: 700;
-    font-size: clamp(2.6rem, 7vw, 5.2rem);
-    letter-spacing: 0.01em;
-    max-width: 16ch;
+    font-size: clamp(2.8rem, 7.2vw, 5.8rem);
+    letter-spacing: 0;
+    max-width: 18ch;
     margin-top: 0.6rem;
+    line-height: 1.1;
   }
+  .discuss-hero h1 .h1-accent { color: var(--cyan); }
   .discuss-lede {
     margin-top: 0.9rem;
     font-size: clamp(1.05rem, 2vw, 1.25rem);
     color: var(--ice);
     font-weight: 500;
   }
+  .discuss-lede .accent { color: var(--cyan); }
   .discuss-hero .body-copy { margin-top: 1.2rem; }
   .discuss-hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.8rem; }
 
@@ -59,7 +62,7 @@
   .body-copy p:last-child { margin-bottom: 0; }
 
   /* -------- right column: Community-Motiv + reale Status-Panels -------- */
-  .discuss-visual { position: relative; min-height: clamp(300px, 32vw, 440px); }
+  .discuss-visual { position: relative; min-height: clamp(380px, 42vw, 540px); }
   .discuss-visual-art { position: absolute; inset: 0; }
   .discuss-visual-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
 
@@ -104,13 +107,17 @@
   .discuss-fact dd { margin: 0; font-weight: 600; font-size: 0.9rem; color: var(--white); }
 
   @media (max-width: 900px) {
-    .discuss-hero-grid { grid-template-columns: 1fr; }
-    .discuss-hero-copy { max-width: 100%; }
-    .discuss-visual { min-height: 0; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.8rem; }
-    .discuss-visual-art { position: static; height: 240px; }
+    .discuss-hero-grid { grid-template-columns: 1fr; width: 100%; padding: 0; box-sizing: border-box; margin-left: auto; margin-right: auto; }
+    .discuss-hero-copy { max-width: 100%; padding: 0 1rem; }
+    .discuss-hero h1 { font-size: clamp(1.8rem, 5.5vw, 3rem); max-width: 100%; }
+    .discuss-lede { font-size: clamp(0.95rem, 2.2vw, 1.1rem); }
+    .discuss-visual { min-height: 0; margin-top: 2rem; display: flex; flex-direction: column; gap: 0.8rem; margin-left: 1rem; margin-right: 1rem; }
+    .discuss-visual-art { position: static; height: clamp(160px, 40vw, 200px); }
     .discuss-visual-art img { position: static; width: 100%; height: 100%; }
-    .discuss-hero-panel { position: static; width: 100%; }
-    .discuss-fact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .discuss-hero-panel { position: static; width: 100%; margin: 0.8rem 1rem; }
+    .discuss-fact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1.5rem; padding-top: 1rem; margin-left: 1rem; margin-right: 1rem; }
+    .discuss-fact dt { font-size: 0.6rem; }
+    .discuss-fact dd { font-size: 0.85rem; }
   }
 
   .discuss-section h2 {
@@ -303,7 +310,7 @@
   <div class="wrap nav-inner">
     <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
     <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
-      <a href="../" data-i18n="nav.home">HOME</a>
+      <a href="../home/" data-i18n="nav.home">HOME</a>
       <a href="../project/" data-i18n="nav.project">PROJECT</a>
       <a href="../signal/" data-i18n="nav.signal">SIGNAL</a>
       <a href="../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
@@ -333,15 +340,15 @@
 
 <main>
   <div class="wrap breadcrumb">
-    <a href="../" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="nav.discuss">DISCUSS</span>
+    <a href="../home/" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="nav.discuss">DISCUSS</span>
   </div>
 
   <section class="block discuss-hero">
     <div class="wrap discuss-hero-grid">
       <div class="discuss-hero-copy">
         <span class="eyebrow" data-i18n="discussPage.eyebrow">DISCUSS &amp; CONNECT</span>
-        <h1 data-i18n="discussPage.h1">J.A.R.V.I.S. Discuss</h1>
-        <p class="discuss-lede" data-i18n="discussPage.lede">Other opinions explicitly welcome.</p>
+        <h1><span data-i18n="discussPage.h1Part1">J.A.R.V.I.S.</span> <span data-i18n="discussPage.h1Part2" class="h1-accent">Discuss</span></h1>
+        <p class="discuss-lede"><span data-i18n="discussPage.lede1">Other opinions</span> <span data-i18n="discussPage.lede2" class="accent">explicitly</span> <span data-i18n="discussPage.lede3">welcome.</span></p>
         <div class="body-copy" id="discuss-intro-body"></div>
 
         <div class="discuss-hero-ctas">
@@ -520,9 +527,9 @@
       </div>
       <div>
         <h4 data-i18n="footer.about">ABOUT</h4>
-        <a href="../#about" data-i18n="footer.aboutProject">About the Project</a>
-        <a href="../#about" data-i18n="footer.roadmap">Roadmap</a>
-        <a href="../#about" data-i18n="footer.contact">Contact</a>
+        <a href="../home/#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../home/#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../home/#about" data-i18n="footer.contact">Contact</a>
       </div>
     </div>
     <div class="footer-bottom">
@@ -648,8 +655,11 @@
   // ==================================================================
   SiteChrome.registerStrings({
     "discussPage.eyebrow": { en: "DISCUSS & CONNECT", de: "DISKUTIEREN & VERNETZEN" },
-    "discussPage.h1": { en: "J.A.R.V.I.S. Discuss", de: "J.A.R.V.I.S. Discuss" },
-    "discussPage.lede": { en: "Other opinions explicitly welcome.", de: "Andere Meinungen ausdrücklich erwünscht." },
+    "discussPage.h1Part1": { en: "J.A.R.V.I.S.", de: "J.A.R.V.I.S." },
+    "discussPage.h1Part2": { en: "Discuss", de: "Discuss" },
+    "discussPage.lede1": { en: "Other opinions", de: "Andere Meinungen" },
+    "discussPage.lede2": { en: "explicitly", de: "ausdrücklich" },
+    "discussPage.lede3": { en: "welcome.", de: "erwünscht." },
     "discussPage.cta1": { en: "START A DISCUSSION", de: "DISKUSSION STARTEN" },
     "discussPage.cta2": { en: "HOW IT WORKS", de: "WIE ES FUNKTIONIERT" },
 

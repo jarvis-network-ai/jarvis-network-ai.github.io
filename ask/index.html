@@ -40,20 +40,22 @@
     align-items: center;
     gap: clamp(2rem, 5vw, 4rem);
   }
-  .askpage-hero-copy { max-width: 640px; }
+  .askpage-hero-copy { max-width: 680px; }
   .askpage-hero h1 {
-    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
-    font-weight: 700;
-    font-size: clamp(2.6rem, 7vw, 5.2rem);
-    letter-spacing: 0.01em;
-    max-width: 16ch;
+    font-family: var(--font-ui);
+    font-weight: 800;
+    font-size: clamp(3.1rem, 8vw, 5.2rem);
+    letter-spacing: -0.01em;
+    max-width: 18ch;
     margin-top: 0.6rem;
+    line-height: 1.08;
   }
   .askpage-lede {
-    margin-top: 0.9rem;
-    font-size: clamp(1.05rem, 2vw, 1.25rem);
-    color: var(--ice);
-    font-weight: 500;
+    margin-top: 1rem;
+    font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+    color: var(--white);
+    font-weight: 600;
+    line-height: 1.3;
   }
   .askpage-hero .body-copy { margin-top: 1.2rem; }
   .askpage-hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.8rem; }
@@ -61,8 +63,9 @@
   .body-copy { max-width: 66ch; }
   .body-copy p {
     margin: 0 0 1rem;
-    color: var(--muted);
-    font-size: 0.98rem;
+    color: var(--ice);
+    font-size: clamp(1.1rem, 1.3vw, 1.2rem);
+    font-weight: 500;
     line-height: 1.75;
     overflow-wrap: break-word;
   }
@@ -75,23 +78,24 @@
 
   .askpage-hero-panel {
     position: absolute;
-    width: 190px;
-    background: color-mix(in srgb, var(--panel) 90%, transparent);
-    backdrop-filter: blur(10px);
+    width: 220px;
+    background: color-mix(in srgb, var(--panel) 92%, transparent);
+    backdrop-filter: blur(12px);
     border: 1px solid var(--line-strong);
     border-radius: 12px;
-    padding: 0.85rem 1rem;
+    padding: 1rem 1.1rem;
     box-shadow: var(--shadow-soft);
   }
   .askpage-hero-panel .k {
     display: block;
     font-family: ui-monospace, monospace;
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
     color: var(--muted);
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.45rem;
+    font-weight: 600;
   }
-  .askpage-hero-panel .v { font-size: 0.85rem; color: var(--white); line-height: 1.45; }
+  .askpage-hero-panel .v { font-size: 0.92rem; color: var(--white); line-height: 1.5; font-weight: 500; }
   .askpage-hero-panel.p1 { top: 0; right: -2%; }
   .askpage-hero-panel.p2 { top: 42%; left: -8%; transform: translateY(-50%); }
   .askpage-hero-panel.p3 { bottom: 0; right: -2%; }
@@ -106,12 +110,13 @@
   }
   .askpage-fact dt {
     font-family: ui-monospace, monospace;
-    font-size: 0.64rem;
-    letter-spacing: 0.08em;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
     color: var(--muted);
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.35rem;
+    font-weight: 600;
   }
-  .askpage-fact dd { margin: 0; font-weight: 600; font-size: 0.9rem; color: var(--white); }
+  .askpage-fact dd { margin: 0; font-weight: 600; font-size: 0.98rem; color: var(--white); line-height: 1.4; }
 
   @media (max-width: 900px) {
     .askpage-hero-grid { grid-template-columns: 1fr; }
@@ -124,11 +129,12 @@
   }
 
   .askpage-section h2 {
-    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
-    font-weight: 700;
-    font-size: clamp(1.5rem, 3.2vw, 2rem);
+    font-family: var(--font-ui);
+    font-weight: 800;
+    font-size: clamp(1.6rem, 3.5vw, 2.1rem);
     max-width: 34ch;
     margin-bottom: 1.2rem;
+    line-height: 1.15;
   }
   .askpage-section h3 {
     font-family: ui-monospace, monospace;
@@ -167,8 +173,8 @@
     opacity: 1;
     pointer-events: auto;
   }
-  .askpage-interface-wrap .ask-input-row input { font-size: 0.98rem; padding: 0.75rem 0.9rem; }
-  .askpage-interface-wrap .ask-input-row button { font-size: 0.8rem; padding: 0 1.3rem; }
+  .askpage-interface-wrap .ask-input-row input { font-size: 1rem; padding: 0.9rem 1rem; font-weight: 500; }
+  .askpage-interface-wrap .ask-input-row button { font-size: 0.85rem; padding: 0 1.5rem; font-weight: 600; }
   .askpage-interface-wrap .ask-scroll { max-height: 50vh; }
 
   .askpage-def-list { margin: 1.2rem 0 0; padding: 0; list-style: none; max-width: 66ch; }
@@ -176,33 +182,35 @@
   .askpage-def-list li:last-child { border-bottom: none; }
   .askpage-def-list .term {
     font-family: ui-monospace, monospace;
-    font-size: 0.76rem;
-    letter-spacing: 0.08em;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
     color: var(--cyan-dim);
     display: block;
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
   }
-  .askpage-def-list .desc { color: var(--muted); font-size: 0.94rem; line-height: 1.6; }
+  .askpage-def-list .desc { color: var(--ice); font-size: 0.98rem; line-height: 1.65; font-weight: 500; }
 
   /* Vertical node-flow layout (same technique as knowledge/index.html's
      .knowledge-flow) - avoids the horizontal, non-wrapping row that the
      shared .arch-node/.arch-arrow primitive defaults to, which would
      otherwise overflow at narrower widths with four flow steps. */
   .askpage-flow { display: flex; flex-direction: column; align-items: flex-start; gap: 0; margin-top: 1.4rem; max-width: 56ch; }
-  .askpage-flow .arch-node { font-size: 0.8rem; white-space: normal; max-width: 100%; overflow-wrap: break-word; }
+  .askpage-flow .arch-node { font-size: 0.88rem; white-space: normal; max-width: 100%; overflow-wrap: break-word; font-weight: 600; color: var(--white); }
   .askpage-flow .arch-arrow { display: block; padding: 0.26rem 0 0.26rem 1.1rem; transform: rotate(90deg); transform-origin: left center; }
 
   .askpage-quote {
     margin: 1.6rem 0;
-    padding: 1.1rem 1.3rem;
+    padding: 1.2rem 1.4rem;
     border: 1px solid var(--line);
     border-radius: 10px;
     background: var(--panel);
     box-shadow: var(--shadow-soft);
-    color: var(--ice);
-    font-size: 1.02rem;
-    line-height: 1.6;
+    color: var(--white);
+    font-size: 1.05rem;
+    line-height: 1.65;
     max-width: 56ch;
+    font-weight: 500;
   }
 
   .askpage-network-links {
@@ -222,8 +230,8 @@
     transition: border-color 0.2s ease, transform 0.15s ease;
   }
   .askpage-network-link:hover { border-color: var(--cyan-dim); transform: translateY(-2px); }
-  .askpage-network-link .t { font-family: ui-monospace, monospace; font-size: 0.74rem; color: var(--cyan); }
-  .askpage-network-link .q { margin-top: 0.4rem; color: var(--white); font-size: 0.9rem; }
+  .askpage-network-link .t { font-family: ui-monospace, monospace; font-size: 0.78rem; color: var(--cyan); font-weight: 600; letter-spacing: 0.05em; }
+  .askpage-network-link .q { margin-top: 0.5rem; color: var(--ice); font-size: 0.95rem; line-height: 1.5; font-weight: 500; }
 </style>
 </head>
 <body>
@@ -232,7 +240,7 @@
   <div class="wrap nav-inner">
     <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
     <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
-      <a href="../" data-i18n="nav.home">HOME</a>
+      <a href="../home/" data-i18n="nav.home">HOME</a>
       <a href="../project/" data-i18n="nav.project">PROJECT</a>
       <a href="../signal/" data-i18n="nav.signal">SIGNAL</a>
       <a href="../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
@@ -262,7 +270,7 @@
 
 <main>
   <div class="wrap breadcrumb">
-    <a href="../" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="ask.btn">ASK J.A.R.V.I.S.</span>
+    <a href="../home/" data-i18n="nav.home">HOME</a><span class="sep">/</span><span class="current" data-i18n="ask.btn">ASK J.A.R.V.I.S.</span>
   </div>
 
   <section class="block askpage-hero">
@@ -429,9 +437,9 @@
       </div>
       <div>
         <h4 data-i18n="footer.about">ABOUT</h4>
-        <a href="../#about" data-i18n="footer.aboutProject">About the Project</a>
-        <a href="../#about" data-i18n="footer.roadmap">Roadmap</a>
-        <a href="../#about" data-i18n="footer.contact">Contact</a>
+        <a href="../home/#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="../home/#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="../home/#about" data-i18n="footer.contact">Contact</a>
       </div>
     </div>
     <div class="footer-bottom">

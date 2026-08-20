@@ -783,8 +783,6 @@
         askCharCount.textContent = length + ' / ' + AJC.MAX_QUESTION_LENGTH;
         askCharCount.classList.toggle('is-over', length > AJC.MAX_QUESTION_LENGTH);
       }
-      askInput.addEventListener('input', updateCharCount);
-      updateCharCount();
 
       function submitAskQuestion() {
         var question = askInput.value;
@@ -792,8 +790,18 @@
           if (!result.ok && result.reason === 'not_authenticated') { openLoginPanelFn(); }
         });
       }
-      askSend.addEventListener('click', submitAskQuestion);
-      askInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { submitAskQuestion(); } });
+
+      // Redesign-Schritt 13 (COVER, 19. August 2026): the COVER page
+      // intentionally has no Ask JARVIS UI at all (no #ask-panel
+      // markup), only login - so askInput/askSend can legitimately be
+      // null here, unlike every other page. Same null-guard style
+      // already used above for askBtn/askClose in this function.
+      if (askInput) {
+        askInput.addEventListener('input', updateCharCount);
+        updateCharCount();
+        askInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { submitAskQuestion(); } });
+      }
+      if (askSend) { askSend.addEventListener('click', submitAskQuestion); }
 
       window.addEventListener('pagehide', function () { controller.stopPolling(); });
 

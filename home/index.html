@@ -1,0 +1,1964 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>J.A.R.V.I.S. Network — Exploring the Future of Artificial Intelligence</title>
+<link rel="stylesheet" href="../foundation.css" />
+<link rel="stylesheet" href="../site-chrome.css" />
+<style>
+  /* Seiten-/komponentenspezifische Stile. Design-Tokens, Basis-Reset,
+     .wrap und die generischen UI-Grundbausteine kommen aus
+     foundation.css (Phase 02 – Bodenplatte); hier nur, was für diese
+     konkrete Seite zusätzlich gebraucht wird. */
+
+  /* Redesign-Schritt 11 (Proportionskorrektur, 18. August 2026): die
+     globale --content-max-width (1180px, foundation.css) lokal für
+     diese eine Seite überschrieben — betrifft nur index.html, da
+     dieser :root-Block nur in diesem Dokument geladen wird und
+     foundation.css selbst unangetastet bleibt (jede andere Seite lädt
+     weiterhin ihre eigene, unveränderte 1180px-Fassung). Ursache des
+     "Schrumpf"-Effekts: bei 1440-1536px Viewportbreite ließ 1180px
+     riesige, ungenutzte Seitenränder, wodurch Hero-Grafik und
+     Fließtext-Spalten deutlich schmaler wirkten als in
+     design-reference/01_START_COVER.png (dort füllt der Inhalt nahezu
+     die volle 1536px-Referenzbreite). */
+  :root { --content-max-width: 1400px; }
+
+  /* Redesign-Schritt 12 (Mobile-Untersuchung, 19. August 2026): reale
+     DOM-Messung (getBoundingClientRect, bis auf Glyph-Ebene per
+     Range.getClientRects) im echten Browser-Tab zeigte bei 375px
+     KEINEN Overflow (jedes Element right <= 375, .hero overflowX:
+     hidden greift nirgends). Ein per Kommandozeile gestarteter
+     Headless-Chrome-Screenshot (ohne echte Mobile-Geräteemulation,
+     nur Fenstergröße verkleinert) zeigte trotzdem sichtbar
+     abgeschnittenen Text samt echter horizontaler Scrollbar - das
+     Chromium-eigene Text-Autosizing/Font-Boosting (vergrößert Text
+     automatisch, wenn ein schmales Fenster NICHT als echtes Mobilgerät
+     erkannt wird) griff dort trotz vorhandenem
+     `<meta name="viewport" content="width=device-width, ...">` in
+     dieser speziellen Kommandozeilen-Konfiguration. text-size-adjust
+     deaktiviert dieses Boosting explizit - hat auf normale
+     Desktop-Darstellung keinerlei Effekt, wirkt ausschließlich gegen
+     genau dieses automatische Hochskalieren. */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+  /* ================= HOME V1.1 — narrative sections ================= */
+  /* HOME Visual V4 (Redesign-Schritt 8, 18. August 2026): großflächiger
+     Tonwert-Rhythmus zwischen den HOME-Sektionen (Auftrag Abschnitt 10)
+     — mindestens drei klar unterscheidbare Stufen ohne 1px-Divider als
+     einzige Trennung. Alle Werte HOME-lokal (dieses <style>), betreffen
+     keine andere Seite. */
+  #home-about { background: var(--black); border-bottom: none; }
+  #home-pulse { background: var(--anthracite); border-bottom: none; }
+  #home-discover { background: var(--black); border-bottom: none; }
+  #home-story { background: var(--anthracite); border-bottom: none; }
+
+  .home-about-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 380px);
+    gap: 3.5rem;
+    align-items: center;
+  }
+  .home-about-text h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.9rem, 3.8vw, 2.6rem);
+    letter-spacing: 0.01em;
+    margin-bottom: 1.5rem;
+    max-width: 22ch;
+  }
+  .home-about-text .body-copy { max-width: 58ch; }
+  /* Redesign-Schritt 11: #adb6be war ein Rest aus der dunklen
+     Vor-Master-Style-Palette (heller Blaugrau-Ton, gedacht für Text auf
+     dunklem Grund) und wurde bei der Hell-Migration nie aktualisiert -
+     auf dem jetzt hellen Hintergrund praktisch unlesbar (~1.3:1
+     Kontrast). Jetzt Navy (--white) wie der Rest der Seite, WCAG-AA
+     weit über 4.5:1. Schriftgröße von 1.02rem auf 1.15rem (~18px,
+     +13%) - Auftrag verlangt mindestens +10%, Zielkorridor 17-18px. */
+  .body-copy p {
+    margin: 0 0 1.05rem;
+    color: var(--white);
+    font-size: 1.15rem;
+    line-height: 1.68;
+  }
+  .body-copy p:last-child { margin-bottom: 0; }
+
+  /* Prozesslinie (Idee -> Bauen -> Testen -> ...) — grösser, als klare
+     vertikale Linie statt kleiner verlorener Zeilen-Umbrüche. */
+  .process-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    font-family: ui-monospace, monospace;
+    font-size: 0.86rem;
+    letter-spacing: 0.06em;
+    border-left: 2px solid var(--line-strong);
+    padding-left: 1.4rem;
+  }
+  .process-flow .arch-node {
+    padding: 0.55rem 0;
+    border: none;
+    background: none;
+    color: var(--ice);
+    font-weight: 500;
+  }
+  .process-flow .arch-node.emphasis { color: var(--cyan); }
+  .process-flow .arch-arrow {
+    display: block;
+    color: var(--line-strong);
+    padding: 0.1rem 0;
+    transform: rotate(90deg) translateX(-2px);
+    transform-origin: left center;
+    width: fit-content;
+    line-height: 1;
+  }
+  @media (max-width: 900px) {
+    .home-about-grid { grid-template-columns: 1fr; }
+    .process-flow { flex-direction: row; flex-wrap: wrap; margin-top: 1rem; border-left: none; padding-left: 0; gap: 0; }
+    .process-flow .arch-arrow { transform: none; padding: 0 0.5rem; }
+  }
+
+  .pulse-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.3rem;
+  }
+  .pulse-card {
+    border-radius: 10px;
+    background: var(--anthracite);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-soft);
+    padding: 1.4rem 1.5rem;
+  }
+  .pulse-kicker {
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    color: var(--cyan-dim);
+  }
+  .pulse-card h3 { margin-top: 0.55rem; font-size: 1rem; font-weight: 600; }
+  .pulse-card p { margin: 0.6rem 0 0; color: var(--muted); font-size: 0.88rem; line-height: 1.55; }
+
+  .discover-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-flow: dense;
+    gap: 1.1rem;
+  }
+  .discover-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    border-radius: 11px;
+    background: var(--anthracite);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .discover-card:hover { border-color: var(--cyan-dim); transform: translateY(-2px); }
+  /* Redesign-Schritt 11: reale, bereits vorhandene Seitenmotive als
+     Teaser-Grafik (keine neuen Assets) - "reduzierter als auf den
+     Unterseiten, aber nicht zu kleinen Icons degradiert" (Auftrag
+     Abschnitt 4). Volle Kartenbreite, fester Bild-Ausschnitt oben. */
+  .discover-card-art {
+    height: 148px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .discover-card-art img { width: 100%; height: 100%; object-fit: cover; object-position: center 15%; }
+  .discover-card.emphasis .discover-card-art { height: 260px; }
+  .discover-card .t,
+  .discover-card .claim,
+  .discover-card .d { padding-left: 1.6rem; padding-right: 1.6rem; }
+  .discover-card .t { margin-top: 1.4rem; }
+  .discover-card .d { padding-bottom: 1.5rem; }
+  .discover-card .t {
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+  }
+  .discover-card .claim {
+    margin-top: 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.35;
+  }
+  .discover-card .d { margin-top: 0.6rem; color: var(--muted); font-size: 0.86rem; line-height: 1.55; }
+  .discover-card.emphasis {
+    grid-column: span 2;
+    grid-row: span 2;
+    background: linear-gradient(165deg, rgba(20,163,199,0.07), var(--panel) 55%);
+    border-color: rgba(20, 163, 199, 0.3);
+  }
+  .discover-card.emphasis .t,
+  .discover-card.emphasis .claim,
+  .discover-card.emphasis .d { padding-left: 1.9rem; padding-right: 1.9rem; }
+  .discover-card.emphasis .t { margin-top: 1.7rem; }
+  .discover-card.emphasis .d { padding-bottom: 1.8rem; }
+  .discover-card.emphasis .claim { font-size: 1.4rem; }
+  @media (max-width: 900px) {
+    .discover-grid { grid-template-columns: repeat(2, 1fr); }
+    .discover-card.emphasis { grid-column: span 2; grid-row: span 1; }
+  }
+  @media (max-width: 560px) {
+    .discover-grid { grid-template-columns: 1fr; }
+    .discover-card.emphasis { grid-column: span 1; }
+  }
+
+  .home-story-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 280px);
+    gap: 3rem;
+    align-items: start;
+  }
+  .home-story-text h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+    margin-bottom: 1.3rem;
+    max-width: 24ch;
+  }
+  .story-cta {
+    display: inline-block;
+    margin-top: 1.2rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.82rem;
+    color: var(--cyan);
+    text-decoration: none;
+  }
+  .story-cta:hover { text-decoration: underline; }
+  .story-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    font-family: ui-monospace, monospace;
+    font-size: 0.74rem;
+    letter-spacing: 0.05em;
+  }
+  .story-timeline .arch-node { width: fit-content; margin-bottom: 0.5rem; }
+  .story-timeline .arch-arrow { display: block; padding: 0 0 0.5rem 0.7rem; transform: rotate(90deg) translateX(-4px); width: fit-content; }
+  @media (max-width: 900px) {
+    .home-story-grid { grid-template-columns: 1fr; }
+    .story-timeline { flex-direction: row; flex-wrap: wrap; }
+    .story-timeline .arch-node { margin-bottom: 0; }
+    .story-timeline .arch-arrow { transform: none; padding: 0 0.5rem; }
+  }
+
+  .home-ask {
+    background: linear-gradient(180deg, var(--panel-raised), var(--anthracite));
+  }
+  .home-ask-inner { max-width: 56ch; text-align: center; margin: 0 auto; }
+  .home-ask h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    font-weight: 700;
+    font-size: clamp(1.7rem, 3.6vw, 2.3rem);
+  }
+  .home-ask-sub { margin-top: 0.5rem; font-size: 1.05rem; color: var(--ice); }
+  .home-ask .body-copy { margin: 1.3rem 0; }
+  .home-ask .body-copy p { text-align: left; }
+
+  /* ================= DEV STATUS ================= */
+
+  .status-panel {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .status-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.9rem 1.3rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.92rem;
+  }
+  .status-row:last-child { border-bottom: none; }
+  .status-row .name { font-weight: 500; }
+  .status-tag {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+  }
+  .status-tag .d { width: 7px; height: 7px; border-radius: 50%; }
+
+  .focus-note {
+    margin-top: 1.4rem;
+    padding: 1.1rem 1.3rem;
+    border-left: 2px solid var(--cyan-dim);
+    background: rgba(20, 163, 199, 0.04);
+    border-radius: 0 8px 8px 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  .focus-note .eyebrow { display: block; margin-bottom: 0.4rem; }
+
+  /* ================= KNOWLEDGE (HOME-Teaser) ================= */
+  /* MASTER STYLE 1:1 (Redesign-Schritt 13, design-reference/04_KNOWLEDGE.png):
+     KNOWLEDGE hat jetzt eine echte eigene Seite (/knowledge/). Dieser
+     HOME-Abschnitt ist bewusst nur noch ein kompakter Teaser (Titel +
+     Tag-Cloud + Link), analog zum "Aktuell bei J.A.R.V.I.S."-Teaser
+     weiter oben. Die Konzept-Flusslinie, das Wissenskern-Bild und die
+     volle Erkenntnis-/Themen-Struktur leben jetzt ausschließlich auf
+     der eigenen Seite. */
+  .tag-cloud { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+  .tag-pill {
+    font-family: ui-monospace, monospace;
+    font-size: 0.76rem;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    padding: 0.42rem 0.9rem;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .tag-pill:hover { color: var(--white); border-color: var(--line-strong); }
+
+  /* ================= OBSERVATIONS (Collective Knowledge, Slice 1) ================= */
+
+  .obs-form-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    padding: 1.2rem 1.3rem;
+    margin-bottom: 1.8rem;
+  }
+  .obs-field {
+    display: flex; flex-direction: column; gap: 0.35rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 0.7rem;
+  }
+  .obs-field textarea {
+    background: var(--panel-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    color: var(--white);
+    font-family: inherit;
+    font-size: 0.88rem;
+    padding: 0.6rem 0.75rem;
+    resize: vertical;
+    min-height: 5.2em;
+  }
+  .obs-field input[type="url"] {
+    background: var(--panel-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    color: var(--white);
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 0.55rem 0.75rem;
+  }
+  .obs-field textarea:focus-visible, .obs-field input:focus-visible {
+    outline: 2px solid var(--cyan-dim); outline-offset: 1px;
+  }
+  .obs-char-count {
+    font-family: ui-monospace, monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: right;
+    margin-top: -0.4rem;
+    margin-bottom: 0.7rem;
+  }
+  .obs-char-count.is-over { color: var(--sem-error); }
+  .obs-source-row {
+    display: flex; flex-wrap: wrap; gap: 1.2rem;
+    font-size: 0.85rem;
+    color: var(--ice);
+    margin-bottom: 0.7rem;
+  }
+  .obs-source-row label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+  .obs-submit {
+    font-family: ui-monospace, monospace;
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    color: var(--black);
+    background: var(--cyan);
+    border: none;
+    border-radius: 7px;
+    padding: 0.6rem 1.1rem;
+    cursor: pointer;
+  }
+  .obs-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .obs-field textarea:disabled, .obs-field input:disabled { opacity: 0.5; cursor: not-allowed; }
+  .obs-status { margin-top: 0.7rem; font-size: 0.78rem; color: var(--muted); min-height: 1em; }
+  .obs-status.is-error { color: var(--sem-error); }
+  .obs-status.is-ok { color: var(--cyan); }
+  .obs-auth-required { margin-bottom: 1.8rem; font-size: 0.85rem; color: var(--muted); }
+  .obs-auth-required button {
+    color: var(--cyan);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0;
+  }
+
+  .obs-list { display: flex; flex-direction: column; gap: 0.8rem; }
+  .obs-card {
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--panel);
+    padding: 1.1rem 1.3rem;
+  }
+  .obs-body {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--white);
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+  .obs-meta {
+    display: flex; align-items: center; gap: 0.9rem;
+    margin-top: 0.7rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+  .obs-meta a { color: var(--cyan); text-decoration: none; }
+  .obs-meta a:hover { text-decoration: underline; }
+  .obs-empty {
+    color: var(--muted);
+    font-size: 0.88rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: 9px;
+    padding: 1.3rem;
+    text-align: center;
+  }
+
+  .obs-reactions {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem;
+    margin-top: 0.7rem;
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--line);
+  }
+  .obs-reaction-counts {
+    display: flex; align-items: center; gap: 0.7rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.74rem;
+    color: var(--muted);
+  }
+  .obs-count-confirm { color: var(--st-active); }
+  .obs-count-contradict { color: var(--muted); }
+  .obs-react-btn {
+    font-size: 0.76rem;
+    color: var(--ice);
+    background: var(--panel-raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 100px;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  }
+  .obs-react-btn:hover { border-color: var(--cyan-dim); }
+  .obs-react-btn.is-active {
+    color: var(--cyan);
+    border-color: rgba(20, 163, 199, 0.5);
+    background: rgba(20, 163, 199, 0.08);
+  }
+  .obs-react-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .obs-reaction-hint { font-size: 0.76rem; color: var(--muted); }
+
+  /* ================= NEWS ================= */
+
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.1rem;
+  }
+  .news-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel);
+    padding: 1.4rem 1.5rem;
+  }
+  .news-cat {
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+  }
+  .news-card h3 {
+    margin-top: 0.6rem;
+    font-size: 1.08rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .news-meta {
+    margin-top: 0.5rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .news-card p { margin: 0.8rem 0 0; color: var(--muted); font-size: 0.88rem; }
+  .news-why {
+    margin-top: 0.7rem;
+    font-size: 0.85rem;
+    color: var(--ice);
+    padding-left: 0.8rem;
+    border-left: 2px solid var(--cyan-dim);
+  }
+  .news-link {
+    display: inline-block; margin-top: 1rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.74rem;
+    color: var(--cyan);
+    text-decoration: none;
+  }
+  .news-link:hover { text-decoration: underline; }
+
+  /* ================= LIVE ACTIVITY ================= */
+
+  .live-strip {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--panel), var(--anthracite));
+    padding: 1.5rem 1.6rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.4rem;
+  }
+  .live-item .n {
+    font-family: ui-monospace, monospace;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--cyan);
+    font-variant-numeric: tabular-nums;
+  }
+  .live-item .l {
+    margin-top: 0.3rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark"></span>J.A.R.V.I.S.</div>
+    <!-- V1-Hauptnavigation: exakt sieben inhaltliche Punkte, siehe
+         WEBSITE_ARCHITECTURE_V1.md Abschnitt 1. "Beobachtungen" ist
+         bewusst kein Hauptnavigationspunkt mehr - die bestehende
+         Observation-Section bleibt unveraendert im Seiteninhalt
+         erreichbar (Anchor/Scroll), nur ohne eigenen Nav-Eintrag. -->
+    <nav class="nav-links" id="main-nav" aria-label="Hauptnavigation">
+      <a href="./" class="current" data-i18n="nav.home">HOME</a>
+      <a href="../project/" data-i18n="nav.project">PROJECT</a>
+      <a href="../signal/" data-i18n="nav.signal">SIGNAL</a>
+      <a href="../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a>
+      <a href="../lab/" data-i18n="nav.lab">LAB</a>
+      <a href="../discuss/" data-i18n="nav.discuss">DISCUSS</a>
+      <a href="../ask/" id="nav-ask-jarvis" data-i18n="ask.btn">ASK J.A.R.V.I.S.</a>
+    </nav>
+    <button
+      type="button"
+      class="nav-toggle"
+      id="nav-toggle"
+      aria-controls="main-nav"
+      aria-expanded="false"
+      aria-label="Hauptmenü"
+    ><span class="nav-toggle-bar" aria-hidden="true"></span></button>
+    <!-- Account/Utility: bewusst KEINE eigene <nav> (weder "Login" noch
+         die Sprachumschaltung/Online-Anzeige sind Seitennavigation) -
+         siehe WEBSITE_ARCHITECTURE_V1.md Abschnitt 1, "Account-/Utility-
+         Funktionen gehoeren nicht in die Hauptnavigation". -->
+    <div class="nav-actions" aria-label="Konto und Einstellungen">
+      <div class="lang-toggle" id="lang-toggle">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
+      </div>
+      <div class="search-hint"><span data-i18n="nav.search">SEARCH</span> <kbd>⌘K</kbd></div>
+      <a href="#" class="login-btn" id="nav-login-btn" data-i18n="nav.login">LOGIN</a>
+      <div class="online-pill"><span class="dot-live"></span><span data-i18n="nav.online">ONLINE</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+<header class="hero" id="home">
+  <div class="wrap hero-inner">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow hero-eyebrow" data-i18n="hero.eyebrow">J.A.R.V.I.S. NETWORK · A PUBLIC AI EXPERIMENT</span>
+        <div class="status-pill"><span class="dot-live"></span><span data-i18n="hero.status">J.A.R.V.I.S. NETWORK ONLINE</span></div>
+        <h1 data-i18n="hero.h1">J.A.R.V.I.S. NETWORK</h1>
+        <p class="tagline" data-i18n="hero.tagline">A real experiment in how far artificial intelligence can go.</p>
+        <div class="intro" id="hero-intro"></div>
+        <div class="hero-ctas">
+          <a href="../project/" class="cta primary" data-i18n="hero.cta1">DISCOVER J.A.R.V.I.S.</a>
+          <a href="../ask/" class="cta ghost" data-i18n="hero.cta2">ASK J.A.R.V.I.S.</a>
+        </div>
+        <a href="#status" class="hero-status-link" data-i18n="hero.statusLink">See the current development status →</a>
+
+        <!-- Master Style Fakten-Leiste (design-reference/01_START_COVER.png,
+             Abschnitt "bottom stat strip"): bewusst KEINE erfundenen
+             Kennzahlen (Mitglieder/Uptime/Signale) - nur real belegbare
+             Fakten der Website-Struktur bzw. ehrliche Zustandslabel
+             (Auftrag Abschnitt 12/MASTER_STYLE.md "1:1 bedeutet NICHT
+             Fake-Daten"). -->
+        <dl class="hero-fact-strip">
+          <div class="hero-fact">
+            <dt data-i18n="hero.fact1Label">AREAS</dt>
+            <dd data-i18n="hero.fact1Value">5 active</dd>
+          </div>
+          <div class="hero-fact">
+            <dt data-i18n="hero.fact2Label">DEVELOPMENT</dt>
+            <dd data-i18n="hero.fact2Value">Publicly documented</dd>
+          </div>
+          <div class="hero-fact">
+            <dt data-i18n="hero.fact3Label">COMMUNITY</dt>
+            <dd data-i18n="hero.fact3Value">Just getting started</dd>
+          </div>
+          <div class="hero-fact">
+            <dt data-i18n="hero.fact4Label">STATUS</dt>
+            <dd data-i18n="hero.fact4Value">Live</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="hero-visual">
+        <!-- Zentrales KI-Kopf-Motiv (design-reference/01_START_COVER.png):
+             echtes, vom Besitzer bereitgestelltes Bildasset statt der
+             vorherigen abstrakten SVG-Ersatzlösung - rein dekorativ
+             (alt=""), keine Information hängt nur an diesem Bild. -->
+        <img class="hero-portrait" src="../assets/img/hero-ai-head.png" alt="" aria-hidden="true" width="1086" height="1448" />
+
+        <div class="hero-core-badge" aria-hidden="true">
+          <span class="hero-core-badge-ring"></span>
+          <span class="hero-core-badge-text">J.A.R.V.I.S.<br>CORE</span>
+        </div>
+
+        <!-- Reale Status-/Fakten-Panels (Auftrag Abschnitt 2/12) - Inhalte
+             alle real: Live-Status, tatsächlicher aktueller
+             Entwicklungsschwerpunkt, tatsächliche fünf Hauptbereiche. -->
+        <div class="hero-panel hero-panel-status-card">
+          <span class="hero-panel-label" data-i18n="hero.panelStatusLabel">SYSTEM STATUS</span>
+          <div class="hero-panel-status"><span class="dot-live"></span><span data-i18n="hero.status">J.A.R.V.I.S. NETWORK ONLINE</span></div>
+        </div>
+        <div class="hero-panel hero-panel-mission-card">
+          <span class="hero-panel-label" data-i18n="status.focusLabel">CURRENT DEVELOPMENT FOCUS</span>
+          <p class="hero-panel-text" data-i18n="status.focusText">Stabilizing browser-controlled actions behind an explicit confirmation
+      step, and extending the memory layer so it can hold a task's goal and
+      open questions across a session.</p>
+        </div>
+        <div class="hero-panel hero-panel-modules-card">
+          <span class="hero-panel-label" data-i18n="hero.panelModulesLabel">NETWORK AREAS</span>
+          <ul class="hero-panel-list">
+            <li><a href="../project/" data-i18n="nav.project">PROJECT</a></li>
+            <li><a href="../signal/" data-i18n="nav.signal">SIGNAL</a></li>
+            <li><a href="../knowledge/" data-i18n="nav.knowledge">KNOWLEDGE</a></li>
+            <li><a href="../lab/" data-i18n="nav.lab">LAB</a></li>
+            <li><a href="../discuss/" data-i18n="nav.discuss">DISCUSS</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="block home-about" id="home-about">
+  <div class="wrap home-about-grid">
+    <div class="home-about-text">
+      <h2 data-i18n="homeAbout.title">Not a finished product. A real experiment.</h2>
+      <div class="body-copy" id="home-about-body"></div>
+    </div>
+    <div class="process-flow" id="process-flow" aria-hidden="true"></div>
+  </div>
+</section>
+
+<section class="block home-pulse" id="home-pulse">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="homePulse.eyebrow">CURRENT STATE</span>
+        <h2 data-i18n="homePulse.title">Right now at J.A.R.V.I.S.</h2>
+      </div>
+    </div>
+    <div class="pulse-grid" id="pulse-grid"></div>
+    <a class="story-cta" href="../aktuell/" style="display:inline-block; margin-top:1.3rem;" data-i18n="homePulse.allUpdates">See all updates →</a>
+  </div>
+</section>
+
+<section class="block home-discover" id="home-discover">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="homeDiscover.eyebrow">EXPLORE</span>
+        <h2 data-i18n="homeDiscover.title">Discover the Network</h2>
+      </div>
+    </div>
+    <div class="discover-grid" id="discover-grid"></div>
+  </div>
+</section>
+
+<section class="block home-story" id="home-story">
+  <div class="wrap home-story-grid">
+    <div class="home-story-text">
+      <h2 data-i18n="homeStory.title">It was only supposed to be an assistant.</h2>
+      <div class="body-copy" id="home-story-body"></div>
+      <a href="project/geschichte/" class="story-cta" id="home-story-cta" data-i18n="homeStory.cta">The story of J.A.R.V.I.S. →</a>
+    </div>
+    <div class="story-timeline" id="story-timeline" aria-hidden="true"></div>
+  </div>
+</section>
+
+<section class="block home-ask" id="home-ask">
+  <div class="wrap home-ask-inner">
+    <h2 data-i18n="homeAsk.title">Read enough about J.A.R.V.I.S.?</h2>
+    <p class="home-ask-sub" data-i18n="homeAsk.sub">Ask him yourself.</p>
+    <div class="body-copy" id="home-ask-body"></div>
+    <a href="../ask/" class="cta primary" id="home-ask-cta" data-i18n="homeAsk.cta">ASK J.A.R.V.I.S. →</a>
+  </div>
+</section>
+
+<section class="block" id="status">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="status.eyebrow">TRANSPARENCY</span>
+        <h2 data-i18n="status.title">DEVELOPMENT STATUS</h2>
+        <p class="sub" data-i18n="status.sub">What's actually being worked on right now — including the parts that aren't finished yet.</p>
+      </div>
+    </div>
+    <div class="status-panel" id="status-panel"></div>
+    <div class="focus-note">
+      <span class="eyebrow mono" data-i18n="status.focusLabel">CURRENT DEVELOPMENT FOCUS</span>
+      <span data-i18n="status.focusText">Stabilizing browser-controlled actions behind an explicit confirmation
+      step, and extending the memory layer so it can hold a task's goal and
+      open questions across a session.</span>
+    </div>
+  </div>
+</section>
+
+<!-- DISCUSS hat jetzt eine echte eigene Seite (/discuss/, Redesign-
+     Schritt 15) - dieser HOME-Abschnitt ist bewusst nur noch ein
+     kompakter Teaser, der dorthin verlinkt (analog zu den KNOWLEDGE-/
+     LAB-Teasern). Die vorher hier gezeigten cat-grid/disc-list-Inhalte
+     trugen bereits den PREVIEW-CONTENT-Hinweis (also selbst als
+     nicht-final markiert) und werden nicht mehr als HOME-Inhalt
+     wiederverwendet - die echte Seite zeigt stattdessen den echten,
+     aktuell leeren discuss_topics/discuss_categories-Stand. -->
+<section class="block home-pulse" id="discuss">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="community.eyebrow">DISCUSS</span>
+        <h2 data-i18n="community.title">Discuss. Question. Build. Learn.</h2>
+        <p class="sub" data-i18n="community.sub">Other opinions explicitly welcome.</p>
+      </div>
+    </div>
+    <a class="story-cta" href="../discuss/" style="display:inline-block; margin-top:0.6rem;" data-i18n="community.cta">Join the Discussion →</a>
+  </div>
+</section>
+
+<section class="block" id="observations">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="obs.eyebrow">COLLECTIVE KNOWLEDGE</span>
+        <h2 data-i18n="obs.title">Observations</h2>
+        <p class="sub" data-i18n="obs.sub">Real experiences from real use of local, hybrid and external AI — the first layer of collective knowledge.</p>
+      </div>
+    </div>
+
+    <div class="obs-form-card" id="obs-form-card">
+      <form id="obs-form" novalidate>
+        <label class="obs-field">
+          <span data-i18n="obs.bodyLabel">Your observation</span>
+          <textarea id="obs-body" maxlength="4000" required></textarea>
+        </label>
+        <div class="obs-char-count" id="obs-char-count">0 / 4000</div>
+        <div class="obs-source-row">
+          <label><input type="radio" name="obs-source-kind" value="own_experience" checked /><span data-i18n="obs.sourceOwn">Own experience</span></label>
+          <label><input type="radio" name="obs-source-kind" value="external_link" /><span data-i18n="obs.sourceExternal">External source</span></label>
+        </div>
+        <label class="obs-field" id="obs-url-field" hidden>
+          <span data-i18n="obs.urlLabel">Source URL</span>
+          <input type="url" id="obs-url" data-i18n-placeholder="obs.urlPlaceholder" placeholder="https://…" />
+        </label>
+        <button type="submit" class="obs-submit" id="obs-submit" data-i18n="obs.submit">Share observation</button>
+        <p class="obs-status" id="obs-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+    <div class="obs-auth-required" id="obs-auth-required" hidden>
+      <span data-i18n="obs.authRequired">Sign in to share an observation.</span>
+      <button type="button" id="obs-auth-login-link" data-i18n="obs.authRequiredLink">Sign in</button>
+    </div>
+
+    <div class="obs-list" id="obs-list"></div>
+    <p class="obs-empty" id="obs-empty" hidden data-i18n="obs.empty">No observations shared yet.</p>
+  </div>
+</section>
+
+<!-- KNOWLEDGE hat jetzt eine echte eigene Seite (/knowledge/, Redesign-
+     Schritt 13) - dieser HOME-Abschnitt ist bewusst nur noch ein
+     kompakter Teaser, der dorthin verlinkt (Auftrag: "HOME-#knowledge
+     nur als kleine Vorschau beibehalten"), analog zum bestehenden
+     "Aktuell bei J.A.R.V.I.S."-Teaser weiter oben, der auf /aktuell/
+     verlinkt. -->
+<section class="block home-pulse" id="knowledge">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="knowledge.eyebrow">AI KNOWLEDGE</span>
+        <h2 data-i18n="knowledge.title">UNDERSTAND AI</h2>
+        <p class="sub" data-i18n="knowledge.sub">Articles connect into a growing, interactive map of AI concepts.</p>
+      </div>
+    </div>
+    <div class="tag-cloud" id="tag-cloud"></div>
+    <a class="story-cta" href="../knowledge/" style="display:inline-block; margin-top:1.3rem;" data-i18n="knowledge.cta">Discover Knowledge →</a>
+  </div>
+</section>
+
+<section class="block" id="signal">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="news.eyebrow">SIGNAL</span>
+        <h2 data-i18n="news.title">AI SIGNAL</h2>
+        <p class="sub" data-i18n="news.sub">Not just headlines — why it matters, and where the community is discussing it.</p>
+      </div>
+      <span class="preview-tag" data-i18n="tag.preview">PREVIEW CONTENT</span>
+    </div>
+    <div class="news-grid" id="news-grid"></div>
+  </div>
+</section>
+
+<!-- LAB hat jetzt eine echte eigene Seite (/lab/, Redesign-Schritt 14) -
+     dieser HOME-Abschnitt ist bewusst nur noch ein kompakter Teaser, der
+     dorthin verlinkt (analog zu den KNOWLEDGE-/AKTUELL-Teasern). Die
+     vorher hier gezeigte sechsteilige Experiment-Liste trug bereits den
+     PREVIEW-CONTENT-Hinweis (also selbst als nicht-final markiert) und
+     wird nicht mehr als HOME-Inhalt wiederverwendet - die echte Seite
+     zeigt stattdessen den echten, aktuell leeren `lab_entries`-Stand. -->
+<section class="block home-pulse" id="lab">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="lab.eyebrow">AI LAB</span>
+        <h2 data-i18n="lab.title">Experiments at the edge of AI.</h2>
+        <p class="sub" data-i18n="lab.sub">What worked, what's in progress — and what failed, and why.</p>
+      </div>
+    </div>
+    <a class="story-cta" href="../lab/" style="display:inline-block; margin-top:0.6rem;" data-i18n="lab.cta">Explore the Lab →</a>
+  </div>
+</section>
+
+<section class="block" style="border-bottom:none;">
+  <div class="wrap">
+    <div class="block-head">
+      <div>
+        <span class="eyebrow" data-i18n="live.eyebrow">LIVE ACTIVITY</span>
+        <h2 data-i18n="live.title">NETWORK ACTIVITY</h2>
+      </div>
+      <span class="preview-tag" data-i18n="live.tag">PREVIEW DATA — NOT LIVE YET</span>
+    </div>
+    <div class="live-strip" id="live-strip"></div>
+  </div>
+</section>
+</main>
+
+<footer id="about">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:0.8rem;"><span class="mark"></span>J.A.R.V.I.S.</div>
+        <p style="color:var(--muted); font-size:0.86rem; max-width:32ch;" data-i18n="footer.desc">
+          A digital platform for people who want to understand, discuss and
+          build the next generation of intelligent systems.
+        </p>
+        <p class="footer-tagline mono" data-i18n="footer.tagline">Built. Tested. Changed. Tested again.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">PLATFORM</h4>
+        <a href="../project/" data-i18n="footer.project">JARVIS Project</a>
+        <a href="../knowledge/" data-i18n="footer.knowledge">AI Knowledge</a>
+        <a href="../signal/" data-i18n="footer.news">AI Signal</a>
+        <a href="../lab/" data-i18n="footer.lab">AI Lab</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.community">DISCUSS</h4>
+        <a href="../discuss/" data-i18n="footer.discussions">Discussions</a>
+        <a href="../discuss/" data-i18n="footer.models">Models</a>
+        <a href="../discuss/" data-i18n="footer.ideas">Ideas</a>
+        <a href="../discuss/" data-i18n="footer.room">JARVIS Room</a>
+      </div>
+      <div>
+        <h4 data-i18n="footer.about">ABOUT</h4>
+        <a href="#about" data-i18n="footer.aboutProject">About the Project</a>
+        <a href="#about" data-i18n="footer.roadmap">Roadmap</a>
+        <a href="#about" data-i18n="footer.contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© J.A.R.V.I.S. NETWORK — A GROWING AI COMMUNITY</span>
+      <span class="online-pill"><span class="dot-live"></span><span data-i18n="footer.networkOnline">NETWORK ONLINE</span></span>
+    </div>
+  </div>
+</footer>
+
+<div class="login-panel" id="login-panel" role="dialog" aria-modal="true" aria-labelledby="login-panel-title">
+  <div class="head"><span id="login-panel-title" data-i18n="login.title">SIGN IN</span><button id="login-close" aria-label="Close">✕</button></div>
+  <div class="login-tabs" id="login-tabs">
+    <button type="button" class="login-tab active" id="login-tab-signin" data-i18n="login.tabSignin">SIGN IN</button>
+    <button type="button" class="login-tab" id="login-tab-signup" data-i18n="login.tabSignup">SIGN UP</button>
+  </div>
+  <form id="login-form" novalidate>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="login-email" autocomplete="email" required />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.password">Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="login-submit" data-i18n="login.submitSignin">SIGN IN</button>
+    <button type="button" class="login-link" id="login-forgot-link" data-i18n="login.forgotLink">Forgot password?</button>
+  </form>
+  <form id="forgot-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.forgotHint">Enter your email and we'll send you a reset link.</p>
+    <label class="login-field">
+      <span data-i18n="login.email">Email</span>
+      <input type="email" id="forgot-email" autocomplete="email" required />
+    </label>
+    <button type="submit" class="login-submit" id="forgot-submit" data-i18n="login.forgotSubmit">SEND RESET LINK</button>
+    <button type="button" class="login-link" id="forgot-back-link" data-i18n="login.backToSignin">Back to sign in</button>
+  </form>
+  <form id="recovery-form" novalidate hidden>
+    <p class="login-hint" data-i18n="login.recoveryHint">Enter a new password for your account.</p>
+    <label class="login-field">
+      <span data-i18n="login.newPassword">New password</span>
+      <input type="password" id="recovery-password" autocomplete="new-password" required minlength="6" />
+    </label>
+    <label class="login-field">
+      <span data-i18n="login.confirmPassword">Confirm password</span>
+      <input type="password" id="recovery-password-confirm" autocomplete="new-password" required minlength="6" />
+    </label>
+    <button type="submit" class="login-submit" id="recovery-submit" data-i18n="login.recoverySubmit">SET NEW PASSWORD</button>
+  </form>
+  <p class="login-status" id="login-status" role="status" aria-live="polite"></p>
+</div>
+
+<button class="ask-btn" id="ask-toggle"><span class="ring"></span><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span></button>
+<div class="ask-panel" id="ask-panel">
+  <div class="head"><span data-i18n="ask.btn">ASK J.A.R.V.I.S.</span><button id="ask-close" aria-label="Close">✕</button></div>
+  <div class="ask-examples" id="ask-examples"></div>
+  <div class="ask-input-row">
+    <input type="text" id="ask-input" maxlength="2000" data-i18n-placeholder="ask.placeholder" placeholder="Ask about anything on this platform…" />
+    <button type="button" id="ask-send" data-i18n="ask.send">ASK</button>
+  </div>
+  <div class="ask-char-count" id="ask-char-count">0 / 2000</div>
+  <div class="ask-status" id="ask-status" role="status" aria-live="polite" hidden><span class="spinner" id="ask-status-spinner"></span><span id="ask-status-text"></span></div>
+  <div class="ask-auth-required" id="ask-auth-required" hidden>
+    <span data-i18n="ask.authRequired">Sign in to ask J.A.R.V.I.S.</span>
+    <button type="button" id="ask-auth-login-link" data-i18n="ask.authRequiredLink">Sign in</button>
+  </div>
+
+  <div class="ask-scroll" id="ask-scroll">
+    <div class="ask-answer-section">
+      <div class="ask-section-label" data-i18n="ask.sectionAnswer">ANSWER</div>
+      <div class="ask-answer is-placeholder" id="ask-answer" data-i18n="ask.answerPlaceholder">Here's where J.A.R.V.I.S.'s answer will appear.</div>
+    </div>
+
+    <details class="ask-details" id="ask-details" hidden>
+      <summary data-i18n="ask.showDetails">Show research details</summary>
+      <div class="ask-details-body" id="ask-details-body"></div>
+    </details>
+
+    <div class="ask-sources-section" id="ask-sources-section" hidden>
+      <span class="ask-sources-label" id="ask-sources-label"></span><span class="ask-sources" id="ask-sources"></span>
+    </div>
+  </div>
+
+  <p class="ask-note" data-i18n="ask.note">Ask a question and get a real, cited answer from J.A.R.V.I.S.</p>
+</div>
+
+<script src="../site-chrome.js"></script>
+<script src="../ask-jarvis-client.js"></script>
+<script>
+  // ==================================================================
+  // HOME-page-only content, rendering, and the Collective Knowledge
+  // Observation/Reaction feature. Everything global (i18n engine,
+  // mobile nav, login/logout, Ask JARVIS wiring, Supabase config/REST
+  // helpers) comes from site-chrome.js - see Redesign-Schritt 4A.1
+  // (WEBSITE_ARCHITECTURE_V1.md) and the accompanying report for the
+  // full classification of what is shared vs. page-specific.
+  // Observation/Reaction code stays here deliberately: it is HOME-only
+  // and must not become global chrome just because it used to sit in
+  // the same copied block - PROJECT does not load it.
+  // ==================================================================
+  SiteChrome.registerStrings({
+    "hero.eyebrow": { en: "J.A.R.V.I.S. NETWORK · A PUBLIC AI EXPERIMENT", de: "J.A.R.V.I.S. NETWORK · EIN ÖFFENTLICHES KI-EXPERIMENT" },
+    "hero.status": { en: "J.A.R.V.I.S. NETWORK ONLINE", de: "J.A.R.V.I.S. NETZWERK ONLINE" },
+    "hero.h1": { en: "J.A.R.V.I.S. NETWORK", de: "J.A.R.V.I.S. NETWORK" },
+    "hero.tagline": { en: "A real experiment in how far artificial intelligence can go.", de: "Ein reales Experiment darüber, wie weit künstliche Intelligenz gehen kann." },
+    "hero.cta1": { en: "DISCOVER J.A.R.V.I.S.", de: "J.A.R.V.I.S. ENTDECKEN" },
+    "hero.cta2": { en: "ASK J.A.R.V.I.S.", de: "J.A.R.V.I.S. FRAGEN" },
+    "hero.statusLink": { en: "See the current development status →", de: "Aktuellen Entwicklungsstand ansehen →" },
+    "hero.fact1Label": { en: "AREAS", de: "BEREICHE" },
+    "hero.fact1Value": { en: "5 active", de: "5 aktiv" },
+    "hero.fact2Label": { en: "DEVELOPMENT", de: "ENTWICKLUNG" },
+    "hero.fact2Value": { en: "Publicly documented", de: "Öffentlich dokumentiert" },
+    "hero.fact3Label": { en: "COMMUNITY", de: "COMMUNITY" },
+    "hero.fact3Value": { en: "Just getting started", de: "Steht noch am Anfang" },
+    "hero.fact4Label": { en: "STATUS", de: "STATUS" },
+    "hero.fact4Value": { en: "Live", de: "Live" },
+    "hero.panelStatusLabel": { en: "SYSTEM STATUS", de: "SYSTEM-STATUS" },
+    "hero.panelModulesLabel": { en: "NETWORK AREAS", de: "NETWORK-BEREICHE" },
+    "homeAbout.title": { en: "Not a finished product. A real experiment.", de: "Kein fertiges Produkt. Ein echtes Experiment." },
+    "homePulse.eyebrow": { en: "CURRENT STATE", de: "AKTUELL" },
+    "homePulse.title": { en: "Right now at J.A.R.V.I.S.", de: "Aktuell bei J.A.R.V.I.S." },
+    "homePulse.allUpdates": { en: "See all updates →", de: "Alle Updates ansehen →" },
+    "homeDiscover.eyebrow": { en: "EXPLORE", de: "ENTDECKEN" },
+    "homeDiscover.title": { en: "Discover the Network", de: "Entdecke das Network" },
+    "homeStory.title": { en: "It was only supposed to be an assistant.", de: "Eigentlich sollte es nur ein Assistent werden." },
+    "homeStory.cta": { en: "The story of J.A.R.V.I.S. →", de: "Die Geschichte von J.A.R.V.I.S. →" },
+    "homeAsk.title": { en: "Read enough about J.A.R.V.I.S.?", de: "Genug über J.A.R.V.I.S. gelesen?" },
+    "homeAsk.sub": { en: "Ask him yourself.", de: "Fragt ihn selbst." },
+    "homeAsk.cta": { en: "ASK J.A.R.V.I.S. →", de: "J.A.R.V.I.S. FRAGEN →" },
+    "status.eyebrow": { en: "TRANSPARENCY", de: "TRANSPARENZ" },
+    "status.title": { en: "DEVELOPMENT STATUS", de: "ENTWICKLUNGSSTATUS" },
+    "status.sub": { en: "What's actually being worked on right now — including the parts that aren't finished yet.", de: "Woran gerade wirklich gearbeitet wird – auch an den Teilen, die noch nicht fertig sind." },
+    "status.focusLabel": { en: "CURRENT DEVELOPMENT FOCUS", de: "AKTUELLER ENTWICKLUNGSSCHWERPUNKT" },
+    "status.focusText": { en: "Stabilizing browser-controlled actions behind an explicit confirmation step, and extending the memory layer so it can hold a task's goal and open questions across a session.", de: "Browsergesteuerte Aktionen hinter einer ausdrücklichen Bestätigung stabilisieren, und die Gedächtnisebene so erweitern, dass sie Ziel und offene Fragen einer Aufgabe über eine Sitzung hinweg festhalten kann." },
+    "community.eyebrow": { en: "DISCUSS", de: "DISKUTIEREN" },
+    "community.title": { en: "Discuss. Question. Build. Learn.", de: "Diskutieren. Hinterfragen. Bauen. Lernen." },
+    "community.sub": { en: "Other opinions explicitly welcome.", de: "Andere Meinungen ausdrücklich erwünscht." },
+    "community.cta": { en: "Join the Discussion →", de: "Zur Diskussion →" },
+    "tag.preview": { en: "PREVIEW CONTENT", de: "VORSCHAU-INHALT" },
+    "knowledge.eyebrow": { en: "AI KNOWLEDGE", de: "KI-WISSEN" },
+    "knowledge.title": { en: "UNDERSTAND AI", de: "KI VERSTEHEN" },
+    "knowledge.sub": { en: "Articles connect into a growing, interactive map of AI concepts.", de: "Artikel verbinden sich zu einer wachsenden, interaktiven Landkarte der KI-Konzepte." },
+    "knowledge.cta": { en: "Discover Knowledge →", de: "Knowledge entdecken →" },
+    "news.eyebrow": { en: "SIGNAL", de: "SIGNAL" },
+    "news.title": { en: "AI SIGNAL", de: "KI SIGNAL" },
+    "news.sub": { en: "Not just headlines — why it matters, and where the community is discussing it.", de: "Nicht nur Schlagzeilen – warum es wichtig ist, und wo die Community darüber diskutiert." },
+    "lab.eyebrow": { en: "AI LAB", de: "KI LABOR" },
+    "lab.title": { en: "Experiments at the edge of AI.", de: "Experimente am Rand des Machbaren." },
+    "lab.sub": { en: "What worked, what's in progress — and what failed, and why.", de: "Was funktioniert hat, was in Arbeit ist – und was gescheitert ist, und warum." },
+    "lab.cta": { en: "Explore the Lab →", de: "Labor entdecken →" },
+    "live.eyebrow": { en: "LIVE ACTIVITY", de: "LIVE-AKTIVITÄT" },
+    "live.title": { en: "NETWORK ACTIVITY", de: "NETZWERK-AKTIVITÄT" },
+    "live.tag": { en: "PREVIEW DATA — NOT LIVE YET", de: "VORSCHAU-DATEN — NOCH NICHT LIVE" },
+    "nav.observations": { en: "OBSERVATIONS", de: "BEOBACHTUNGEN" },
+    "obs.eyebrow": { en: "COLLECTIVE KNOWLEDGE", de: "COLLECTIVE KNOWLEDGE" },
+    "obs.title": { en: "Observations", de: "Beobachtungen" },
+    "obs.sub": { en: "Real experiences from real use of local, hybrid and external AI — the first layer of collective knowledge.", de: "Echte Erfahrungen aus der echten Nutzung lokaler, hybrider und externer KI — die erste Ebene von gemeinsamem Wissen." },
+    "obs.bodyLabel": { en: "Your observation", de: "Deine Beobachtung" },
+    "obs.sourceOwn": { en: "Own experience", de: "Eigene Erfahrung" },
+    "obs.sourceExternal": { en: "External source", de: "Externe Quelle" },
+    "obs.urlLabel": { en: "Source URL", de: "Quell-URL" },
+    "obs.urlPlaceholder": { en: "https://…", de: "https://…" },
+    "obs.submit": { en: "Share observation", de: "Beobachtung teilen" },
+    "obs.statusSubmitting": { en: "Sharing…", de: "Wird geteilt…" },
+    "obs.statusSuccess": { en: "Shared. Thank you.", de: "Geteilt. Danke." },
+    "obs.errorGeneric": { en: "Something went wrong. Please try again.", de: "Etwas ist schiefgelaufen. Bitte erneut versuchen." },
+    "obs.error.body_required": { en: "Please enter your observation.", de: "Bitte gib deine Beobachtung ein." },
+    "obs.error.body_too_long": { en: "That's too long (max. 4000 characters).", de: "Das ist zu lang (max. 4000 Zeichen)." },
+    "obs.error.url_required": { en: "Please enter the source URL.", de: "Bitte gib die Quell-URL ein." },
+    "obs.error.url_invalid": { en: "Please enter a valid http:// or https:// URL.", de: "Bitte gib eine gültige http:// oder https:// URL ein." },
+    "obs.authRequired": { en: "Sign in to share an observation.", de: "Melde dich an, um eine Beobachtung zu teilen." },
+    "obs.authRequiredLink": { en: "Sign in", de: "Anmelden" },
+    "obs.empty": { en: "No observations shared yet.", de: "Noch keine Beobachtungen geteilt." },
+    "obs.confirmBtn": { en: "I experienced this too", de: "Das habe ich auch erlebt" },
+    "obs.contradictBtn": { en: "Mine was different", de: "Bei mir war das anders" },
+    "obs.reactionsSignInHint": { en: "Sign in to react", de: "Zum Reagieren anmelden" }
+  });
+
+  SiteChrome.setPageTitle({
+    en: "J.A.R.V.I.S. Network — Exploring the Future of Artificial Intelligence",
+    de: "J.A.R.V.I.S. Network — Die Zukunft der Künstlichen Intelligenz erkunden"
+  });
+
+  // Convenience local alias so the large amount of existing HOME
+  // rendering code below (unchanged from before this consolidation
+  // step) doesn't need every t()/currentLang call site rewritten.
+  function t(key) { return SiteChrome.t(key); }
+  var currentLang = SiteChrome.getLang();
+
+  // Hero right-column "system map" is a static inline SVG (see markup
+  // above) as of HOME Visual V4 (Redesign-Schritt 8) - replaces the
+  // previous full-hero animated particle canvas, which scattered ~24-60
+  // random nodes across the entire hero instead of a deliberate,
+  // structured composition (Auftrag Abschnitt 3/5). No JS needed.
+
+  // ==================================================================
+  // Bilingual dynamic content (HOME-only)
+  // ==================================================================
+
+  // HOME V1.1 (WEBSITE_ARCHITECTURE_V1.md, Abschnitt 2.1). Project
+  // development speaks singular ICH/MIR/MEIN (I/my), never WIR/UNS (we);
+  // the English copy stays first-person singular for the same reason.
+  var heroIntroParagraphs = {
+    en: [
+      "J.A.R.V.I.S. began with a fairly simple idea: I wanted to build a personal AI assistant that doesn't just answer, but actually does something.",
+      "Some things already work surprisingly well. Others keep reminding me how much is still ahead of me.",
+      "And that's exactly the development I want to share with you."
+    ],
+    de: [
+      "J.A.R.V.I.S. begann mit einer ziemlich einfachen Idee: Ich wollte einen persönlichen KI-Assistenten bauen, der nicht nur antwortet, sondern tatsächlich etwas kann.",
+      "Einige Dinge funktionieren bereits erstaunlich gut. Andere erinnern mich regelmäßig daran, wie viel noch vor mir liegt.",
+      "Und genau diese Entwicklung möchte ich mit euch teilen."
+    ]
+  };
+
+  var homeAboutParagraphs = {
+    en: [
+      "J.A.R.V.I.S. isn't a finished product I'm presenting to you here in a polished showcase version.",
+      "This site shows how the system actually comes together — with ideas, experiments, successes, mistakes and the occasional detour.",
+      "Some features come together in one evening. Others keep me busy considerably longer than I expected at the start.",
+      "And sometimes I spend several hours finding a bug whose eventual fix is three lines of code. Welcome to software development.",
+      "So I don't just want to show what works, but also what didn't work and what I learned from it."
+    ],
+    de: [
+      "J.A.R.V.I.S. ist kein fertiges Produkt, das ich euch hier in einer Hochglanzversion präsentieren möchte.",
+      "Diese Seite zeigt, wie das System wirklich entsteht – mit Ideen, Experimenten, Erfolgen, Fehlern und gelegentlichen Umwegen.",
+      "Manche Funktionen entstehen an einem Abend. Andere beschäftigen mich erheblich länger, als ich am Anfang erwartet habe.",
+      "Und manchmal verbringe ich mehrere Stunden damit, einen Fehler zu finden, dessen endgültige Lösung aus drei Zeilen Code besteht. Willkommen in der Softwareentwicklung.",
+      "Ich möchte deshalb nicht nur zeigen, was funktioniert, sondern auch, was nicht funktioniert hat und was ich daraus gelernt habe."
+    ]
+  };
+
+  var processFlow = [
+    { en: "IDEA", de: "IDEE" },
+    { en: "BUILD", de: "BAUEN" },
+    { en: "TEST", de: "TESTEN" },
+    { en: "UNDERSTAND", de: "VERSTEHEN" },
+    { en: "IMPROVE", de: "VERBESSERN" },
+    { en: "KNOWLEDGE", de: "WISSEN" }
+  ];
+
+  // Static, belegbare Projektstände (keine erfundenen Zeitstempel) - kein
+  // dynamisches Aktuell-Backend in diesem Schritt, siehe
+  // WEBSITE_ARCHITECTURE_V1.md, Abschnitt 8/12.3 (spätere Arbeit).
+  var homePulse = [
+    {
+      kicker: { en: "IN THE LAB RIGHT NOW", de: "GERADE IM LABOR" },
+      title: { en: "Collective Knowledge", de: "Collective Knowledge" },
+      text: {
+        en: "How can individual experiences connect so that verifiable knowledge eventually emerges from them?",
+        de: "Wie können einzelne Erfahrungen so miteinander verbunden werden, dass daraus irgendwann nachvollziehbare Erkenntnisse entstehen?"
+      }
+    },
+    {
+      kicker: { en: "LATEST SUCCESS", de: "LETZTER ERFOLG" },
+      title: { en: "J.A.R.V.I.S. Network", de: "J.A.R.V.I.S. Network" },
+      text: {
+        en: "The public website can now reach a real local J.A.R.V.I.S., trigger research, and get the answer back.",
+        de: "Die öffentliche Website kann inzwischen einen echten lokalen J.A.R.V.I.S. erreichen, Recherche auslösen und die Antwort wieder zurückliefern."
+      }
+    },
+    {
+      kicker: { en: "WORKING ON THIS", de: "DARAN ARBEITE ICH" },
+      title: { en: "The Network is getting structure.", de: "Das Network bekommt Struktur." },
+      text: {
+        en: "Project, Lab, discussions, observations and Knowledge are getting fixed places and relationships to each other — so the Network doesn't turn into digital clutter.",
+        de: "Project, Lab, Diskussionen, Beobachtungen und Knowledge bekommen feste Plätze und Beziehungen zueinander – damit aus dem Network kein digitaler Salat wird."
+      }
+    },
+    {
+      kicker: { en: "NOT PRETTY YET", de: "NOCH NICHT SO SCHÖN" },
+      title: { en: "Local model quality", de: "Lokale Modellqualität" },
+      text: {
+        en: "Sometimes the local model answers a complex question surprisingly well. Sometimes I want to read the question back to it slowly afterward.",
+        de: "Manchmal beantwortet das lokale Modell eine komplexe Frage erstaunlich gut. Manchmal möchte ich ihm danach die Frage noch einmal langsam vorlesen."
+      }
+    }
+  ];
+
+  var homeDiscover = [
+    {
+      href: "../project/", emphasis: true, img: "../assets/img/project-brain-core.png",
+      t: { en: "PROJECT", de: "PROJECT" },
+      claim: { en: "How J.A.R.V.I.S. is really built.", de: "Wie J.A.R.V.I.S. wirklich gebaut wird." },
+      d: {
+        en: "History, architecture, capabilities and development — from core and memory to agents, browser and hardware.",
+        de: "Geschichte, Architektur, Fähigkeiten und Entwicklung – von Kern und Gedächtnis bis zu Agenten, Browser und Hardware."
+      }
+    },
+    {
+      href: "../signal/", img: "../assets/img/signal-radar.png",
+      t: { en: "SIGNAL", de: "SIGNAL" },
+      claim: { en: "What's happening out there — and why it might be interesting.", de: "Was draußen passiert – und warum es interessant sein könnte." },
+      d: {
+        en: "Models, research, agents, hardware, open source and other developments that could become relevant for J.A.R.V.I.S.",
+        de: "Modelle, Forschung, Agenten, Hardware, Open Source und andere Entwicklungen, die für J.A.R.V.I.S. relevant werden könnten."
+      }
+    },
+    {
+      href: "../knowledge/", img: "../assets/img/knowledge-core.png",
+      t: { en: "KNOWLEDGE", de: "KNOWLEDGE" },
+      claim: { en: "What still holds up after observation, experiment and contradiction.", de: "Was nach Beobachtung, Experiment und Widerspruch noch Bestand hat." },
+      d: {
+        en: "Verifiable knowledge that grows out of experience, sources and tests.",
+        de: "Nachvollziehbares Wissen, das aus Erfahrungen, Quellen und Tests entsteht."
+      }
+    },
+    {
+      href: "../lab/", img: "../assets/img/lab-container.png",
+      t: { en: "LAB", de: "LAB" },
+      claim: { en: "Where good ideas have to prove they're good ideas.", de: "Wo gute Ideen beweisen müssen, dass sie gute Ideen sind." },
+      d: {
+        en: "Experiments, comparisons, tests — including the things that didn't work.",
+        de: "Experimente, Vergleiche, Tests – einschließlich Dinge, die nicht funktioniert haben."
+      }
+    },
+    {
+      href: "../discuss/", img: "../assets/img/discuss-community.png",
+      t: { en: "DISCUSS", de: "DISCUSS" },
+      claim: { en: "Other opinions explicitly welcome.", de: "Andere Meinungen ausdrücklich erwünscht." },
+      d: {
+        en: "Discussions about AI, models, agents, hardware and J.A.R.V.I.S.",
+        de: "Diskussionen über KI, Modelle, Agenten, Hardware und J.A.R.V.I.S."
+      }
+    },
+    {
+      href: "../ask/", img: "../assets/img/ask-ai-interface.png",
+      t: { en: "ASK J.A.R.V.I.S.", de: "ASK J.A.R.V.I.S." },
+      claim: { en: "Your questions. Real answers.", de: "Deine Fragen. Echte Antworten." },
+      d: {
+        en: "Ask about this platform and get a real, cited answer from the Network.",
+        de: "Frag zu dieser Plattform und erhalte eine echte, belegte Antwort vom Network."
+      }
+    }
+  ];
+
+  var homeStoryParagraphs = {
+    en: [
+      "At least, that was the plan.",
+      "Over time, a personal AI assistant grew memory, tools, a browser, research, agents, and eventually a whole Network.",
+      "In between: experiments, wrong turns, surprising successes, and a few problems whose solution turned out to be a lot simpler than the road to it.",
+      "That story belongs to J.A.R.V.I.S. just as much as the code itself."
+    ],
+    de: [
+      "Zumindest war das der Plan.",
+      "Aus einem persönlichen KI-Assistenten wurden mit der Zeit Gedächtnis, Werkzeuge, Browser, Recherche, Agenten und schließlich ein ganzes Network.",
+      "Dazwischen liegen Experimente, Fehlentscheidungen, überraschende Erfolge und einige Probleme, bei denen die Lösung am Ende deutlich einfacher war als der Weg dorthin.",
+      "Diese Geschichte gehört zu J.A.R.V.I.S. genauso wie der Code selbst."
+    ]
+  };
+
+  var storyTimeline = [
+    { en: "ASSISTANT", de: "ASSISTENT" },
+    { en: "MEMORY", de: "GEDÄCHTNIS" },
+    { en: "TOOLS", de: "WERKZEUGE" },
+    { en: "BROWSER & RESEARCH", de: "BROWSER & RECHERCHE" },
+    { en: "AGENTS", de: "AGENTEN" },
+    { en: "NETWORK", de: "NETWORK" },
+    { en: "COLLECTIVE KNOWLEDGE", de: "COLLECTIVE KNOWLEDGE" }
+  ];
+
+  var homeAskParagraphs = {
+    en: [
+      "There's no prepared demo chatbot running here. The request goes through the Network to the real J.A.R.V.I.S. path.",
+      "Sometimes he impresses me.",
+      "And sometimes he reminds me why this project is nowhere near finished."
+    ],
+    de: [
+      "Hier läuft kein vorbereiteter Demo-Chatbot. Die Anfrage geht über das Network an den echten J.A.R.V.I.S.-Pfad.",
+      "Manchmal beeindruckt er mich.",
+      "Und manchmal erinnert er mich daran, warum dieses Projekt noch lange nicht fertig ist."
+    ]
+  };
+
+  var statuses = [
+    { row: { en: "CORE", de: "KERN" }, s: "active" },
+    { row: { en: "AI AGENTS", de: "KI-AGENTEN" }, s: "active" },
+    { row: { en: "VOICE SYSTEM", de: "SPRACHSYSTEM" }, s: "testing" },
+    { row: { en: "BROWSER CONTROL", de: "BROWSER-STEUERUNG" }, s: "dev" },
+    { row: { en: "MEMORY", de: "GEDÄCHTNIS" }, s: "experimental" },
+    { row: { en: "AUTONOMOUS TASKS", de: "AUTONOME AUFGABEN" }, s: "research" }
+  ];
+  var statusLabel = {
+    active: { en: "ACTIVE", de: "AKTIV" }, testing: { en: "TESTING", de: "IM TEST" },
+    dev: { en: "DEVELOPMENT", de: "IN ENTWICKLUNG" }, experimental: { en: "EXPERIMENTAL", de: "EXPERIMENTELL" },
+    research: { en: "RESEARCH", de: "ERFORSCHUNG" }
+  };
+  var statusVar = { active: "--st-active", testing: "--st-testing", dev: "--st-dev", experimental: "--st-experimental", research: "--st-research" };
+
+  var tags = [
+    { en: "Artificial Intelligence", de: "Künstliche Intelligenz" }, { en: "Large Language Models", de: "Große Sprachmodelle" },
+    { en: "AI Agents", de: "KI-Agenten" }, { en: "Machine Learning", de: "Maschinelles Lernen" },
+    { en: "Neural Networks", de: "Neuronale Netze" }, { en: "Computer Vision", de: "Computer Vision" },
+    { en: "Voice AI", de: "Sprach-KI" }, { en: "Local AI", de: "Lokale KI" },
+    { en: "Automation", de: "Automatisierung" }, { en: "Robotics", de: "Robotik" },
+    { en: "AI Safety", de: "KI-Sicherheit" }, { en: "Future Technologies", de: "Zukunftstechnologien" }
+  ];
+
+  var news = [
+    { cat: { en: "RESEARCH", de: "FORSCHUNG" },
+      title: { en: "New reasoning benchmark shows agentic models closing the gap on multi-step planning", de: "Neuer Reasoning-Benchmark zeigt: agentische Modelle holen bei mehrstufiger Planung auf" },
+      src: { en: "AI Research Weekly", de: "AI Research Weekly" }, date: { en: "Example date", de: "Beispieldatum" },
+      sum: { en: "A new benchmark tests models on long-horizon tasks that require planning, tool use and self-correction.", de: "Ein neuer Benchmark testet Modelle an langfristigen Aufgaben, die Planung, Werkzeugnutzung und Selbstkorrektur erfordern." },
+      why: { en: "Why it matters: multi-step planning is the main gap between chatbots and real agents.", de: "Warum wichtig: mehrstufige Planung ist der Hauptunterschied zwischen Chatbots und echten Agenten." } },
+    { cat: { en: "OPEN SOURCE", de: "OPEN SOURCE" },
+      title: { en: "Open-source model release adds native tool-calling for local agents", de: "Open-Source-Modell veröffentlicht mit nativer Werkzeugnutzung für lokale Agenten" },
+      src: { en: "Community Digest", de: "Community Digest" }, date: { en: "Example date", de: "Beispieldatum" },
+      sum: { en: "A newly released open-weight model ships with built-in structured tool-calling, aimed at local agent frameworks.", de: "Ein neu veröffentlichtes offenes Modell bringt eingebautes, strukturiertes Tool-Calling für lokale Agenten-Frameworks mit." },
+      why: { en: "Why it matters: native tool-calling lowers the bar for running real agents fully offline.", de: "Warum wichtig: natives Tool-Calling senkt die Hürde, echte Agenten komplett offline zu betreiben." } }
+  ];
+  var communityDiscussionLink = { en: "Community Discussion →", de: "Community-Diskussion →" };
+
+
+  var live = [
+    { n: { en: "247", de: "247" }, l: { en: "AI ENTHUSIASTS ONLINE", de: "KI-BEGEISTERTE ONLINE" } },
+    { n: { en: "What should a real JARVIS be able to do?", de: "Was sollte ein echtes JARVIS können?" }, l: { en: "LATEST DISCUSSION", de: "NEUESTE DISKUSSION" } },
+    { n: { en: "Local AI vs Cloud AI", de: "Lokale KI vs. Cloud-KI" }, l: { en: "TRENDING TOPIC", de: "TRENDTHEMA" } },
+    { n: { en: "Browser control confirmation flow", de: "Bestätigungsablauf für Browsersteuerung" }, l: { en: "LATEST JARVIS UPDATE", de: "NEUESTES JARVIS-UPDATE" } },
+    { n: { en: "Open-weight tool-calling release", de: "Offenes Modell mit Tool-Calling" }, l: { en: "NEW AI MODEL", de: "NEUES KI-MODELL" } },
+    { n: { en: "Browser Agents", de: "Browser-Agenten" }, l: { en: "ACTIVE EXPERIMENT", de: "AKTIVES EXPERIMENT" } }
+  ];
+
+  var askExamples = [
+    { en: "What are AI Agents?", de: "Was sind KI-Agenten?" },
+    { en: "Which local models are being discussed?", de: "Welche lokalen Modelle werden diskutiert?" },
+    { en: "What's new on the JARVIS project?", de: "Was gibt's Neues beim JARVIS-Projekt?" },
+    { en: "Show discussions about browser agents.", de: "Zeige Diskussionen über Browser-Agenten." }
+  ];
+
+  // Phase 11 (Sicherheitshaertung): alle innerHTML-Bausteine unten
+  // interpolieren Textfelder, die inzwischen aus echten, von Nutzern
+  // erstellbaren Zeilen stammen koennen (z.B. discuss_topics.title, von
+  // jedem 'member' setzbar, siehe AUTH_AND_ROLES.md). Ohne Escaping waere
+  // das gespeichertes XSS. escapeHtml() wird konsequent auf jedes
+  // interpolierte Feld angewendet, nicht nur auf die aktuell echt
+  // live-gebundenen.
+  var escapeHtml = SiteChrome.escapeHtml;
+  var renderNodeFlow = SiteChrome.renderNodeFlow;
+  var renderParagraphs = SiteChrome.renderParagraphs;
+
+  function renderHomeV1() {
+    renderParagraphs(document.getElementById('hero-intro'), heroIntroParagraphs);
+
+    renderParagraphs(document.getElementById('home-about-body'), homeAboutParagraphs);
+    renderNodeFlow(document.getElementById('process-flow'), processFlow);
+
+    var pulseGrid = document.getElementById('pulse-grid');
+    if (pulseGrid) {
+      pulseGrid.innerHTML = '';
+      homePulse.forEach(function (item) {
+        var card = document.createElement('div');
+        card.className = 'pulse-card';
+        var kicker = document.createElement('div');
+        kicker.className = 'pulse-kicker mono';
+        kicker.textContent = item.kicker[currentLang];
+        var h3 = document.createElement('h3');
+        h3.textContent = item.title[currentLang];
+        var p = document.createElement('p');
+        p.textContent = item.text[currentLang];
+        card.appendChild(kicker);
+        card.appendChild(h3);
+        card.appendChild(p);
+        pulseGrid.appendChild(card);
+      });
+    }
+
+    var discoverGrid = document.getElementById('discover-grid');
+    if (discoverGrid) {
+      discoverGrid.innerHTML = '';
+      homeDiscover.forEach(function (item) {
+        var a = document.createElement('a');
+        a.className = 'discover-card' + (item.emphasis ? ' emphasis' : '');
+        a.href = item.href; // fixed, hardcoded route - never user-derived
+        if (item.img) {
+          var artWrap = document.createElement('div');
+          artWrap.className = 'discover-card-art';
+          var img = document.createElement('img');
+          img.src = item.img; // fixed, hardcoded asset path - never user-derived
+          img.alt = '';
+          img.setAttribute('aria-hidden', 'true');
+          artWrap.appendChild(img);
+          a.appendChild(artWrap);
+        }
+        var t = document.createElement('div');
+        t.className = 't mono';
+        t.textContent = item.t[currentLang];
+        var claim = document.createElement('div');
+        claim.className = 'claim';
+        claim.textContent = item.claim[currentLang];
+        var d = document.createElement('div');
+        d.className = 'd';
+        d.textContent = item.d[currentLang];
+        a.appendChild(t);
+        a.appendChild(claim);
+        a.appendChild(d);
+        discoverGrid.appendChild(a);
+      });
+    }
+
+    renderParagraphs(document.getElementById('home-story-body'), homeStoryParagraphs);
+    renderNodeFlow(document.getElementById('story-timeline'), storyTimeline);
+
+    renderParagraphs(document.getElementById('home-ask-body'), homeAskParagraphs);
+  }
+
+  function renderDynamic() {
+    renderHomeV1();
+
+    // Development status
+    var panel = document.getElementById('status-panel');
+    panel.innerHTML = '';
+    statuses.forEach(function (s) {
+      var row = document.createElement('div');
+      row.className = 'status-row';
+      row.innerHTML = '<span class="name">' + escapeHtml(s.row[currentLang]) + '</span>' +
+        '<span class="status-tag mono" style="color:var(' + statusVar[s.s] + ')">' +
+        '<span class="d" style="background:var(' + statusVar[s.s] + ')"></span>' + escapeHtml(statusLabel[s.s][currentLang]) + '</span>';
+      panel.appendChild(row);
+    });
+
+    // Knowledge teaser tag cloud (the full concept map now lives on the
+    // real /knowledge/ page - see Redesign-Schritt 13).
+    var tagCloud = document.getElementById('tag-cloud');
+    tagCloud.innerHTML = '';
+    tags.forEach(function (tg) {
+      var el = document.createElement('span');
+      el.className = 'tag-pill';
+      el.textContent = tg[currentLang];
+      tagCloud.appendChild(el);
+    });
+
+    // News
+    var newsGrid = document.getElementById('news-grid');
+    newsGrid.innerHTML = '';
+    news.forEach(function (n) {
+      var el = document.createElement('div');
+      el.className = 'news-card';
+      el.innerHTML =
+        '<span class="news-cat mono">' + escapeHtml(n.cat[currentLang]) + '</span><h3>' + escapeHtml(n.title[currentLang]) + '</h3>' +
+        '<div class="news-meta mono">' + escapeHtml(n.src[currentLang]) + ' · ' + escapeHtml(n.date[currentLang]) + '</div>' +
+        '<p>' + escapeHtml(n.sum[currentLang]) + '</p><div class="news-why">' + escapeHtml(n.why[currentLang]) + '</div>' +
+        '<a class="news-link" href="../discuss/">' + escapeHtml(communityDiscussionLink[currentLang]) + '</a>';
+      newsGrid.appendChild(el);
+    });
+
+    // Live activity
+    var liveStrip = document.getElementById('live-strip');
+    liveStrip.innerHTML = '';
+    live.forEach(function (item) {
+      var value = item.n[currentLang];
+      var el = document.createElement('div');
+      el.className = 'live-item';
+      el.innerHTML = '<div class="n" style="font-size:' + (value.length > 6 ? '1rem' : '1.5rem') + '">' + escapeHtml(value) + '</div><div class="l">' + escapeHtml(item.l[currentLang]) + '</div>';
+      liveStrip.appendChild(el);
+    });
+
+    // Ask examples
+    var askExamplesEl = document.getElementById('ask-examples');
+    askExamplesEl.innerHTML = '';
+    askExamples.forEach(function (ex) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = ex[currentLang];
+      btn.addEventListener('click', function () {
+        document.getElementById('ask-input').value = ex[currentLang];
+      });
+      askExamplesEl.appendChild(btn);
+    });
+  }
+
+  SiteChrome.applyStaticStrings();
+  renderDynamic();
+  SiteChrome.onLanguageChange(function (lang) {
+    currentLang = lang;
+    renderDynamic();
+  });
+
+  SiteChrome.initMobileNav();
+
+  // ---------- Transitional "active area" marking (HOME-only) ----------
+  // The site is still a single index.html with anchor sections, not
+  // real routed subpages (see WEBSITE_ARCHITECTURE_V1.md, Abschnitt
+  // 12.2/12.15) - there is no URL per area to key off yet. This scroll
+  // position based highlight is a deliberately small stand-in: it
+  // toggles the exact same `.current` class on the exact same nav
+  // links a future URL-based implementation would use, so swapping the
+  // trigger (scroll position -> location.pathname) later needs no
+  // markup or CSS change, only replacing this one observer. "Ask
+  // JARVIS" opens a panel rather than scrolling to a section, so it is
+  // intentionally not part of this scroll-spy. This lives on HOME only
+  // because it is the only page with these anchor sections.
+  (function () {
+    var mainNav = document.getElementById('main-nav');
+    if (!mainNav) { return; }
+
+    var scrollSpyIds = ['home', 'project', 'signal', 'knowledge', 'lab', 'discuss'];
+    var scrollSpyLinks = {};
+    scrollSpyIds.forEach(function (id) {
+      var link = mainNav.querySelector('a[href="#' + id + '"]');
+      if (link) { scrollSpyLinks[id] = link; }
+    });
+    var scrollSpySections = scrollSpyIds
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+
+    if (scrollSpySections.length && typeof IntersectionObserver !== 'undefined') {
+      var setCurrentSection = function (id) {
+        Object.keys(scrollSpyLinks).forEach(function (key) {
+          scrollSpyLinks[key].classList.toggle('current', key === id);
+        });
+      };
+      var scrollSpyObserver = new IntersectionObserver(function (entries) {
+        var visible = entries
+          .filter(function (e) { return e.isIntersecting; })
+          .sort(function (a, b) { return b.intersectionRatio - a.intersectionRatio; });
+        if (visible.length) { setCurrentSection(visible[0].target.id); }
+      }, { rootMargin: '-80px 0px -60% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] });
+      scrollSpySections.forEach(function (s) { scrollSpyObserver.observe(s); });
+    }
+  })();
+
+  // ==================================================================
+  // Phase 11 (Weg 2) — Vorbereitung der echten Supabase-Anbindung.
+  // Konfiguration ist absichtlich leer, bis eine echte Provisionierung
+  // stattgefunden hat (siehe supabase/README.md). Solange leer: KEIN
+  // Netzwerkaufruf — die Seite verhält sich exakt wie mit den
+  // statischen Beispieldaten oben. JARVIS_NETWORK_CONFIG/restFetch
+  // kommen jetzt aus site-chrome.js.
+  // ==================================================================
+  function loadLiveDataIfConfigured() {
+    if (!SiteChrome.isSupabaseConfigured()) { return; } // kein Netzwerkaufruf ohne echte Konfiguration
+
+    var anyLoaded = false;
+    var rerender = function () { if (anyLoaded) { renderDynamic(); } };
+    var warn = function (label) {
+      return function (e) { console.warn('[jarvis-network] live ' + label + ' load failed:', e); };
+    };
+
+    SiteChrome.restFetch('signals?select=*&published=eq.true').then(function (rows) {
+      if (!rows.length) { return; }
+      news = rows.map(function (r) {
+        return {
+          cat: r.category, title: r.title,
+          src: { en: r.source, de: r.source },
+          date: { en: r.date_value, de: r.date_value },
+          sum: r.summary, why: r.jarvis_einordnung
+        };
+      });
+      anyLoaded = true; rerender();
+    }).catch(warn('signals'));
+
+    SiteChrome.restFetch('knowledge_tags?select=*&published=eq.true').then(function (rows) {
+      if (!rows.length) { return; }
+      tags = rows.map(function (r) { return r.label; });
+      anyLoaded = true; rerender();
+    }).catch(warn('knowledge_tags'));
+
+    SiteChrome.restFetch('project_components?select=*&published=eq.true&order=sort_order.asc').then(function (rows) {
+      if (!rows.length) { return; }
+      components = rows.map(function (r) {
+        return { en: [r.name.en, r.description.en], de: [r.name.de, r.description.de] };
+      });
+      anyLoaded = true; rerender();
+    }).catch(warn('project_components'));
+
+    SiteChrome.restFetch('project_status?select=*&published=eq.true').then(function (rows) {
+      if (!rows.length) { return; }
+      statuses = rows.map(function (r) { return { row: r.component, s: r.status }; });
+      anyLoaded = true; rerender();
+    }).catch(warn('project_status'));
+  }
+
+  loadLiveDataIfConfigured();
+
+  SiteChrome.initAuthAndAsk();
+
+  // ==================================================================
+  // Collective Knowledge, Slice 1: "Beobachtung teilen" (HOME-only)
+  // Browser talks to Supabase only with the public publishable key plus
+  // the signed-in user's own session token (never a service key). INSERT
+  // sends only body/source_kind/source_url - author_id/topic_area/
+  // knowledge_level/status are never set from the frontend; they are
+  // enforced server-side by the guard trigger in
+  // supabase/migrations/0009_collective_observations.sql, exactly like
+  // the ask-jarvis request flow above never sets its own server fields.
+  // Every piece of stored text is rendered via textContent, never
+  // innerHTML - same discipline as escapeHtml() above. This code is
+  // deliberately NOT part of site-chrome.js: it is HOME-only, and
+  // PROJECT (and future subpages that don't need it) must not load it.
+  // ==================================================================
+  (function () {
+    var AJC = window.AskJarvisClient;
+    var cfg = SiteChrome.JARVIS_NETWORK_CONFIG;
+
+    var obsForm = document.getElementById('obs-form');
+    var obsBody = document.getElementById('obs-body');
+    var obsCharCount = document.getElementById('obs-char-count');
+    var obsSourceRadios = document.querySelectorAll('input[name="obs-source-kind"]');
+    var obsUrlField = document.getElementById('obs-url-field');
+    var obsUrl = document.getElementById('obs-url');
+    var obsSubmit = document.getElementById('obs-submit');
+    var obsStatus = document.getElementById('obs-status');
+    var obsAuthRequired = document.getElementById('obs-auth-required');
+    var obsAuthLoginLink = document.getElementById('obs-auth-login-link');
+    var obsList = document.getElementById('obs-list');
+    var obsEmpty = document.getElementById('obs-empty');
+    if (!obsForm || !obsList) { return; }
+
+    var observations = [];
+    var reactionCounts = {};   // observation_id -> { confirm_count, contradict_count }
+    var ownReactions = {};     // observation_id -> 'confirm' | 'contradict'
+    var pendingReactionIds = {}; // observation_id -> true while a write is in flight
+
+    function updateObsAuthGate() {
+      var authed = SiteChrome.isAuthenticated();
+      obsAuthRequired.hidden = authed;
+      obsBody.disabled = !authed;
+      obsUrl.disabled = !authed;
+      obsSubmit.disabled = !authed;
+      Array.prototype.forEach.call(obsSourceRadios, function (r) { r.disabled = !authed; });
+    }
+    obsAuthLoginLink.addEventListener('click', SiteChrome.openLoginPanel);
+
+    function obsSourceKindValue() {
+      var checked = document.querySelector('input[name="obs-source-kind"]:checked');
+      return checked ? checked.value : 'own_experience';
+    }
+    Array.prototype.forEach.call(obsSourceRadios, function (r) {
+      r.addEventListener('change', function () {
+        var isExternal = obsSourceKindValue() === 'external_link';
+        obsUrlField.hidden = !isExternal;
+        if (!isExternal) { obsUrl.value = ''; }
+      });
+    });
+
+    function updateObsCharCount() {
+      var length = obsBody.value.length;
+      obsCharCount.textContent = length + ' / 4000';
+      obsCharCount.classList.toggle('is-over', length > 4000);
+    }
+    obsBody.addEventListener('input', updateObsCharCount);
+    updateObsCharCount();
+
+    function setObsStatus(message, kind) {
+      obsStatus.textContent = message || '';
+      obsStatus.classList.remove('is-error', 'is-ok');
+      if (kind) { obsStatus.classList.add(kind === 'error' ? 'is-error' : 'is-ok'); }
+    }
+
+    // Mirrors the DB constraints in 0009_collective_observations.sql
+    // client-side for a fast, clear error message - the database remains
+    // the authoritative check (defense in depth, not the only defense).
+    function validateObservationInput(bodyText, sourceKind, sourceUrl) {
+      var trimmedBody = String(bodyText || '').trim();
+      if (!trimmedBody) { return { ok: false, reason: 'body_required' }; }
+      if (trimmedBody.length > 4000) { return { ok: false, reason: 'body_too_long' }; }
+      if (sourceKind === 'external_link') {
+        var trimmedUrl = String(sourceUrl || '').trim();
+        if (!trimmedUrl) { return { ok: false, reason: 'url_required' }; }
+        if (!AJC.isSafeHttpUrl(trimmedUrl)) { return { ok: false, reason: 'url_invalid' }; }
+        return { ok: true, body: trimmedBody, sourceKind: 'external_link', sourceUrl: trimmedUrl };
+      }
+      return { ok: true, body: trimmedBody, sourceKind: 'own_experience', sourceUrl: null };
+    }
+
+    // INSERT only ever carries the three legitimate input fields. No
+    // author_id/topic_area/knowledge_level/status key exists in this
+    // payload at all - there is nothing here for a compromised client to
+    // "forget to omit"; the guard trigger would overwrite them anyway even
+    // if present, but this function structurally cannot send them.
+    function insertObservation(payload) {
+      var url = cfg.supabaseUrl.replace(/\/+$/, '') + '/rest/v1/collective_observations';
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          apikey: cfg.supabasePublishableKey,
+          Authorization: 'Bearer ' + SiteChrome.accessToken(),
+          Prefer: 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      }).then(function (res) {
+        if (res.ok) { return { ok: true }; }
+        return { ok: false, status: res.status };
+      });
+    }
+
+    // Writes go straight to PostgREST with only the legitimate input
+    // fields - author_id is never sent (INSERT), and UPDATE sends only
+    // `reaction` (observation_id/author_id are selected via the URL
+    // filter + RLS, never re-sent as body fields that could be
+    // tampered with). Self-vote and hidden-observation checks are
+    // enforced server-side regardless of what the client sends - see
+    // guard_collective_observation_reaction_write() in
+    // 0011_collective_observation_reactions.sql; the client-side
+    // "hide the buttons on your own card" below is UX only, never the
+    // actual security boundary.
+    function insertReaction(observationId, reaction) {
+      var url = cfg.supabaseUrl.replace(/\/+$/, '') + '/rest/v1/collective_observation_reactions';
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          apikey: cfg.supabasePublishableKey,
+          Authorization: 'Bearer ' + SiteChrome.accessToken(),
+          Prefer: 'return=minimal'
+        },
+        body: JSON.stringify({ observation_id: observationId, reaction: reaction })
+      }).then(function (res) { return { ok: res.ok }; }, function () { return { ok: false }; });
+    }
+
+    function updateReaction(observationId, reaction) {
+      var url = cfg.supabaseUrl.replace(/\/+$/, '') +
+        '/rest/v1/collective_observation_reactions?observation_id=eq.' + encodeURIComponent(observationId);
+      return fetch(url, {
+        method: 'PATCH',
+        headers: {
+          'content-type': 'application/json',
+          apikey: cfg.supabasePublishableKey,
+          Authorization: 'Bearer ' + SiteChrome.accessToken(),
+          Prefer: 'return=minimal'
+        },
+        body: JSON.stringify({ reaction: reaction })
+      }).then(function (res) { return { ok: res.ok }; }, function () { return { ok: false }; });
+    }
+
+    function deleteReaction(observationId) {
+      var url = cfg.supabaseUrl.replace(/\/+$/, '') +
+        '/rest/v1/collective_observation_reactions?observation_id=eq.' + encodeURIComponent(observationId);
+      return fetch(url, {
+        method: 'DELETE',
+        headers: {
+          apikey: cfg.supabasePublishableKey,
+          Authorization: 'Bearer ' + SiteChrome.accessToken()
+        }
+      }).then(function (res) { return { ok: res.ok }; }, function () { return { ok: false }; });
+    }
+
+    function loadReactionData() {
+      reactionCounts = {};
+      ownReactions = {};
+      if (!observations.length) { return Promise.resolve(); }
+      var idList = observations.map(function (o) { return o.id; }).join(',');
+
+      var countsPromise = SiteChrome.restFetch(
+        'collective_observation_reaction_counts?select=observation_id,confirm_count,contradict_count' +
+        '&observation_id=in.(' + idList + ')'
+      ).then(function (rows) {
+        rows.forEach(function (r) { reactionCounts[r.observation_id] = r; });
+      }).catch(function (e) {
+        console.warn('[jarvis-network] reaction counts load failed:', e);
+      });
+
+      var ownPromise = SiteChrome.isAuthenticated()
+        ? SiteChrome.restFetchAuthenticated(
+            'collective_observation_reactions?select=observation_id,reaction' +
+            '&observation_id=in.(' + idList + ')'
+          ).then(function (rows) {
+            rows.forEach(function (r) { ownReactions[r.observation_id] = r.reaction; });
+          }).catch(function (e) {
+            console.warn('[jarvis-network] own reactions load failed:', e);
+          })
+        : Promise.resolve();
+
+      return Promise.all([countsPromise, ownPromise]);
+    }
+
+    function handleReactionClick(observationId, reaction) {
+      if (pendingReactionIds[observationId]) { return; }
+      var current = ownReactions[observationId];
+      var writePromise;
+      if (current === reaction) {
+        writePromise = deleteReaction(observationId);
+      } else if (current) {
+        writePromise = updateReaction(observationId, reaction);
+      } else {
+        writePromise = insertReaction(observationId, reaction);
+      }
+      pendingReactionIds[observationId] = true;
+      renderObservations();
+      writePromise.then(function () {
+        delete pendingReactionIds[observationId];
+        return loadReactionData();
+      }).then(function () {
+        renderObservations();
+      });
+    }
+
+    // Compact controls per observation card - deliberately not styled or
+    // worded like a social-media like button: two short, first-person
+    // experience statements, a plain +/- count (not a heart/thumb icon),
+    // no "vote" or "score" language anywhere. A reaction is a signal
+    // ("I had this experience too"), never a truth claim.
+    function renderReactionBlock(observation) {
+      var wrap = document.createElement('div');
+      wrap.className = 'obs-reactions';
+
+      var counts = reactionCounts[observation.id] || { confirm_count: 0, contradict_count: 0 };
+      var countsEl = document.createElement('span');
+      countsEl.className = 'obs-reaction-counts';
+      var confirmCountEl = document.createElement('span');
+      confirmCountEl.className = 'obs-count-confirm';
+      confirmCountEl.textContent = '✓ ' + counts.confirm_count; // textContent only
+      var contradictCountEl = document.createElement('span');
+      contradictCountEl.className = 'obs-count-contradict';
+      contradictCountEl.textContent = '✗ ' + counts.contradict_count; // textContent only
+      countsEl.appendChild(confirmCountEl);
+      countsEl.appendChild(contradictCountEl);
+      wrap.appendChild(countsEl);
+
+      if (!SiteChrome.isAuthenticated()) {
+        var hint = document.createElement('span');
+        hint.className = 'obs-reaction-hint';
+        hint.textContent = t('obs.reactionsSignInHint');
+        wrap.appendChild(hint);
+        return wrap;
+      }
+
+      // Own observation: counts stay visible, no buttons. This is UX
+      // convenience only - the guard trigger rejects a self-reaction
+      // server-side regardless (see comment on insertReaction above).
+      var currentUserId = SiteChrome.currentUserId();
+      if (currentUserId && observation.author_id === currentUserId) {
+        return wrap;
+      }
+
+      var activeReaction = ownReactions[observation.id] || '';
+      var isPending = !!pendingReactionIds[observation.id];
+
+      var confirmBtn = document.createElement('button');
+      confirmBtn.type = 'button';
+      confirmBtn.className = 'obs-react-btn' + (activeReaction === 'confirm' ? ' is-active' : '');
+      confirmBtn.textContent = t('obs.confirmBtn');
+      confirmBtn.setAttribute('aria-pressed', activeReaction === 'confirm' ? 'true' : 'false');
+      confirmBtn.disabled = isPending;
+      confirmBtn.addEventListener('click', function () {
+        handleReactionClick(observation.id, 'confirm');
+      });
+
+      var contradictBtn = document.createElement('button');
+      contradictBtn.type = 'button';
+      contradictBtn.className = 'obs-react-btn' + (activeReaction === 'contradict' ? ' is-active' : '');
+      contradictBtn.textContent = t('obs.contradictBtn');
+      contradictBtn.setAttribute('aria-pressed', activeReaction === 'contradict' ? 'true' : 'false');
+      contradictBtn.disabled = isPending;
+      contradictBtn.addEventListener('click', function () {
+        handleReactionClick(observation.id, 'contradict');
+      });
+
+      wrap.appendChild(confirmBtn);
+      wrap.appendChild(contradictBtn);
+      return wrap;
+    }
+
+    function formatObsDate(isoString) {
+      try {
+        var locale = currentLang === 'de' ? 'de-DE' : 'en-US';
+        return new Date(isoString).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
+      } catch (error) {
+        return String(isoString || '');
+      }
+    }
+
+    // knowledge_level is intentionally never rendered here - internally
+    // every row is 'observation' (Wissensstufe 1), but showing that label
+    // prominently on every card would be noise, not information, for a V1
+    // with exactly one level. See COLLECTIVE_KNOWLEDGE.md, "Wissensstufen".
+    function renderObservations() {
+      while (obsList.firstChild) { obsList.removeChild(obsList.firstChild); }
+      if (!observations.length) {
+        obsEmpty.hidden = false;
+        return;
+      }
+      obsEmpty.hidden = true;
+      observations.forEach(function (o) {
+        var card = document.createElement('div');
+        card.className = 'obs-card';
+
+        var body = document.createElement('p');
+        body.className = 'obs-body';
+        body.textContent = o.body; // textContent only - never innerHTML
+        card.appendChild(body);
+
+        var meta = document.createElement('div');
+        meta.className = 'obs-meta';
+
+        var dateEl = document.createElement('span');
+        dateEl.textContent = formatObsDate(o.created_at);
+        meta.appendChild(dateEl);
+
+        if (o.source_kind === 'external_link' && AJC.isSafeHttpUrl(o.source_url)) {
+          var a = document.createElement('a');
+          a.href = o.source_url;                 // safe: passed isSafeHttpUrl
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer nofollow';
+          a.textContent = AJC.urlHostname(o.source_url) || o.source_url; // text only
+          meta.appendChild(a);
+        } else {
+          var ownEl = document.createElement('span');
+          ownEl.textContent = t('obs.sourceOwn');
+          meta.appendChild(ownEl);
+        }
+
+        card.appendChild(meta);
+        card.appendChild(renderReactionBlock(o));
+        obsList.appendChild(card);
+      });
+    }
+
+    function loadObservations() {
+      return SiteChrome.restFetch(
+        'collective_observations?select=id,body,source_kind,source_url,created_at,author_id' +
+        '&status=eq.visible&order=created_at.desc&limit=50'
+      ).then(function (rows) {
+        observations = rows;
+        return loadReactionData();
+      }).then(function () {
+        renderObservations();
+      }).catch(function (e) {
+        console.warn('[jarvis-network] observations load failed:', e);
+      });
+    }
+
+    obsForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!SiteChrome.isAuthenticated()) { SiteChrome.openLoginPanel(); return; }
+      var validation = validateObservationInput(obsBody.value, obsSourceKindValue(), obsUrl.value);
+      if (!validation.ok) {
+        setObsStatus(t('obs.error.' + validation.reason), 'error');
+        return;
+      }
+      obsSubmit.disabled = true;
+      setObsStatus(t('obs.statusSubmitting'), null);
+      insertObservation({
+        body: validation.body,
+        source_kind: validation.sourceKind,
+        source_url: validation.sourceUrl
+      }).then(function (res) {
+        obsSubmit.disabled = !SiteChrome.isAuthenticated();
+        if (!res.ok) {
+          setObsStatus(t('obs.errorGeneric'), 'error');
+          return;
+        }
+        obsForm.reset();
+        obsUrlField.hidden = true;
+        updateObsCharCount();
+        setObsStatus(t('obs.statusSuccess'), 'ok');
+        loadObservations();
+      }, function () {
+        obsSubmit.disabled = !SiteChrome.isAuthenticated();
+        setObsStatus(t('obs.errorGeneric'), 'error');
+      });
+    });
+
+    updateObsAuthGate();
+    if (SiteChrome.isSupabaseConfigured()) { loadObservations(); }
+
+    SiteChrome.onAuthChange(function () {
+      updateObsAuthGate();
+      if (observations.length) { loadReactionData().then(renderObservations); }
+    });
+  })();
+</script>
+
+</body>
+</html>
