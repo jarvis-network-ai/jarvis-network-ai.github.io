@@ -23,7 +23,19 @@
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
-  background: var(--black);
+  /* Redesign-Schritt 14: Global background darkening + soft horizontal edge vignette (2026-08-20)
+     Basis: #e8ecf1 (~5-7% darker than original #eef2f6 for reduced glare).
+     Horizontal gradient: soft Ice-tone fade at left/right edges (5% opacity, 22%-78% spread).
+     Center stays bright. No radial gradients, no overlays, no top/bottom darkening.
+     Test verified in TEST_BACKGROUND_VIGNETTE.html */
+  background-color: #e8ecf1;
+  background-image: linear-gradient(
+    90deg,
+    rgba(51, 70, 94, 0.05) 0%,
+    transparent 22%,
+    transparent 78%,
+    rgba(51, 70, 94, 0.05) 100%
+  );
   color: var(--white);
   font-family: var(--font-ui);
   line-height: 1.55;
@@ -172,12 +184,38 @@ img, svg, canvas { display: block; max-width: 100%; }
 }
 .text-body {
   font-size: 1rem;
+  font-weight: 600;
   color: var(--white);
   line-height: 1.55;
 }
 .text-small {
   font-size: 0.88rem;
-  color: var(--muted);
+  font-weight: 600;
+  color: var(--white);
+}
+.body-copy {
+  font-weight: 600;
+  color: var(--white);
+}
+.body-copy p {
+  font-weight: 600;
+  color: var(--white);
+}
+/* Redesign-Schritt 15: Global typography – all semantic lesetext classes
+   (font-weight: 600, dunkler Navy-Ton für bessere Lesbarkeit auf allen Seiten).
+   Keine generischen HTML-Tag-Regeln. Akzentwörter (mit .accent/.cyan) behalten
+   ihre Farbe durch Spezifizität. */
+.cover-lede, .cover-copy,
+.aktuell-lede, .askpage-lede, .askpage-hero-copy,
+.discuss-lede, .discuss-hero-copy,
+.knowledge-lede, .knowledge-hero-copy,
+.lab-lede, .lab-hero-copy,
+.signal-lede, .signal-hero-copy,
+.project-hero-copy,
+.home-about-text, .home-story-text,
+.hero-copy, .hero-panel-text, .intro {
+  font-weight: 600;
+  color: var(--white);
 }
 .text-label {
   font-family: var(--font-mono);
