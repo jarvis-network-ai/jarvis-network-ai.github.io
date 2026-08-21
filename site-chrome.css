@@ -252,7 +252,7 @@
     border-bottom: 1px solid var(--line);
     background:
       radial-gradient(ellipse 900px 620px at 100% 8%, rgba(20, 163, 199, 0.08), transparent 62%),
-      var(--black);
+      var(--bg-page);
   }
   .hero-inner { position: relative; z-index: 2; width: 100%; }
   .hero-grid {
@@ -470,11 +470,9 @@
        ("J.A.R.V.I.S.") Navy, Zeile 2 ("NETWORK") Cyan, wie in der
        Referenz (design-reference/01_START_COVER.png). Kein drittes
        Text-Farbmittel, kein Blending. */
-    background: linear-gradient(180deg, var(--white) 0%, var(--white) 50%, var(--cyan) 54%, var(--cyan) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    opacity: 0;
+    /* Redesign-Schritt 17 FIX: Animation war nicht sichtbar (opacity: 0 wurde nicht animated).
+       Fallback auf sichere Navy-Farbe damit H1 immer sichtbar ist. */
+    color: var(--white);
     animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.15s forwards;
   }
 

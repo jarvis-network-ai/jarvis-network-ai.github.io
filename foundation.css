@@ -23,18 +23,18 @@
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
-  /* Redesign-Schritt 14: Global background darkening + soft horizontal edge vignette (2026-08-20)
-     Basis: #d8e0e8 (~12-14% darker than original #eef2f6 for optimal comfort).
-     Horizontal gradient: soft Ice-tone fade at left/right edges (12% opacity, 22%-78% spread).
-     Center stays bright. No radial gradients, no overlays, no top/bottom darkening.
-     Fine-tuned 2026-08-20 based on live feedback (darker iteration). */
-  background-color: #d8e0e8;
+  /* Redesign-Schritt 17: Soft light layer with horizontal falloff (2026-08-21)
+     Premium-Tech/Ice-Navy look: bright center with smooth edge darkening.
+     Horizontal gradient only (no radial, no overlay). Center 35-65% bright,
+     outer 15-20% noticeably darker, very broad transition, no hard edges.
+     Color palette: Ice/Navy tones only (no black/gray). */
   background-image: linear-gradient(
     90deg,
-    rgba(51, 70, 94, 0.12) 0%,
-    transparent 22%,
-    transparent 78%,
-    rgba(51, 70, 94, 0.12) 100%
+    #d8dfe8 0%,
+    #dce4ed 15%,
+    #eff4f9 50%,
+    #dce4ed 85%,
+    #d8dfe8 100%
   );
   color: var(--white);
   font-family: var(--font-ui);
@@ -106,16 +106,16 @@ img, svg, canvas { display: block; max-width: 100%; }
 
   color-scheme: light;
 
-  /* Redesign-Schritt 16: Global page background tokens (2026-08-20)
-     Zentrale Hintergrunddefinition für alle vollflächigen Page-/Hero-/Section-Container.
-     Anwendung auf allen 9 Network-Seiten für konsistente Lesbarkeit und visuellen Komfort. */
-  --bg-page: #d8e0e8;
-  --bg-page-vignette: linear-gradient(
+  /* Redesign-Schritt 17: Global soft light layer tokens (2026-08-21)
+     Horizontal gradient-only background for all fullbleed page/hero/section containers.
+     Premium-Tech/Ice-Navy: bright center, soft edge falloff, no overlays. */
+  --bg-page: linear-gradient(
     90deg,
-    rgba(51, 70, 94, 0.12) 0%,
-    transparent 22%,
-    transparent 78%,
-    rgba(51, 70, 94, 0.12) 100%
+    #d8dfe8 0%,
+    #dce4ed 15%,
+    #eff4f9 50%,
+    #dce4ed 85%,
+    #d8dfe8 100%
   );
 }
 
