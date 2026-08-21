@@ -27,6 +27,7 @@
 
   .lab-hero { padding: 1.6rem 0 clamp(2.6rem, 5vw, 4rem); }
   .lab-hero-grid {
+    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     align-items: center;
@@ -64,7 +65,7 @@
   .body-copy p:last-child { margin-bottom: 0; }
 
   /* -------- right column: Lab-Container-Motiv + reale Status-Panels -------- */
-  .lab-visual { position: relative; min-height: clamp(380px, 42vw, 540px); }
+  .lab-visual { position: static; min-height: clamp(380px, 42vw, 540px); }
   .lab-visual-art { position: absolute; inset: 0; }
   .lab-visual-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
 
@@ -95,9 +96,9 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .lab-hero-panel.p1 { top: 0; right: -2%; }
-  .lab-hero-panel.p2 { top: 42%; left: -8%; transform: translateY(-50%); }
-  .lab-hero-panel.p3 { bottom: 0; right: -2%; }
+  .lab-hero-panel.p1 { left: 1100px; top: 205px; }
+  .lab-hero-panel.p2 { left: 1100px; top: 284px; transform: none; }
+  .lab-hero-panel.p3 { left: 1100px; top: 395px; }
 
   .lab-fact-strip {
     display: grid;
