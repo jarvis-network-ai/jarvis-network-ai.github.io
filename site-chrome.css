@@ -814,6 +814,7 @@
     box-shadow: var(--shadow-soft);
     transition: background-color 0.2s ease, transform 0.15s ease;
   }
+  .ask-btn[hidden] { display: none; }
   .ask-btn:hover { background: var(--cyan-dim); border-color: var(--cyan-dim); transform: translateY(-1px); }
   .ask-btn .ring {
     width: 8px; height: 8px; border-radius: 50%;

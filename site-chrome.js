@@ -477,8 +477,14 @@
       var askAuthRequired = document.getElementById('ask-auth-required');
       var askAuthLoginLink = document.getElementById('ask-auth-login-link');
 
-      if (askBtn) { askBtn.addEventListener('click', function () { askPanel.classList.toggle('open'); }); }
-      if (askClose) { askClose.addEventListener('click', function () { askPanel.classList.remove('open'); }); }
+      function setAskPanelOpen(isOpen) {
+        if (!askPanel || !askBtn) { return; }
+        askPanel.classList.toggle('open', isOpen);
+        askBtn.hidden = isOpen;
+      }
+
+      if (askBtn) { askBtn.addEventListener('click', function () { setAskPanelOpen(!askPanel.classList.contains('open')); }); }
+      if (askClose) { askClose.addEventListener('click', function () { setAskPanelOpen(false); }); }
       // Redesign-Schritt 10 (ASK JARVIS, 18. August 2026): the main-nav
       // "ASK J.A.R.V.I.S." link now points to the real standalone /ask/
       // page (analogous to KNOWLEDGE/LAB/DISCUSS), so it navigates like
