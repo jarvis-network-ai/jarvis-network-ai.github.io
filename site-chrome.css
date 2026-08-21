@@ -68,6 +68,11 @@
   }
   .nav-links a:hover, .nav-links a.current { color: var(--white); border-color: var(--cyan-dim); }
 
+  @media (min-width: 861px) {
+    .nav > .wrap.nav-inner { max-width: 1400px; }
+    .nav-links { flex: 0 0 621.0625px; }
+  }
+
   .nav-actions {
     display: flex;
     align-items: center;
