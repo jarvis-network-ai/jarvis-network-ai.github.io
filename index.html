@@ -51,9 +51,7 @@
     display: flex;
     align-items: center;
     padding: 64px 0;
-    background:
-      radial-gradient(ellipse 900px 620px at 100% 8%, rgba(20, 163, 199, 0.07), transparent 62%),
-      var(--black);
+    background: var(--bg-page);
   }
   .cover-hero-grid {
     display: grid;
@@ -136,9 +134,10 @@
   .cover-visual {
     position: relative;
     justify-self: end;
-    width: 805px;
+    width: 780px;
     margin-top: -78px;
-    margin-right: -145px;
+    margin-right: -100px;
+    margin-left: -15px;
   }
   .cover-portrait {
     display: block;
@@ -148,8 +147,8 @@
     /* Ultra-Fix "Grafik beruhigen" (19. August 2026): reine Anzeige-
        Filter, das Asset selbst (assets/img/start-cover-original.png)
        bleibt unveraendert auf der Platte. Groesse/Position unveraendert. */
-    filter: brightness(0.9) saturate(0.85) contrast(0.94);
-    opacity: 0.93;
+    filter: brightness(1) saturate(1) contrast(1.05);
+    opacity: 1;
     mix-blend-mode: normal;
     transform: none;
     box-shadow: none;
@@ -167,7 +166,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: radial-gradient(ellipse 62% 62% at 50% 46%, transparent 50%, rgba(238, 242, 246, 0.4) 100%);
+    background: radial-gradient(ellipse 62% 62% at 50% 46%, transparent 60%, rgba(238, 242, 246, 0.08) 100%);
   }
 
   /* Mobile-Nachtrag (19. August 2026): war seit der "1:1 nach Vorlage"-
