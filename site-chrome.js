@@ -40,6 +40,7 @@
     "nav.discuss": { en: "DISCUSS", de: "DISKUTIEREN" },
     "nav.knowledge": { en: "KNOWLEDGE", de: "WISSEN" },
     "nav.lab": { en: "LAB", de: "LABOR" },
+    "nav.ask": { en: "ASK", de: "ASK" },
     "nav.search": { en: "SEARCH", de: "SUCHE" },
     "nav.login": { en: "LOGIN", de: "ANMELDEN" },
     "nav.online": { en: "ONLINE", de: "ONLINE" },
