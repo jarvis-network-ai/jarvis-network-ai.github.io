@@ -276,7 +276,7 @@
     position: relative;
     align-self: center;
     min-height: clamp(480px, 52vw, 660px);
-    opacity: 0;
+    opacity: 1;
     animation: fadeUp 0.9s ease 0.3s forwards;
   }
   .hero-portrait {
@@ -336,7 +336,7 @@
     border-radius: 12px;
     padding: 0.9rem 1rem;
     box-shadow: var(--shadow-soft);
-    opacity: 0;
+    opacity: 1;
     animation: fadeUp 0.8s ease forwards;
   }
   .hero-panel-label {
@@ -375,7 +375,7 @@
     margin-top: 2.6rem;
     padding-top: 1.8rem;
     border-top: 1px solid var(--line);
-    opacity: 0;
+    opacity: 1;
     animation: fadeUp 0.8s ease 0.7s forwards;
   }
   .hero-fact dt {
@@ -456,7 +456,7 @@
     border-radius: 100px;
     padding: 0.4rem 0.9rem 0.4rem 0.7rem;
     margin-bottom: 1.6rem;
-    opacity: 0;
+    opacity: 1;
     animation: fadeUp 0.7s ease 0.05s forwards;
   }
 
@@ -481,7 +481,7 @@
     font-size: clamp(1.05rem, 2.4vw, 1.4rem);
     color: var(--ice);
     font-weight: 500;
-    opacity: 0;
+    opacity: 1;
     animation: fadeUp 0.8s ease 0.28s forwards;
   }
   .hero .subtagline {
@@ -491,14 +491,14 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
-    opacity: 0;
+    opacity: 1;
     animation: fadeUp 0.8s ease 0.36s forwards;
   }
 
   .hero-ctas {
     display: flex; flex-wrap: wrap; gap: 1rem;
     margin-top: 2.4rem;
-    opacity: 0;
+    opacity: 1;
     animation: fadeUp 0.8s ease 0.55s forwards;
   }
   .cta {
@@ -545,7 +545,7 @@
   .hero-eyebrow {
     display: block;
     margin-bottom: 1rem;
-    opacity: 0;
+    opacity: 1;
     animation: fadeUp 0.7s ease 0s forwards;
   }
   .hero .intro {
@@ -554,7 +554,7 @@
     color: var(--white);
     font-size: 1.2rem;
     line-height: 1.65;
-    opacity: 0;
+    opacity: 1;
     animation: fadeUp 0.8s ease 0.44s forwards;
   }
   .hero .intro p { margin: 0 0 0.9rem; }
@@ -568,7 +568,7 @@
     text-decoration: none;
     border-bottom: 1px solid var(--line-strong);
     padding-bottom: 0.15rem;
-    opacity: 0;
+    opacity: 1;
     animation: fadeUp 0.8s ease 0.62s forwards;
   }
   .hero-status-link:hover { color: var(--cyan); border-color: var(--cyan-dim); }
@@ -798,7 +798,7 @@
 
   .ask-btn {
     position: fixed;
-    right: 1.4rem; bottom: 1.4rem;
+    right: 2rem; bottom: 2.5rem;
     z-index: 60;
     font-family: ui-monospace, monospace;
     font-size: 0.76rem;
